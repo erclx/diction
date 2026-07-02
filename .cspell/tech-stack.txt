@@ -50,6 +50,7 @@ oxlintrc
 parallelizable
 pathlib
 piper
+pkill
 pretrained
 pycache
 pydantic
