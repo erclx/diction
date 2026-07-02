@@ -29,6 +29,8 @@ One git repo holds two subprojects. Shared tooling lives at the root and each su
 
 The frontend calls the backend at `http://localhost:8000`. Root `bun run dev` starts both and opens `http://localhost:5173`, so the health check and API-backed views resolve without starting each subtree by hand. `Ctrl-C` stops both.
 
+Backend startup builds the real `GopScorer` by default, so it needs the `scoring` extra installed. Without it, run `DICTION_USE_STUB_SCORER=true bun run dev` for the stub. Startup fails with an actionable message if neither is in place.
+
 ## Verify
 
 Root `bun run check` runs shared format, spell, and shell checks, then the backend and frontend checks in turn. `pre-push` runs the same command.
