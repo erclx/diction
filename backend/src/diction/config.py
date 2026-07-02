@@ -7,7 +7,9 @@ BACKEND_ROOT = Path(__file__).resolve().parent.parent.parent
 
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_prefix='DICTION_')
+    model_config = SettingsConfigDict(
+        env_prefix='DICTION_', env_file=BACKEND_ROOT / '.env', extra='ignore'
+    )
 
     db_path: Path = BACKEND_ROOT / 'diction.db'
     use_stub_scorer: bool = False
