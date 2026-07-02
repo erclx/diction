@@ -20,6 +20,10 @@ The web UI is a Vite and React single-page app talking to a FastAPI backend over
 
 The backend is Python because the model stack is Python. The frontend is a Vite and React SPA calling FastAPI over localhost, chosen over Next.js because there is no server-side rendering need and no second backend to justify a Node runtime. Next.js would duplicate a server layer the Python pipeline already owns. The tradeoff is two dev processes and a client-server contract to maintain, accepted for a clean split between the ML pipeline and a component-driven UI for dashboards and drills.
 
+### shadcn/ui on Tailwind v4 with TanStack Query for the frontend
+
+The UI uses shadcn/ui components over Tailwind v4 tokens, with TanStack Query for server state. shadcn vendors component source into the repo rather than pulling a runtime library, so the dashboards and drills stay editable without fighting a component framework, and its semantic token vocabulary maps onto the `DESIGN.md` palette. TanStack Query owns fetch state, caching, and mutation lifecycle for the score and history calls instead of hand-rolled hooks. The tradeoff is more frontend dependencies and two token systems to keep aligned, accepted because the coming dashboard and drill surfaces are component-heavy and share server-state patterns. Dark theme follows the OS through `prefers-color-scheme` with no manual toggle.
+
 ### Phoneme scoring via GOP, not a cloud pronunciation API
 
 GOP, or Goodness of Pronunciation, scores each phoneme as the posterior probability that the target phoneme was actually produced, computed by an acoustic model trained on native speech. Commercial tools like Azure Pronunciation Assessment, and by extension sites like AnyToSpeech, are built on the same underlying approach. Building it locally instead of calling Azure avoids per-hour cost and keeps audio on-device. The tradeoff is owning the alignment and scoring correctness instead of getting it from a managed API.

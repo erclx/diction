@@ -21,12 +21,13 @@ One git repo holds two subprojects. Shared tooling lives at the root and each su
 
 ## Run the servers
 
-| Command                      | Where    | Purpose                                        |
-| ---------------------------- | -------- | ---------------------------------------------- |
-| `cd backend && bun run dev`  | backend  | FastAPI on `http://localhost:8000` with reload |
-| `cd frontend && bun run dev` | frontend | Vite dev server on `http://localhost:5173`     |
+| Command                      | Where    | Purpose                                             |
+| ---------------------------- | -------- | --------------------------------------------------- |
+| `bun run dev`                | root     | Run backend and frontend together, open the browser |
+| `cd backend && bun run dev`  | backend  | FastAPI on `http://localhost:8000` with reload      |
+| `cd frontend && bun run dev` | frontend | Vite dev server on `http://localhost:5173`          |
 
-The frontend calls the backend at `http://localhost:8000`. Start the backend first for the health check and any API-backed views to resolve.
+The frontend calls the backend at `http://localhost:8000`. Root `bun run dev` starts both and opens `http://localhost:5173`, so the health check and API-backed views resolve without starting each subtree by hand. `Ctrl-C` stops both.
 
 ## Verify
 
