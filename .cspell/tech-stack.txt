@@ -14,6 +14,7 @@ cuda
 dataclass
 dataclasses
 dbaeumer
+domcontentloaded
 dotenv
 dotfolders
 dunder
@@ -41,6 +42,7 @@ mkdocs
 mkhl
 monkeypatch
 mypy
+navigations
 networkidle
 njsproj
 noopener

@@ -7,4 +7,4 @@ subtitle: Per-surface ASCII layouts loaded on demand
 
 Per-surface ASCII layouts loaded on demand
 
-- [Feature name](feature-name.md): Brief sentence describing when and where the surface appears.
+- [Passage scoring](passage-scoring.md): The passage reading surface where the user records a read-aloud and sees pronunciation scores

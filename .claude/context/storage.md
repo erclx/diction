@@ -18,7 +18,7 @@ The persistence layer every practice mode writes through. One SQLite file, one e
 - Table models stay internal. API routes return separate response models, so the HTTP contract does not track the DB shape.
 - Schema is created with `SQLModel.metadata.create_all()` in the app lifespan. Alembic is deferred until a real migration is needed, so a column change means resetting the local DB.
 - The session table model is `PracticeSession`, not `Session`, to avoid clashing with SQLModel's own `Session`.
-- Conventions for this layer are enforced by `.claude/rules/lib/320-sqlmodel.md`.
+- Conventions for this layer are enforced by `.claude/rules/lib/370-sqlmodel.md`.
 
 ## Hidden contracts
 
