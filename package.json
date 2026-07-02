@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "./scripts/dev.sh",
+    "dev:all": "./scripts/dev.sh",
     "check:spell": "cspell '**' '.*/**' '.*' --no-progress --color --show-context",
     "check:format": "prettier --check --log-level warn --ignore-path .gitignore --ignore-path .prettierignore . && shfmt --diff --indent 2 scripts/",
     "check:shell": "find scripts -name '*.sh' -exec shellcheck --severity=warning {} +",
