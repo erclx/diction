@@ -11,6 +11,9 @@ node_modules/
 *.local
 !.env.example
 
+# Local database
+*.db
+
 # Python
 .pytest_cache/
 .mypy_cache/
