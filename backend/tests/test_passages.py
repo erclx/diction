@@ -1,0 +1,91 @@
+from collections.abc import Iterator
+
+import pytest
+from fastapi.testclient import TestClient
+from sqlalchemy import Engine
+from sqlmodel import Session, SQLModel
+
+from diction.api.passages import get_scorer
+from diction.app import create_app
+from diction.db.engine import get_session, make_engine
+from diction.scoring.audio import ClipTooWeakError
+from diction.scoring.types import FlaggedWordResult, ScoreResult
+from diction.storage import sessions as sessions_storage
+
+
+class FakeScorer:
+    def __init__(self, result: ScoreResult) -> None:
+        self._result = result
+
+    def score(self, passage: str, audio: bytes) -> ScoreResult:
+        return self._result
+
+
+class RaisingScorer:
+    def score(self, passage: str, audio: bytes) -> ScoreResult:
+        raise ClipTooWeakError('duration=0.10s below 1.0s minimum')
+
+
+@pytest.fixture
+def engine(tmp_path) -> Engine:
+    built = make_engine(f'sqlite:///{tmp_path / "test.db"}')
+    SQLModel.metadata.create_all(built)
+    return built
+
+
+@pytest.fixture
+def client(engine: Engine) -> Iterator[TestClient]:
+    app = create_app()
+
+    def override_session() -> Iterator[Session]:
+        with Session(engine) as session:
+            yield session
+
+    app.dependency_overrides[get_session] = override_session
+    yield TestClient(app)
+    app.dependency_overrides.clear()
+
+
+def _post(client: TestClient) -> object:
+    return client.post(
+        '/api/passages/score',
+        data={'passage': 'the thick fog'},
+        files={'audio': ('clip.webm', b'fake-bytes', 'audio/webm')},
+    )
+
+
+def test_score_returns_scores_and_persists_the_session(
+    client: TestClient, engine: Engine
+) -> None:
+    result = ScoreResult(
+        completeness=90.0,
+        accuracy=80.0,
+        fluency=70.0,
+        phoneme_quality=60.0,
+        flagged_words=[
+            FlaggedWordResult(word='thick', start=1.0, end=1.3, phoneme='θ')
+        ],
+    )
+    client.app.dependency_overrides[get_scorer] = lambda: FakeScorer(result)
+
+    response = _post(client)
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body['phoneme_quality'] == 60.0
+    assert body['flagged_words'][0]['phoneme'] == 'θ'
+    assert 'θ' in body['flagged_words'][0]['explanation']
+    with Session(engine) as session:
+        saved = sessions_storage.list_sessions(session)
+        assert len(saved) == 1
+        assert saved[0].flagged_words[0].word == 'thick'
+        assert saved[0].flagged_words[0].phoneme == 'θ'
+
+
+def test_score_returns_422_for_a_too_weak_clip(client: TestClient) -> None:
+    client.app.dependency_overrides[get_scorer] = lambda: RaisingScorer()
+
+    response = _post(client)
+
+    assert response.status_code == 422
+    assert response.json()['error'] == 'clip_too_weak'

@@ -10,6 +10,7 @@ commitlint
 conftest
 coqui
 coveragerc
+cuda
 dataclass
 dataclasses
 dbaeumer
@@ -21,6 +22,8 @@ espeak
 evenodd
 fastapi
 flake8
+frombuffer
+frombytes
 frontmatter
 htmlcov
 httpx
@@ -49,6 +52,10 @@ oxlint
 oxlintrc
 parallelizable
 pathlib
+phonemize
+phonemized
+phonemizer
+phonemizing
 piper
 pkill
 pretrained
@@ -68,14 +75,19 @@ setattr
 shellcheck
 shfmt
 sidepanel
+soundfile
 speechocean
 sqlite
 sqlmodel
+stdlib
 tabindex
 tablename
 testpaths
 threadpool
 timonwong
+tobytes
+torchaudio
+torchcodec
 tsgolint
 uvicorn
 venv

@@ -4,6 +4,7 @@ diction
 Fluenta
 getpronounce
 GOP
+gops
 Interspeech
 intonation
 IPA
@@ -14,4 +15,6 @@ phonemes
 prosody
 Ryzen
 schwa
+scorable
 shadowing
+unscorable

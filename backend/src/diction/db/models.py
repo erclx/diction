@@ -25,6 +25,9 @@ class FlaggedWord(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
     session_id: int | None = Field(default=None, foreign_key='sessions.id', index=True)
     word: str
+    phoneme: str
+    start: float
+    end: float
     explanation: str
 
     session: PracticeSession | None = Relationship(back_populates='flagged_words')

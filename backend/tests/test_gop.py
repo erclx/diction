@@ -1,0 +1,70 @@
+import pytest
+
+from diction.scoring.audio import ClipTooWeakError
+from diction.scoring.gop import (
+    AlignedPhoneme,
+    aggregate_scores,
+    completeness,
+    fluency,
+    normalize_gop,
+)
+
+
+def make_phoneme(
+    word_index: int, word: str, phoneme: str, gop: float
+) -> AlignedPhoneme:
+    return AlignedPhoneme(
+        word_index=word_index, word=word, phoneme=phoneme, gop=gop, start=0.0, end=0.1
+    )
+
+
+def test_normalize_gop_clamps_to_zero_hundred() -> None:
+    assert normalize_gop(0.0) == 100.0
+    assert normalize_gop(-100.0) == 0.0
+
+
+def test_completeness_is_fraction_of_expected_words_spoken() -> None:
+    result = completeness(['the', 'thick', 'fog'], ['the', 'fog'])
+
+    assert result == 100.0 * 2 / 3
+
+
+def test_fluency_penalizes_inter_word_pauses() -> None:
+    tight = fluency([(0.0, 0.5), (0.5, 1.0)], duration=1.0)
+    gappy = fluency([(0.0, 0.5), (2.5, 3.0)], duration=3.0)
+
+    assert tight > gappy
+
+
+def test_aggregate_flags_words_with_a_phoneme_below_threshold() -> None:
+    aligned = [
+        make_phoneme(0, 'the', 'ð', -1.0),
+        make_phoneme(1, 'thick', 'θ', -8.0),
+        make_phoneme(1, 'thick', 'k', -1.0),
+    ]
+
+    result = aggregate_scores(
+        aligned=aligned,
+        expected_words=['the', 'thick'],
+        spoken_words=['the', 'thick'],
+        spoken_spans=[(0.0, 0.2), (0.2, 0.5)],
+        duration=0.5,
+    )
+
+    assert [flag.word for flag in result.flagged_words] == ['thick']
+    assert result.flagged_words[0].phoneme == 'θ'
+
+
+def test_aggregate_rejects_an_empty_alignment_instead_of_scoring_perfect() -> None:
+    with pytest.raises(ClipTooWeakError):
+        aggregate_scores([], ['thick'], ['thick'], [(0.0, 0.3)], 0.3)
+
+
+def test_aggregate_phoneme_quality_drops_as_gop_worsens() -> None:
+    clean = [make_phoneme(0, 'thick', 'θ', -1.0)]
+    degraded = [make_phoneme(0, 'thick', 'θ', -9.0)]
+
+    clean_score = aggregate_scores(clean, ['thick'], ['thick'], [(0.0, 0.3)], 0.3)
+    degraded_score = aggregate_scores(degraded, ['thick'], ['thick'], [(0.0, 0.3)], 0.3)
+
+    assert clean_score.phoneme_quality > degraded_score.phoneme_quality

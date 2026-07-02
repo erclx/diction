@@ -16,12 +16,12 @@ GitHub Actions workflow for this project.
 
 Defined in `.github/workflows/verify.yml`. Four jobs run in parallel and all must pass before merge.
 
-| Job              | Asserts                                                                          |
-| ---------------- | -------------------------------------------------------------------------------- |
-| 🛡️ Static Checks | Shared prettier, shfmt, cspell, and shellcheck are clean                         |
-| 🐍 Backend       | `uv` sync, then `ruff`, `ruff format --check`, `mypy`, and `pytest`              |
-| ⚛️ Frontend      | `bun` install, then `tsc --noEmit`, `oxlint`, and `vitest`                       |
-| 🎭 E2E           | Starts the backend, installs the Playwright chromium browser, runs the e2e suite |
+| Job              | Asserts                                                                                                              |
+| ---------------- | -------------------------------------------------------------------------------------------------------------------- |
+| 🛡️ Static Checks | Shared prettier, shfmt, cspell, and shellcheck are clean                                                             |
+| 🐍 Backend       | `uv` sync, then `ruff`, `ruff format --check`, `mypy`, and `pytest`                                                  |
+| ⚛️ Frontend      | `bun` install, then `tsc --noEmit`, `oxlint`, and `vitest`                                                           |
+| 🎭 E2E           | Starts the backend with `DICTION_USE_STUB_SCORER=true`, installs the Playwright chromium browser, runs the e2e suite |
 
 ## Running CI locally
 

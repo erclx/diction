@@ -32,8 +32,12 @@ def test_save_session_round_trips_scores_and_flagged_words(
 ) -> None:
     record = make_session('passage')
     record.flagged_words = [
-        FlaggedWord(word='walk', explanation='said as wok'),
-        FlaggedWord(word='ship', explanation='said as sheep'),
+        FlaggedWord(
+            word='walk', phoneme='w', start=0.1, end=0.3, explanation='said as wok'
+        ),
+        FlaggedWord(
+            word='ship', phoneme='ɪ', start=0.4, end=0.6, explanation='said as sheep'
+        ),
     ]
 
     saved = sessions_storage.save_session(db_session, record)

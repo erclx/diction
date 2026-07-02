@@ -17,6 +17,7 @@ One git repo holds two subprojects. Shared tooling lives at the root and each su
 - Root tooling: `bun install`
 - Frontend deps: `cd frontend && bun install`
 - Backend deps: `cd backend && uv sync`
+- Model stack, optional and GPU-bound: `cd backend && uv sync --extra scoring`. Also needs the `espeak-ng` and `ffmpeg` system packages. Skip it to run against the stub scorer with `DICTION_USE_STUB_SCORER=true`.
 
 ## Run the servers
 

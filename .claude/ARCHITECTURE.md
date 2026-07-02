@@ -56,6 +56,10 @@ Real-time conversation requires streaming ASR, a low-latency LLM response loop, 
 
 The whole stack of wav2vec2, Whisper, the local LLM, Piper or XTTS, and SQLite runs on one machine for one user. Chosen over a cloud or hosted approach because the target hardware of RTX 5090, 32GB VRAM, and 96GB RAM runs all required models locally with room to spare. The purpose is personal practice rather than a multi-user product. See the non-goals in `REQUIREMENTS.md`.
 
+### ML stack is an optional dependency group with a stub scorer for CI
+
+The model libraries (torch, torchaudio, transformers, faster-whisper, phonemizer, soundfile) live in a `scoring` optional dependency group, not in base dependencies, and are imported only inside the module that runs inference. A stub scorer behind the same contract serves canned scores when `use_stub_scorer` is set. Chosen so CI and unit tests run without a GPU or a multi-GB download, and so the pronunciation scoring can be built and tested against a fixed contract before the real pipeline is wired everywhere. The tradeoff is two code paths behind one protocol, accepted because the alternative is a GPU-bound CI runner and slow model pulls on every run.
+
 ## Risks / open questions
 
 - Forced alignment and GOP scoring accuracy is unproven for this specific model and pipeline combination. It may need tuning or a fallback approach if alignment fails on mispronunciations that deviate significantly from the reference.
