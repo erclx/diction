@@ -69,7 +69,9 @@ shfmt
 sidepanel
 speechocean
 sqlite
+sqlmodel
 tabindex
+tablename
 testpaths
 threadpool
 timonwong
