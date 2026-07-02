@@ -18,10 +18,12 @@ from transformers import AutoModelForCTC, AutoProcessor
 from diction.config import Settings
 from diction.scoring.audio import (
     TARGET_SAMPLE_RATE,
+    ClipTooWeakError,
     decode_audio,
     ensure_scorable,
 )
 from diction.scoring.gop import AlignedPhoneme, aggregate_scores
+from diction.scoring.text import normalize_word
 from diction.scoring.types import ScoreResult
 
 
@@ -67,7 +69,7 @@ class GopScorer:
         words: list[tuple[str, float, float]] = []
         for segment in segments:
             for word in segment.words or []:
-                words.append((word.word.strip().lower(), word.start, word.end))
+                words.append((normalize_word(word.word), word.start, word.end))
         return words
 
     def _emission(self, waveform: np.ndarray) -> torch.Tensor:
@@ -95,37 +97,43 @@ class GopScorer:
                 target_tokens.append(token_id)
                 token_word_index.append(word_index)
 
-        targets = torch.tensor([target_tokens], dtype=torch.int32)
-        aligned_ids, scores = torchaudio.functional.forced_align(
-            emission.unsqueeze(0), targets, blank=tokenizer.pad_token_id
-        )
-        spans = [
-            span
-            for span in torchaudio.functional.merge_tokens(
-                aligned_ids[0], scores[0].exp()
+        # A garbled read can make forced alignment fail or return a different
+        # span count than the target. Surface that as unscorable, not a 500.
+        try:
+            targets = torch.tensor([target_tokens], dtype=torch.int32)
+            aligned_ids, scores = torchaudio.functional.forced_align(
+                emission.unsqueeze(0), targets, blank=tokenizer.pad_token_id
             )
-            if span.token != tokenizer.pad_token_id
-        ]
-
-        seconds_per_frame = duration / emission.shape[0]
-        result: list[AlignedPhoneme] = []
-        for span, word_index in zip(spans, token_word_index, strict=True):
-            gop = float(emission[span.start : span.end, span.token].mean())
-            result.append(
-                AlignedPhoneme(
-                    word_index=word_index,
-                    word=words[word_index],
-                    phoneme=tokenizer.convert_ids_to_tokens(span.token),
-                    gop=gop,
-                    start=span.start * seconds_per_frame,
-                    end=span.end * seconds_per_frame,
+            spans = [
+                span
+                for span in torchaudio.functional.merge_tokens(
+                    aligned_ids[0], scores[0].exp()
                 )
-            )
+                if span.token != tokenizer.pad_token_id
+            ]
+            seconds_per_frame = duration / emission.shape[0]
+            result: list[AlignedPhoneme] = []
+            for span, word_index in zip(spans, token_word_index, strict=True):
+                gop = float(emission[span.start : span.end, span.token].mean())
+                result.append(
+                    AlignedPhoneme(
+                        word_index=word_index,
+                        word=words[word_index],
+                        phoneme=tokenizer.convert_ids_to_tokens(span.token),
+                        gop=gop,
+                        start=span.start * seconds_per_frame,
+                        end=span.end * seconds_per_frame,
+                    )
+                )
+        except (ValueError, RuntimeError) as error:
+            raise ClipTooWeakError(
+                'could not align the passage to the audio'
+            ) from error
         return result
 
 
 def _normalize_words(passage: str) -> list[str]:
-    return [word.strip('.,!?;:"').lower() for word in passage.split()]
+    return [normalize_word(word) for word in passage.split()]
 
 
 def _phonemize(words: list[str]) -> list[list[str]]:
