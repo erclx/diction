@@ -3,7 +3,7 @@ from datetime import UTC, datetime
 from sqlmodel import Field, Relationship, SQLModel
 
 
-class Session(SQLModel, table=True):
+class PracticeSession(SQLModel, table=True):
     __tablename__ = 'sessions'
 
     id: int | None = Field(default=None, primary_key=True)
@@ -27,4 +27,4 @@ class FlaggedWord(SQLModel, table=True):
     word: str
     explanation: str
 
-    session: Session | None = Relationship(back_populates='flagged_words')
+    session: PracticeSession | None = Relationship(back_populates='flagged_words')

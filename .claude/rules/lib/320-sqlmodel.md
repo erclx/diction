@@ -26,5 +26,5 @@ paths:
 
 - Scope the DB session per request through a generator dependency that yields then closes, per `.claude/rules/framework/220-fastapi.md`.
 - Keep persistence logic in `src/diction/storage/`. Pass the session as the first argument to each storage function.
-- Reference the table model as `models.Session` to disambiguate it from the SQLModel `Session`.
+- Name table models so they do not collide with the SQLModel `Session`, e.g. `PracticeSession`.
 - Use `col(...)` from `sqlmodel` when ordering or filtering on a column.
