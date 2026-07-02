@@ -21,7 +21,7 @@ class ClipTooWeakError(Exception):
 
 @dataclass(frozen=True, slots=True)
 class DecodedAudio:
-    samples: array.array[float]  # float32 mono at TARGET_SAMPLE_RATE
+    samples: array.array[float]
     sample_rate: int
 
     @property

@@ -10,9 +10,6 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_prefix='DICTION_')
 
     db_path: Path = BACKEND_ROOT / 'diction.db'
-
-    # Serve canned scores instead of loading models. Set in CI, where there is
-    # no GPU and the multi-GB model download is not worth it.
     use_stub_scorer: bool = False
 
     phoneme_model_id: str = 'facebook/wav2vec2-xlsr-53-espeak-cv-ft'

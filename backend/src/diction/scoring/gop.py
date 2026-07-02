@@ -84,8 +84,7 @@ def aggregate_scores(
     spoken_spans: list[tuple[float, float]],
     duration: float,
 ) -> ScoreResult:
-    # No aligned phonemes means nothing was measured. Reporting that as a perfect
-    # score is the false pass the spike hit, so treat it as unscorable.
+    # Nothing aligned means nothing measured, so a perfect score would be a false pass.
     if not aligned:
         raise ClipTooWeakError('no phonemes could be aligned to score')
     word_gops = _word_mean_gops(aligned)

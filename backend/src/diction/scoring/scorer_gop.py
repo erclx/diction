@@ -10,9 +10,6 @@ blocking and must run in a threadpool, never inside an async handler, per
 import numpy as np
 import torch
 import torchaudio.functional
-
-# Imported here, not at protocol level: this module is only imported from the
-# lifespan when the scoring extra is installed.
 from faster_whisper import WhisperModel
 from phonemizer import phonemize
 from phonemizer.separator import Separator
