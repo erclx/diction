@@ -79,6 +79,7 @@ soundfile
 speechocean
 sqlite
 sqlmodel
+stdlib
 tabindex
 tablename
 testpaths
@@ -86,6 +87,7 @@ threadpool
 timonwong
 tobytes
 torchaudio
+torchcodec
 tsgolint
 uvicorn
 venv
