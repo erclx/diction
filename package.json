@@ -1,0 +1,25 @@
+{
+  "name": "diction",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "check:spell": "cspell '**' '.*/**' '.*' --no-progress --color --show-context",
+    "check:format": "prettier --check --log-level warn --ignore-path .gitignore --ignore-path .prettierignore . && shfmt --diff --indent 2 scripts/",
+    "check:shell": "find scripts -name '*.sh' -exec shellcheck --severity=warning {} +",
+    "format": "prettier --write --log-level warn --ignore-path .gitignore --ignore-path .prettierignore . && shfmt --write --indent 2 scripts/",
+    "prepare": "husky",
+    "check:backend": "cd backend && bun run check",
+    "check:frontend": "cd frontend && bun run check",
+    "check": "./scripts/verify.sh && bun run check:backend && bun run check:frontend",
+    "clean": "./scripts/clean.sh",
+    "update": "./scripts/update.sh"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^21.2.0",
+    "@commitlint/config-conventional": "^21.2.0",
+    "cspell": "^10.0.1",
+    "husky": "^9.1.7",
+    "prettier": "^3.9.4"
+  }
+}

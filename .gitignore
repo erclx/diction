@@ -1,0 +1,46 @@
+
+# System
+.DS_Store
+
+# Dependencies
+node_modules/
+
+# Secrets
+.env
+.env.*
+*.local
+!.env.example
+
+# Build output
+dist/
+dist-ssr/
+build/
+
+# Test and coverage artifacts
+coverage/
+htmlcov/
+test-results/
+playwright-report/
+blob-report/
+playwright/.cache/
+screenshots/
+
+# Python
+__pycache__/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage_cache/
+.coverage
+.venv/
+
+# Logs
+*.log
+
+# Claude
+.claude/.tmp/
+.claude/memory/
+.claude/plans/
+.claude/review/
+.claude/worktrees/
+.claude/TASKS.md

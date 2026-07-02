@@ -1,0 +1,16 @@
+{
+  "name": "backend",
+  "private": true,
+  "version": "0.0.0",
+  "scripts": {
+    "dev": "uv run uvicorn diction.main:app --app-dir src --reload --port 8000",
+    "typecheck": "uv run mypy src",
+    "lint": "uv run ruff check .",
+    "lint:fix": "uv run ruff check --fix .",
+    "format": "uv run ruff format .",
+    "check:format": "uv run ruff format --check .",
+    "test": "uv run pytest",
+    "test:run": "uv run pytest",
+    "check": "./scripts/verify.sh"
+  }
+}

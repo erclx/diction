@@ -1,0 +1,7 @@
+*.py
+*.lock
+bun.lock
+frontend/dist/
+frontend/coverage/
+frontend/playwright-report/
+frontend/test-results/

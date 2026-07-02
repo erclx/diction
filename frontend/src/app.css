@@ -1,0 +1,20 @@
+.app {
+  max-width: 40rem;
+  margin: 0 auto;
+  padding: 4rem 1.5rem;
+  text-align: center;
+}
+
+.app h1 {
+  margin-bottom: 0.25rem;
+}
+
+.tagline {
+  color: #888;
+  margin-top: 0;
+}
+
+.status {
+  margin-top: 2rem;
+  font-family: monospace;
+}
