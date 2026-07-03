@@ -1,62 +1,87 @@
 @import 'tailwindcss';
 @import 'tw-animate-css';
-
-/* Dark theme follows the OS via prefers-color-scheme, no manual toggle.
-   See .claude/DESIGN.md for the token intent. */
+@import '@fontsource-variable/newsreader/index.css';
+@import '@fontsource-variable/source-sans-3/index.css';
 
 :root {
   --radius: 0.5rem;
 
-  --background: #ffffff;
-  --foreground: #08060d;
-  --card: #f8f8fa;
-  --card-foreground: #08060d;
-  --popover: #ffffff;
-  --popover-foreground: #08060d;
-  --primary: #7c3aed;
-  --primary-foreground: #ffffff;
-  --secondary: #f1f1f4;
-  --secondary-foreground: #08060d;
-  --muted: #f1f1f4;
-  --muted-foreground: #6b6375;
-  --accent: #f1f1f4;
-  --accent-foreground: #08060d;
-  --destructive: #dc2626;
-  --destructive-foreground: #ffffff;
-  --success: #16a34a;
-  --success-foreground: #ffffff;
-  --warning: #d97706;
-  --warning-foreground: #ffffff;
-  --border: #e5e4e7;
-  --input: #e5e4e7;
-  --ring: #7c3aed;
+  --background: #faf8f3;
+  --foreground: #2b2622;
+  --card: #f2ede3;
+  --card-foreground: #2b2622;
+  --popover: #faf8f3;
+  --popover-foreground: #2b2622;
+  --primary: #0f766e;
+  --primary-foreground: #faf8f3;
+  --secondary: #ece5d8;
+  --secondary-foreground: #2b2622;
+  --muted: #ece5d8;
+  --muted-foreground: #6f665b;
+  --accent: #ece5d8;
+  --accent-foreground: #2b2622;
+  --destructive: #b23a2e;
+  --destructive-foreground: #faf8f3;
+  --success: #4f7a3f;
+  --success-foreground: #faf8f3;
+  --warning: #b0741c;
+  --warning-foreground: #faf8f3;
+  --border: #e2d9c9;
+  --input: #e2d9c9;
+  --ring: #0f766e;
+}
+
+.dark {
+  --background: #1c1a17;
+  --foreground: #e9e3d8;
+  --card: #24211c;
+  --card-foreground: #e9e3d8;
+  --popover: #24211c;
+  --popover-foreground: #e9e3d8;
+  --primary: #5eb3a8;
+  --primary-foreground: #16140f;
+  --secondary: #302c25;
+  --secondary-foreground: #e9e3d8;
+  --muted: #302c25;
+  --muted-foreground: #a89e8f;
+  --accent: #302c25;
+  --accent-foreground: #e9e3d8;
+  --destructive: #e8836f;
+  --destructive-foreground: #16140f;
+  --success: #8fc47a;
+  --success-foreground: #16140f;
+  --warning: #e0a94a;
+  --warning-foreground: #16140f;
+  --border: #302c25;
+  --input: #302c25;
+  --ring: #5eb3a8;
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
-    --background: #16171d;
-    --foreground: #f3f4f6;
-    --card: #1c1d24;
-    --card-foreground: #f3f4f6;
-    --popover: #1c1d24;
-    --popover-foreground: #f3f4f6;
-    --primary: #a78bfa;
-    --primary-foreground: #16171d;
-    --secondary: #2e303a;
-    --secondary-foreground: #f3f4f6;
-    --muted: #2e303a;
-    --muted-foreground: #9ca3af;
-    --accent: #2e303a;
-    --accent-foreground: #f3f4f6;
-    --destructive: #f87171;
-    --destructive-foreground: #16171d;
-    --success: #4ade80;
-    --success-foreground: #16171d;
-    --warning: #fbbf24;
-    --warning-foreground: #16171d;
-    --border: #2e303a;
-    --input: #2e303a;
-    --ring: #a78bfa;
+  :root:not(.light):not(.dark) {
+    --background: #1c1a17;
+    --foreground: #e9e3d8;
+    --card: #24211c;
+    --card-foreground: #e9e3d8;
+    --popover: #24211c;
+    --popover-foreground: #e9e3d8;
+    --primary: #5eb3a8;
+    --primary-foreground: #16140f;
+    --secondary: #302c25;
+    --secondary-foreground: #e9e3d8;
+    --muted: #302c25;
+    --muted-foreground: #a89e8f;
+    --accent: #302c25;
+    --accent-foreground: #e9e3d8;
+    --destructive: #e8836f;
+    --destructive-foreground: #16140f;
+    --success: #8fc47a;
+    --success-foreground: #16140f;
+    --warning: #e0a94a;
+    --warning-foreground: #16140f;
+    --border: #302c25;
+    --input: #302c25;
+    --ring: #5eb3a8;
   }
 }
 
@@ -85,7 +110,9 @@
   --color-input: var(--input);
   --color-ring: var(--ring);
 
-  --font-sans: system-ui, 'Segoe UI', Roboto, sans-serif;
+  --font-sans: 'Source Sans 3 Variable', system-ui, 'Segoe UI', Roboto,
+    sans-serif;
+  --font-serif: 'Newsreader Variable', Georgia, serif;
   --font-mono: ui-monospace, Consolas, monospace;
 
   --radius-sm: calc(var(--radius) - 4px);

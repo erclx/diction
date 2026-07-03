@@ -16,8 +16,9 @@ description: React SPA structure, shadcn and token setup, mic capture, and the s
 
 ## Decisions
 
-- Dark theme follows the OS through `prefers-color-scheme`, not shadcn's `.dark` class. There is no manual toggle until a user needs to override the OS.
-- Tokens live as CSS variables in `:root` with a `prefers-color-scheme` override, mapped to utilities through `@theme inline`. Utilities like `bg-background` resolve the variable at runtime, so the media query switches the whole palette.
+- Theme is a manual light, dark, or system choice. `useTheme` in `features/theme/` persists it to the `diction-theme` localStorage key and toggles a `.light` or `.dark` class on `<html>`. The `system` choice clears the class and falls back to `prefers-color-scheme`. An inline script in `index.html` stamps the class before first paint to avoid a flash, and shares the same storage key.
+- Tokens live as CSS variables in `:root`, overridden by a `.dark` block for the explicit choice and by a `:root:not(.light):not(.dark)` block inside `prefers-color-scheme: dark` for the system fallback. The two dark blocks hold the same values and must move together. They map to utilities through `@theme inline`, so `bg-background` resolves the active palette at runtime.
+- Type is self-hosted through Fontsource variable packages imported in `index.css`. `font-serif` (Newsreader) sets headings and the read-aloud passage. `font-sans` (Source Sans 3) sets UI body and labels. Fonts bundle as local woff2, so the offline guarantee holds.
 - A flagged word replays the user's own recorded span through `useSpanPlayer`, not a native reference clip. Native TTS reference audio is a later feature.
 - The score fetch carries a 60s `AbortSignal.timeout`. GPU scoring is intentionally slow, so the ceiling is generous rather than snappy.
 

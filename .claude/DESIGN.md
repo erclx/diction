@@ -4,36 +4,38 @@ Authoring guidance: `.claude/standards/design.md`.
 
 ## Personality
 
-Diction is a private, offline practice tool for one person, not a public product. The interface should feel calm, focused, and personal, closer to a quiet workbench than a graded test. It centers content on a narrow column and leans on system fonts for a native feel, with both light and dark themes through `prefers-color-scheme`. The chrome stays neutral cool-gray so the real color belongs to feedback: a green, amber, and red ramp carries score and flagged-word signal, and a single calm violet marks links and primary actions.
+Diction is a private, offline practice tool for one person, not a public product. The interface should feel calm, focused, and personal, closer to a quiet workbench than a graded test. It centers content on a narrow column on a warm paper canvas, with ink-brown text. Reading surfaces, headings and the passage to read aloud, use a self-hosted Newsreader serif for warmth, while the UI chrome uses a self-hosted Source Sans 3 for clarity. Both faces are bundled locally so nothing loads over the network. Light is warm paper and dark is warm charcoal, so the mood holds at night. The user picks light, dark, or system from a header toggle, with system following `prefers-color-scheme`. The chrome stays warm and quiet so the real color belongs to feedback: a sage, ochre, and brick ramp carries score and flagged-word signal, and a single muted teal marks links and primary actions.
 
 ## Color
 
 One row per role. Intent is a short phrase a human can picture. Value is the light-theme hex. Dark-theme overrides follow the table. These map onto shadcn/ui tokens: `background`, `card` for surface, `primary` for accent, `destructive` for error, with `success` and `warning` added as custom semantic tokens.
 
-| Role       | Intent                        | Value   |
-| ---------- | ----------------------------- | ------- |
-| background | page canvas                   | #ffffff |
-| surface    | cards, panels, raised blocks  | #f8f8fa |
-| text       | primary body text             | #6b6375 |
-| muted      | secondary text, captions      | #888888 |
-| accent     | links, primary action         | #7c3aed |
-| success    | confirmations, positive state | #16a34a |
-| warning    | cautions, pending state       | #d97706 |
-| error      | failures, destructive action  | #dc2626 |
+| Role       | Intent                       | Value   |
+| ---------- | ---------------------------- | ------- |
+| background | warm paper canvas            | #faf8f3 |
+| surface    | cards, panels, raised blocks | #f2ede3 |
+| text       | primary body text, ink       | #2b2622 |
+| muted      | secondary text, captions     | #6f665b |
+| accent     | links, primary action, teal  | #0f766e |
+| success    | confirmations, sage          | #4f7a3f |
+| warning    | cautions, ochre              | #b0741c |
+| error      | failures, brick              | #b23a2e |
 
-Dark-theme overrides: background #16171d, surface #1c1d24, text #9ca3af, muted #9ca3af, accent #a78bfa, success #4ade80, warning #fbbf24, error #f87171.
+Dark-theme overrides: background #1c1a17, surface #24211c, text #e9e3d8, muted #a89e8f, accent #5eb3a8, success #8fc47a, warning #e0a94a, error #e8836f.
 
 ## Typography
 
 One row per role. Size and line height in pixels or rem. Family names use their product casing.
 
-| Role    | Family       | Weight | Size | Line height |
-| ------- | ------------ | ------ | ---- | ----------- |
-| display | system-ui    | 500    | 40px | 120%        |
-| heading | system-ui    | 500    | 24px | 118%        |
-| body    | system-ui    | 400    | 18px | 145%        |
-| label   | system-ui    | 400    | 15px | 135%        |
-| code    | ui-monospace | 400    | 15px | 135%        |
+| Role    | Family        | Weight | Size | Line height |
+| ------- | ------------- | ------ | ---- | ----------- |
+| display | Newsreader    | 500    | 40px | 120%        |
+| heading | Newsreader    | 500    | 24px | 118%        |
+| body    | Source Sans 3 | 400    | 18px | 145%        |
+| label   | Source Sans 3 | 400    | 15px | 135%        |
+| code    | ui-monospace  | 400    | 15px | 135%        |
+
+Newsreader also sets the passage to read aloud, the primary reading surface. Both families are self-hosted via Fontsource variable packages and bundled locally, so no font loads over the network.
 
 ## Spacing
 

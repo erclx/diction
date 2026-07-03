@@ -23,6 +23,7 @@ espeak
 evenodd
 fastapi
 flake8
+fontsource
 frombuffer
 frombytes
 frontmatter
@@ -44,6 +45,7 @@ monkeypatch
 mypy
 navigations
 networkidle
+newsreader
 njsproj
 noopener
 noreferrer
