@@ -36,6 +36,7 @@ jsxSingleQuote
 kaldi
 kwargs
 labelledby
+lessac
 linecap
 linejoin
 lintstagedrc
