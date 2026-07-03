@@ -27,6 +27,7 @@ fontsource
 frombuffer
 frombytes
 frontmatter
+gemma
 htmlcov
 httpx
 huggingface

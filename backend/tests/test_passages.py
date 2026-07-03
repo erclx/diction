@@ -5,9 +5,10 @@ from fastapi.testclient import TestClient
 from sqlalchemy import Engine
 from sqlmodel import Session, SQLModel
 
-from diction.api.passages import get_scorer
+from diction.api.passages import get_explainer, get_scorer
 from diction.app import create_app
 from diction.db.engine import get_session, make_engine
+from diction.feedback.base import StubExplainer
 from diction.scoring.audio import ClipTooWeakError
 from diction.scoring.types import FlaggedWordResult, ScoreResult
 from diction.storage import sessions as sessions_storage
@@ -42,6 +43,7 @@ def client(engine: Engine) -> Iterator[TestClient]:
             yield session
 
     app.dependency_overrides[get_session] = override_session
+    app.dependency_overrides[get_explainer] = lambda: StubExplainer()
     yield TestClient(app)
     app.dependency_overrides.clear()
 
