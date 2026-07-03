@@ -110,8 +110,8 @@
   --color-input: var(--input);
   --color-ring: var(--ring);
 
-  --font-sans: 'Source Sans 3 Variable', system-ui, 'Segoe UI', Roboto,
-    sans-serif;
+  --font-sans:
+    'Source Sans 3 Variable', system-ui, 'Segoe UI', Roboto, sans-serif;
   --font-serif: 'Newsreader Variable', Georgia, serif;
   --font-mono: ui-monospace, Consolas, monospace;
 
