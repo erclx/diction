@@ -53,6 +53,7 @@ noreferrer
 ntvs
 numpy
 ollama
+onnx
 oxlint
 oxlintrc
 parallelizable
