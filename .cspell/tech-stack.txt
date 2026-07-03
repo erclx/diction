@@ -95,6 +95,7 @@ tobytes
 torchaudio
 torchcodec
 tsgolint
+unseekable
 uvicorn
 venv
 virtualenv
