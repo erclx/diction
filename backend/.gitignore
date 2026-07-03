@@ -14,6 +14,10 @@ node_modules/
 # Local database
 *.db
 
+# Artifacts
+voices/
+.cache/
+
 # Python
 .pytest_cache/
 .mypy_cache/
