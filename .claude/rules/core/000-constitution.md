@@ -11,7 +11,7 @@ Your primary directive is to maintain long-term system health over short-term co
 
 - Optimize for readability. Code is read far more than it is written.
 - Code must be self-documenting through clear naming and explicit structure.
-- Do not add comments to source code. Let clear naming and explicit structure carry the meaning.
+- Comments are permitted ONLY to explain intent, never logic.
 - Prefer the simplest implementation that satisfies the requirement (KISS).
 
 ## Design philosophy
