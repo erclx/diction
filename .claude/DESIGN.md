@@ -27,13 +27,14 @@ Dark-theme overrides: background #1c1a17, surface #24211c, text #e9e3d8, muted #
 
 One row per role. Size and line height in pixels or rem. Family names use their product casing.
 
-| Role    | Family        | Weight | Size | Line height |
-| ------- | ------------- | ------ | ---- | ----------- |
-| display | Newsreader    | 500    | 40px | 120%        |
-| heading | Newsreader    | 500    | 24px | 118%        |
-| body    | Source Sans 3 | 400    | 18px | 145%        |
-| label   | Source Sans 3 | 400    | 15px | 135%        |
-| code    | ui-monospace  | 400    | 15px | 135%        |
+| Role       | Family        | Weight | Size | Line height |
+| ---------- | ------------- | ------ | ---- | ----------- |
+| display    | Newsreader    | 500    | 40px | 120%        |
+| heading    | Newsreader    | 500    | 24px | 118%        |
+| subheading | Newsreader    | 500    | 20px | 130%        |
+| body       | Source Sans 3 | 400    | 18px | 145%        |
+| label      | Source Sans 3 | 400    | 15px | 135%        |
+| code       | ui-monospace  | 400    | 15px | 135%        |
 
 Newsreader also sets the passage to read aloud, the primary reading surface. Both families are self-hosted via Fontsource variable packages and bundled locally, so no font loads over the network.
 
