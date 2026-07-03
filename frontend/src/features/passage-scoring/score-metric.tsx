@@ -22,7 +22,7 @@ export function ScoreMetric({ label, value }: ScoreMetricProps) {
       <CardContent className="flex flex-col items-center gap-1 p-4">
         <span
           className={cn(
-            'text-3xl font-semibold tabular-nums',
+            'text-2xl font-semibold tabular-nums',
             toneClass(value),
           )}
         >
