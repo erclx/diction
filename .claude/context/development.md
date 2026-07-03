@@ -18,6 +18,7 @@ One git repo holds two subprojects. Shared tooling lives at the root and each su
 - Frontend deps: `cd frontend && bun install`
 - Backend deps: `cd backend && uv sync`
 - Model stack, optional and GPU-bound: `cd backend && uv sync --extra scoring`. Also needs the `espeak-ng` and `ffmpeg` system packages. Skip it to run against the stub scorer with `DICTION_USE_STUB_SCORER=true`.
+- Feedback stack, optional: `cd backend && uv sync --extra feedback` for the local-LLM explainer over Ollama. Skip it to run against the stub explainer with `DICTION_USE_STUB_EXPLAINER=true`.
 
 The local dev box is the RTX 5090 target machine named in `.claude/REQUIREMENTS.md`, so the `scoring` extra, wav2vec2, and Whisper large-v3 run directly here. Run `nvidia-smi` before concluding model or GPU work must be deferred or offloaded.
 
@@ -31,7 +32,7 @@ The local dev box is the RTX 5090 target machine named in `.claude/REQUIREMENTS.
 
 The frontend calls the backend at `http://localhost:8000`. Root `bun run dev:all` starts both and opens `http://localhost:5173`, so the health check and API-backed views resolve without starting each subtree by hand. `Ctrl-C` stops both.
 
-Backend startup builds the real `GopScorer` by default, so it needs the `scoring` extra installed. Without it, run `DICTION_USE_STUB_SCORER=true bun run dev:all` for the stub. Startup fails with an actionable message if neither is in place.
+Backend startup builds the real `GopScorer` and the real `OllamaExplainer` by default, so it needs both the `scoring` and `feedback` extras installed. Without them, run `DICTION_USE_STUB_SCORER=true DICTION_USE_STUB_EXPLAINER=true bun run dev:all` for the stubs. Startup fails with an actionable message for whichever stack is missing.
 
 ## Verify
 
