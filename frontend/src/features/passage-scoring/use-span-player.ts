@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 export interface SpanPlayer {
   playSpan: (start: number, end: number) => void
@@ -6,40 +6,66 @@ export interface SpanPlayer {
 }
 
 export function useSpanPlayer(url: string | undefined): SpanPlayer {
-  const audioRef = useRef<HTMLAudioElement | null>(null)
-  const stopAtRef = useRef(0)
+  const contextRef = useRef<AudioContext | null>(null)
+  const bufferRef = useRef<AudioBuffer | null>(null)
+  const sourceRef = useRef<AudioBufferSourceNode | null>(null)
+  const [canPlay, setCanPlay] = useState(false)
 
   useEffect(() => {
-    if (!url) {
+    if (!url || typeof AudioContext === 'undefined') {
       return
     }
 
-    const audio = new Audio(url)
-    audioRef.current = audio
+    const sourceUrl = url
+    const context = new AudioContext()
+    contextRef.current = context
+    let cancelled = false
 
-    const stopAtEnd = () => {
-      if (audio.currentTime >= stopAtRef.current) {
-        audio.pause()
+    async function decode(): Promise<void> {
+      try {
+        const response = await fetch(sourceUrl)
+        const data = await response.arrayBuffer()
+        const buffer = await context.decodeAudioData(data)
+        if (cancelled) {
+          return
+        }
+        bufferRef.current = buffer
+        setCanPlay(true)
+      } catch {
+        setCanPlay(false)
       }
     }
-    audio.addEventListener('timeupdate', stopAtEnd)
+
+    void decode()
 
     return () => {
-      audio.removeEventListener('timeupdate', stopAtEnd)
-      audio.pause()
-      audioRef.current = null
+      cancelled = true
+      setCanPlay(false)
+      sourceRef.current?.stop()
+      sourceRef.current = null
+      bufferRef.current = null
+      void context.close()
+      contextRef.current = null
     }
   }, [url])
 
   const playSpan = useCallback((start: number, end: number) => {
-    const audio = audioRef.current
-    if (!audio) {
+    const context = contextRef.current
+    const buffer = bufferRef.current
+    if (!context || !buffer) {
       return
     }
-    stopAtRef.current = end
-    audio.currentTime = start
-    void audio.play()
+
+    sourceRef.current?.stop()
+
+    const source = context.createBufferSource()
+    source.buffer = buffer
+    source.connect(context.destination)
+    sourceRef.current = source
+
+    void context.resume()
+    source.start(0, start, Math.max(0, end - start))
   }, [])
 
-  return { playSpan, canPlay: Boolean(url) }
+  return { playSpan, canPlay }
 }

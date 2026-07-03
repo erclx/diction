@@ -5,6 +5,18 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Diction</title>
+    <script>
+      ;(function () {
+        try {
+          var stored = localStorage.getItem('diction-theme')
+          var root = document.documentElement
+          root.classList.remove('light', 'dark')
+          if (stored === 'light' || stored === 'dark') {
+            root.classList.add(stored)
+          }
+        } catch (e) {}
+      })()
+    </script>
   </head>
   <body>
     <div id="root"></div>

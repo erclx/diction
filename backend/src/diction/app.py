@@ -21,7 +21,14 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     if settings.use_stub_scorer:
         app.state.scorer = StubScorer()
     else:
-        from diction.scoring.scorer_gop import GopScorer
+        try:
+            from diction.scoring.scorer_gop import GopScorer
+        except ModuleNotFoundError as error:
+            raise RuntimeError(
+                'The scoring model stack is not installed. Run '
+                "'uv sync --extra scoring', or set DICTION_USE_STUB_SCORER=true "
+                'to run against the stub scorer.'
+            ) from error
 
         app.state.scorer = GopScorer(settings)
     yield
