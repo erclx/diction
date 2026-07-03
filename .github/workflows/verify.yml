@@ -125,6 +125,8 @@ jobs:
         env:
           # No GPU in CI: serve canned scores instead of loading the model stack.
           DICTION_USE_STUB_SCORER: 'true'
+          # No local LLM in CI: serve canned explanations instead of calling Ollama.
+          DICTION_USE_STUB_EXPLAINER: 'true'
         run: |
           (cd ../backend && uv run uvicorn diction.main:app --app-dir src --port 8000) &
           BACKEND_PID=$!

@@ -8,6 +8,7 @@ from fastapi.responses import JSONResponse
 from diction.api import health, passages, sessions
 from diction.config import get_settings
 from diction.db.engine import create_db_and_tables
+from diction.feedback.base import StubExplainer
 from diction.scoring.audio import ClipTooWeakError
 from diction.scoring.base import StubScorer
 
@@ -31,6 +32,20 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
             ) from error
 
         app.state.scorer = GopScorer(settings)
+
+    if settings.use_stub_explainer:
+        app.state.explainer = StubExplainer()
+    else:
+        from diction.feedback.explainer_llm import OllamaExplainer
+
+        try:
+            app.state.explainer = OllamaExplainer.from_settings(settings)
+        except ModuleNotFoundError as error:
+            raise RuntimeError(
+                'The feedback model stack is not installed. Run '
+                "'uv sync --extra feedback', or set DICTION_USE_STUB_EXPLAINER=true "
+                'to run against the stub explainer.'
+            ) from error
     yield
 
 
