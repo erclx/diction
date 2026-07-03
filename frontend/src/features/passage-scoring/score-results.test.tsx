@@ -1,5 +1,7 @@
-import { render, screen } from '@testing-library/react'
+import { screen } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
+
+import { renderWithProviders } from '@/test/render'
 
 import type { ScoreResult } from './score-result'
 import { ScoreResults } from './score-results'
@@ -22,21 +24,25 @@ const baseResult: ScoreResult = {
 
 describe('ScoreResults', () => {
   it('should render a score metric with its label and value', () => {
-    render(<ScoreResults result={baseResult} recordingUrl={undefined} />)
+    renderWithProviders(
+      <ScoreResults result={baseResult} recordingUrl={undefined} />,
+    )
 
     expect(screen.getByText('Accuracy')).toBeInTheDocument()
     expect(screen.getByText('92.2')).toBeInTheDocument()
   })
 
   it('should list a flagged word with its explanation', () => {
-    render(<ScoreResults result={baseResult} recordingUrl={undefined} />)
+    renderWithProviders(
+      <ScoreResults result={baseResult} recordingUrl={undefined} />,
+    )
 
     expect(screen.getByText('thought')).toBeInTheDocument()
     expect(screen.getByText('Say th, not t.')).toBeInTheDocument()
   })
 
   it('should show an empty message when no words are flagged', () => {
-    render(
+    renderWithProviders(
       <ScoreResults
         result={{ ...baseResult, flagged_words: [] }}
         recordingUrl={undefined}
