@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { BACKEND_URL } from '@/config'
 
@@ -42,17 +42,17 @@ export function useReferenceAudio(text: string): ReferenceAudio {
     gcTime: Infinity,
   })
 
-  const objectUrl = useMemo(
-    () => (query.data ? URL.createObjectURL(query.data) : undefined),
-    [query.data],
-  )
+  const [objectUrl, setObjectUrl] = useState<string>()
 
   useEffect(() => {
-    if (!objectUrl) {
+    if (!query.data) {
+      setObjectUrl(undefined)
       return
     }
-    return () => URL.revokeObjectURL(objectUrl)
-  }, [objectUrl])
+    const url = URL.createObjectURL(query.data)
+    setObjectUrl(url)
+    return () => URL.revokeObjectURL(url)
+  }, [query.data])
 
   const playUrl = useCallback((url: string) => {
     const audio = audioRef.current ?? new Audio()
