@@ -19,6 +19,8 @@ One git repo holds two subprojects. Shared tooling lives at the root and each su
 - Backend deps: `cd backend && uv sync`
 - Model stack, optional and GPU-bound: `cd backend && uv sync --extra scoring`. Also needs the `espeak-ng` and `ffmpeg` system packages. Skip it to run against the stub scorer with `DICTION_USE_STUB_SCORER=true`.
 
+The local dev box is the RTX 5090 target machine named in `.claude/REQUIREMENTS.md`, so the `scoring` extra, wav2vec2, and Whisper large-v3 run directly here. Run `nvidia-smi` before concluding model or GPU work must be deferred or offloaded.
+
 ## Run the servers
 
 | Command                      | Where    | Purpose                                             |
