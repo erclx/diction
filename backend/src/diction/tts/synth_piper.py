@@ -22,5 +22,5 @@ class PiperSynthesizer:
     def synthesize(self, text: str) -> bytes:
         buffer = io.BytesIO()
         with wave.open(buffer, 'wb') as wav_file:
-            self._voice.synthesize(text, wav_file)
+            self._voice.synthesize_wav(text, wav_file)
         return buffer.getvalue()
