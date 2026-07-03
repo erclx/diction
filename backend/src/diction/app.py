@@ -5,11 +5,13 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from diction.api import health, passages, sessions
+from diction.api import health, passages, reference, sessions
 from diction.config import get_settings
 from diction.db.engine import create_db_and_tables
 from diction.scoring.audio import ClipTooWeakError
 from diction.scoring.base import StubScorer
+from diction.tts.base import StubSynthesizer
+from diction.tts.cache import CachedSynthesizer, ReferenceAudioCache
 
 FRONTEND_ORIGIN = 'http://localhost:5173'
 
@@ -31,6 +33,24 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
             ) from error
 
         app.state.scorer = GopScorer(settings)
+
+    if settings.use_stub_synth:
+        app.state.synth = StubSynthesizer()
+    else:
+        try:
+            from diction.tts.synth_piper import PiperSynthesizer
+        except ModuleNotFoundError as error:
+            raise RuntimeError(
+                'The TTS stack is not installed. Run '
+                "'uv sync --extra tts', or set DICTION_USE_STUB_SYNTH=true "
+                'to run against the stub synthesizer.'
+            ) from error
+
+        app.state.synth = CachedSynthesizer(
+            PiperSynthesizer(settings),
+            ReferenceAudioCache(settings.reference_cache_dir),
+            str(settings.tts_voice),
+        )
     yield
 
 
@@ -47,6 +67,7 @@ def create_app() -> FastAPI:
 
     app.include_router(health.router, prefix='/api')
     app.include_router(passages.router, prefix='/api')
+    app.include_router(reference.router, prefix='/api')
     app.include_router(sessions.router, prefix='/api')
 
     @app.exception_handler(ClipTooWeakError)

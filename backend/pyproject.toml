@@ -23,6 +23,11 @@ scoring = [
     "transformers>=4.44",
 ]
 
+# Opt-in local TTS for native reference audio. Install with `uv sync --extra tts`.
+tts = [
+    "piper-tts>=1.2",
+]
+
 [dependency-groups]
 dev = [
     "mypy>=1.13",
