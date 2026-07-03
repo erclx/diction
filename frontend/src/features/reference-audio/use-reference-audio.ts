@@ -75,8 +75,12 @@ export function useReferenceAudio(text: string): ReferenceAudio {
       return
     }
     wantsPlayRef.current = true
+    if (query.isError) {
+      void query.refetch()
+      return
+    }
     setShouldLoad(true)
-  }, [objectUrl, playUrl])
+  }, [objectUrl, playUrl, query])
 
   return { play, isFetching: query.isFetching, isError: query.isError }
 }

@@ -47,4 +47,22 @@ describe('ReferenceButton', () => {
 
     expect(screen.getByRole('button', { name: 'Hear thought' })).toBeEnabled()
   })
+
+  it('should surface a failed synthesis instead of failing silently', async () => {
+    server.use(
+      http.get('http://localhost:8000/api/reference', () =>
+        HttpResponse.json(null, { status: 500 }),
+      ),
+    )
+    const user = userEvent.setup()
+    renderWithProviders(<ReferenceButton text="thought" label="Hear thought" />)
+
+    await user.click(screen.getByRole('button', { name: 'Hear thought' }))
+
+    await waitFor(() =>
+      expect(
+        screen.getByRole('button', { name: 'Hear thought, failed, retry' }),
+      ).toBeInTheDocument(),
+    )
+  })
 })
