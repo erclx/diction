@@ -37,6 +37,7 @@ jsxSingleQuote
 kaldi
 kwargs
 labelledby
+lessac
 linecap
 linejoin
 lintstagedrc
@@ -53,6 +54,7 @@ noreferrer
 ntvs
 numpy
 ollama
+onnx
 oxlint
 oxlintrc
 parallelizable
@@ -95,6 +97,7 @@ tobytes
 torchaudio
 torchcodec
 tsgolint
+unseekable
 uvicorn
 venv
 virtualenv

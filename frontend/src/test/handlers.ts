@@ -22,6 +22,11 @@ export const handlers = [
       ],
     }),
   ),
+  http.get('http://localhost:8000/api/reference', () =>
+    HttpResponse.arrayBuffer(new Uint8Array([82, 73, 70, 70]).buffer, {
+      headers: { 'Content-Type': 'audio/wav' },
+    }),
+  ),
   http.get('http://localhost:8000/api/sessions', () =>
     HttpResponse.json([
       {

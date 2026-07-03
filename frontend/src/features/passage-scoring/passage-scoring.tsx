@@ -3,6 +3,8 @@ import { Loader2, Mic, RotateCcw, Square } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
+import { ReferenceButton } from '@/features/reference-audio/reference-button'
+
 import { ClipTooWeakError, useScorePassage } from './use-score-passage'
 import { ScoreResults } from './score-results'
 import { useRecorder } from './use-recorder'
@@ -44,10 +46,19 @@ export function PassageScoring() {
         <CardHeader>
           <CardTitle>Read this aloud</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="flex flex-col gap-4">
           <p className="font-serif text-lg leading-relaxed">
             {PRACTICE_PASSAGE}
           </p>
+          <div className="flex items-center gap-2">
+            <ReferenceButton
+              text={PRACTICE_PASSAGE}
+              label="Play native reference for the passage"
+            />
+            <span className="text-sm text-muted-foreground">
+              Hear it read aloud
+            </span>
+          </div>
         </CardContent>
       </Card>
 

@@ -1,6 +1,7 @@
 import { Volume2 } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
+import { ReferenceButton } from '@/features/reference-audio/reference-button'
 
 import type { FlaggedWord } from './score-result'
 import type { SpanPlayer } from './use-span-player'
@@ -26,17 +27,23 @@ export function FlaggedWordList({ words, player }: FlaggedWordListProps) {
           key={`${word.word}-${word.start}`}
           className="flex items-start gap-3 rounded-lg border p-3 text-left"
         >
-          {player && (
-            <Button
-              variant="outline"
-              size="icon"
-              aria-label={`Play ${word.word}`}
-              disabled={!player.canPlay}
-              onClick={() => player.playSpan(word.start, word.end)}
-            >
-              <Volume2 />
-            </Button>
-          )}
+          <div className="flex gap-2">
+            {player && (
+              <Button
+                variant="outline"
+                size="icon"
+                aria-label={`Play your recording of ${word.word}`}
+                disabled={!player.canPlay}
+                onClick={() => player.playSpan(word.start, word.end)}
+              >
+                <Volume2 />
+              </Button>
+            )}
+            <ReferenceButton
+              text={word.word}
+              label={`Play native reference for ${word.word}`}
+            />
+          </div>
           <div className="flex flex-col gap-1">
             <div className="flex items-baseline gap-2">
               <span className="font-medium">{word.word}</span>

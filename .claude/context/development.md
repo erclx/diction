@@ -19,6 +19,7 @@ One git repo holds two subprojects. Shared tooling lives at the root and each su
 - Backend deps: `cd backend && uv sync`
 - Model stack, optional and GPU-bound: `cd backend && uv sync --extra scoring`. Also needs the `espeak-ng` and `ffmpeg` system packages. Skip it to run against the stub scorer with `DICTION_USE_STUB_SCORER=true`.
 - Feedback stack, optional: `cd backend && uv sync --extra feedback` for the local-LLM explainer over Ollama. Skip it to run against the stub explainer with `DICTION_USE_STUB_EXPLAINER=true`.
+- Reference-audio TTS, optional: `cd backend && uv sync --extra tts`. Also needs a Piper voice on disk at the `DICTION_TTS_VOICE` path, default `backend/voices/en_US-lessac-medium.onnx`. Download the `en_US-lessac-medium` `.onnx` and `.onnx.json` pair from the [Piper voices release](https://github.com/rhasspy/piper/releases) into `backend/voices/`. Skip both to run against the stub synthesizer with `DICTION_USE_STUB_SYNTH=true`.
 
 The local dev box is the RTX 5090 target machine named in `.claude/REQUIREMENTS.md`, so the `scoring` extra, wav2vec2, and Whisper large-v3 run directly here. Run `nvidia-smi` before concluding model or GPU work must be deferred or offloaded.
 
@@ -32,7 +33,7 @@ The local dev box is the RTX 5090 target machine named in `.claude/REQUIREMENTS.
 
 The frontend calls the backend at `http://localhost:8000`. Root `bun run dev:all` starts both and opens `http://localhost:5173`, so the health check and API-backed views resolve without starting each subtree by hand. `Ctrl-C` stops both.
 
-Backend startup builds the real `GopScorer` and the real `OllamaExplainer` by default, so it needs both the `scoring` and `feedback` extras installed. Without them, run `DICTION_USE_STUB_SCORER=true DICTION_USE_STUB_EXPLAINER=true bun run dev:all` for the stubs. Startup fails with an actionable message for whichever stack is missing.
+Backend startup builds the real `GopScorer`, `OllamaExplainer`, and `PiperSynthesizer` by default, so it needs the `scoring`, `feedback`, and `tts` extras installed. Without them, run `DICTION_USE_STUB_SCORER=true DICTION_USE_STUB_EXPLAINER=true DICTION_USE_STUB_SYNTH=true bun run dev:all` for the stubs. Startup fails with an actionable message for whichever stack is missing.
 
 ## Verify
 

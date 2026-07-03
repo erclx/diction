@@ -20,6 +20,7 @@ The single-column practice surface for the passage reading feature. It shows a p
 │  ┌──────────────────────────────────────┐    │
 │  │ Read this aloud                       │    │ ← passage card
 │  │ The quick brown fox jumps over the... │    │
+│  │ [🗣] Hear it read aloud               │    │ ← native reference playback
 │  └──────────────────────────────────────┘    │
 │                                               │
 │                 [ 🎤 Record ]                 │ ← record control
@@ -43,7 +44,7 @@ The single-column practice surface for the passage reading feature. It shows a p
 │                                               │
 │  Flagged words                                │
 │  ┌──────────────────────────────────────┐    │
-│  │ [🔊] thought  (θ)                     │    │ ← play span, phoneme chip
+│  │ [🔊][🗣] thought  (θ)                 │    │ ← own span, native reference, phoneme chip
 │  │      The "th" came out as "t"...      │    │ ← plain-language reason
 │  └──────────────────────────────────────┘    │
 ```
@@ -61,6 +62,7 @@ The single-column practice surface for the passage reading feature. It shows a p
 - Title: `Passage reading`
 - Subtitle: `Read the passage aloud, then score your pronunciation.`
 - Passage card heading: `Read this aloud`
+- Reference caption: `Hear it read aloud`
 - Controls: `Record`, `Stop`, `Record again`, `Score`
 - Metric labels: `Completeness`, `Accuracy`, `Fluency`, `Phoneme quality`
 - Clip too weak: `Recording was too short or quiet, record again and speak clearly.`
@@ -75,3 +77,4 @@ The single-column practice surface for the passage reading feature. It shows a p
 - A too-weak clip shows a re-record prompt distinct from a generic failure, matching the 422 boundary.
 - Each metric is colored by band: green at 90 and above, amber at 75 to 89, red below 75.
 - Each flagged word plays its own recorded span. Score band coloring and span playback mechanics live in `.claude/context/frontend.md`.
+- The passage card and each flagged word also play a native reference, synthesized locally and distinct from the user's own recording. The flagged-word row shows both controls side by side, the speaker for the user's clip and the reference for the native one. Reference synthesis and caching live in `.claude/context/tts.md`.
