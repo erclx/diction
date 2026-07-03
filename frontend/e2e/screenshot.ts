@@ -25,11 +25,103 @@ const MOCK_SCORE = {
   ],
 }
 
+const MOCK_SESSIONS = [
+  {
+    id: 12,
+    created_at: '2026-07-02T09:14:00Z',
+    mode: 'passage',
+    accuracy: 94.5,
+    phoneme_quality: 94,
+  },
+  {
+    id: 11,
+    created_at: '2026-06-30T18:02:00Z',
+    mode: 'passage',
+    accuracy: 82.1,
+    phoneme_quality: 80,
+  },
+  {
+    id: 10,
+    created_at: '2026-06-28T07:41:00Z',
+    mode: 'passage',
+    accuracy: 68.3,
+    phoneme_quality: 65,
+  },
+]
+
+const MOCK_SESSION_DETAIL = {
+  id: 12,
+  created_at: '2026-07-02T09:14:00Z',
+  mode: 'passage',
+  completeness: 90.9,
+  accuracy: 94.5,
+  fluency: 98,
+  phoneme_quality: 94,
+  flagged_words: [
+    {
+      word: 'thought',
+      start: 6.19,
+      end: 6.59,
+      phoneme: 'θ',
+      explanation:
+        'The "th" came out as "t", place the tongue behind the teeth.',
+    },
+  ],
+}
+
 type Theme = 'light' | 'dark'
 
 interface CaptureCase {
+  readonly section: string
   readonly name: string
   readonly act?: (page: Page) => Promise<void>
+  readonly viewport?: { readonly width: number; readonly height: number }
+}
+
+async function routeSessions(
+  page: Page,
+  list: readonly unknown[],
+): Promise<void> {
+  await page.route('**/api/sessions/*', (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify(MOCK_SESSION_DETAIL),
+    }),
+  )
+  await page.route('**/api/sessions', (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify(list),
+    }),
+  )
+}
+
+async function openHistory(page: Page): Promise<void> {
+  await page.getByRole('button', { name: 'History' }).click()
+}
+
+async function driveToHistoryList(page: Page): Promise<void> {
+  await routeSessions(page, MOCK_SESSIONS)
+  await openHistory(page)
+  await page.getByText('94.5').waitFor()
+}
+
+async function driveToHistoryDetail(page: Page): Promise<void> {
+  await routeSessions(page, MOCK_SESSIONS)
+  await openHistory(page)
+  await page
+    .getByRole('button', { name: /passage/ })
+    .first()
+    .click()
+  await page.getByRole('heading', { name: 'Flagged words' }).waitFor()
+}
+
+async function driveToHistoryEmpty(page: Page): Promise<void> {
+  await routeSessions(page, [])
+  await openHistory(page)
+  await page.getByText(/No sessions yet/).waitFor()
 }
 
 async function driveToResults(page: Page): Promise<void> {
@@ -46,9 +138,20 @@ async function driveToResults(page: Page): Promise<void> {
   await page.getByRole('heading', { name: 'Flagged words' }).waitFor()
 }
 
+const NARROW_VIEWPORT = { width: 390, height: 800 }
+
 const CASES: readonly CaptureCase[] = [
-  { name: 'idle' },
-  { name: 'results', act: driveToResults },
+  { section: 'passage-scoring', name: 'idle' },
+  { section: 'passage-scoring', name: 'results', act: driveToResults },
+  { section: 'session-history', name: 'list', act: driveToHistoryList },
+  { section: 'session-history', name: 'detail', act: driveToHistoryDetail },
+  { section: 'session-history', name: 'empty', act: driveToHistoryEmpty },
+  {
+    section: 'shell',
+    name: 'nav-narrow',
+    act: driveToHistoryList,
+    viewport: NARROW_VIEWPORT,
+  },
 ]
 
 async function ensureServer(): Promise<void> {
@@ -74,7 +177,7 @@ async function capture(
   theme: Theme,
 ): Promise<void> {
   const context = await browser.newContext({
-    viewport: VIEWPORT,
+    viewport: testCase.viewport ?? VIEWPORT,
     colorScheme: theme,
     permissions: ['microphone'],
   })
@@ -86,8 +189,10 @@ async function capture(
     if (testCase.act) {
       await testCase.act(page)
     }
-    await mkdir(OUT_DIR, { recursive: true })
-    const file = path.join(OUT_DIR, `home-${testCase.name}--${theme}.png`)
+    await page.mouse.move(0, 0)
+    const sectionDir = path.join(OUT_DIR, testCase.section)
+    await mkdir(sectionDir, { recursive: true })
+    const file = path.join(sectionDir, `${testCase.name}--${theme}.png`)
     await page.screenshot({ path: file, fullPage: true })
     console.log(`captured ${file}`)
   } finally {
