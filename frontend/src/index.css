@@ -1,7 +1,6 @@
 @import 'tailwindcss';
 @import 'tw-animate-css';
-@import '@fontsource-variable/newsreader/index.css';
-@import '@fontsource-variable/source-sans-3/index.css';
+@import './fonts.css';
 
 :root {
   --radius: 0.5rem;

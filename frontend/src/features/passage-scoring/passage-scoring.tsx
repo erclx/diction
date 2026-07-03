@@ -45,7 +45,7 @@ export function PassageScoring() {
           <CardTitle>Read this aloud</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="font-serif text-xl leading-relaxed">
+          <p className="font-serif text-lg leading-relaxed">
             {PRACTICE_PASSAGE}
           </p>
         </CardContent>
