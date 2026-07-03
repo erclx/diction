@@ -27,8 +27,16 @@ class FakeChatClient:
         model: str,
         messages: list[dict[str, str]],
         options: Mapping[str, object],
+        think: bool,
     ) -> FakeReply:
-        self.calls.append({'model': model, 'messages': messages, 'options': options})
+        self.calls.append(
+            {
+                'model': model,
+                'messages': messages,
+                'options': options,
+                'think': think,
+            }
+        )
         return FakeReply(FakeMessage(self.content))
 
 
@@ -65,6 +73,15 @@ def test_ollama_explainer_prompts_with_each_flagged_word_and_phoneme() -> None:
     user_prompt = client.calls[0]['messages'][1]['content']
     assert 'thick' in user_prompt and 'θ' in user_prompt
     assert 'cat' in user_prompt and 'k' in user_prompt
+
+
+def test_ollama_explainer_disables_the_reasoning_pass() -> None:
+    client = FakeChatClient(content='reason one')
+    explainer = OllamaExplainer(client=client, model_id='test-model')
+
+    explainer.explain([FlaggedWordContext(word='thick', phoneme='θ')])
+
+    assert client.calls[0]['think'] is False
 
 
 def test_ollama_explainer_maps_one_reply_line_to_each_flagged_word() -> None:

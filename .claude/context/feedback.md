@@ -22,6 +22,7 @@ The explanation subsystem behind the flagged words in `POST /api/passages/score`
 - The Ollama client is imported lazily inside `OllamaExplainer.from_settings`, so importing the protocol or the stub never pulls the optional `feedback` dependency. This differs from the scorer, whose model imports sit at module top.
 - For v0.2 the explainer receives only the target phoneme and word. Capturing the substituted phoneme is a scoring-pipeline change deferred until explanations read too generic.
 - The default `llm_model_id` is `gemma4:26b`, confirmed against the user's local Ollama library. Ollama's OpenAI-compatible endpoint means a later LM Studio swap is a base-URL change.
+- The chat call passes `think=False`. `gemma4` is a reasoning model that otherwise emits a long hidden thinking pass before the short answer. A live spike measured one warm call at 3.3s with reasoning versus 0.24s without, for the same output, so reasoning is disabled for these terse one-line explanations.
 
 ## Hidden contracts
 
@@ -33,6 +34,7 @@ The explanation subsystem behind the flagged words in `POST /api/passages/score`
 ## Gotchas
 
 - A real LLM varies per call, so its output cannot be asserted in e2e. The `StubExplainer` covers CI. Keep temperature low and the prompt tight so real output stays terse and one line per word.
+- A live spike on `gemma4:26b` returned five clean one-line explanations for five flagged words in 0.8s warm, with the phoneme and articulation named per word. The `/ʒ/` line read articulatorily off (described as a `/v/` variant), so fall back to `gemma4:31b` if that imprecision recurs on real sessions.
 - When the reply line count does not match the flagged-word count, `_parse_reply` logs a warning and falls back to the template for every word, rather than mapping lines to the wrong words.
 - Two models now run in one request. Load the client once in the lifespan and keep `llm_timeout_seconds` bounded so a slow cold model does not brush the frontend's 60s score-fetch ceiling.
 - Prompt injection is not guarded here: single user, fixed passage, no untrusted text. Revisit before free-topic mode in v0.7, which feeds user speech to the LLM.

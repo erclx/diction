@@ -8,7 +8,7 @@ per `.claude/rules/framework/220-fastapi.md`.
 import logging
 import re
 from collections.abc import Mapping
-from typing import Protocol, Self
+from typing import Protocol, Self, cast
 
 from diction.config import Settings
 from diction.feedback.base import default_explanation
@@ -44,6 +44,7 @@ class _ChatClient(Protocol):
         model: str,
         messages: list[dict[str, str]],
         options: Mapping[str, object],
+        think: bool,
     ) -> _ChatReply: ...
 
 
@@ -60,7 +61,7 @@ class OllamaExplainer:
             host=settings.ollama_base_url,
             timeout=settings.llm_timeout_seconds,
         )
-        return cls(client=client, model_id=settings.llm_model_id)
+        return cls(client=cast(_ChatClient, client), model_id=settings.llm_model_id)
 
     def explain(self, flagged_words: list[FlaggedWordContext]) -> list[str]:
         if not flagged_words:
@@ -76,6 +77,7 @@ class OllamaExplainer:
                 {'role': 'user', 'content': _build_prompt(flagged_words)},
             ],
             options={'temperature': 0.2},
+            think=False,
         )
         return _parse_reply(reply.message.content, flagged_words)
 
