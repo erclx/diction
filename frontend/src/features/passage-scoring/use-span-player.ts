@@ -31,7 +31,8 @@ export function useSpanPlayer(url: string | undefined): SpanPlayer {
         }
         bufferRef.current = buffer
         setCanPlay(true)
-      } catch {
+      } catch (error) {
+        console.error('span player failed to decode the recording', error)
         setCanPlay(false)
       }
     }
@@ -63,8 +64,12 @@ export function useSpanPlayer(url: string | undefined): SpanPlayer {
     source.connect(context.destination)
     sourceRef.current = source
 
-    void context.resume()
-    source.start(0, start, Math.max(0, end - start))
+    const begin = () => source.start(0, start, Math.max(0, end - start))
+    if (context.state === 'suspended') {
+      void context.resume().then(begin)
+    } else {
+      begin()
+    }
   }, [])
 
   return { playSpan, canPlay }
