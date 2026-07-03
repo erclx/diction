@@ -31,6 +31,7 @@ description: React SPA structure, shadcn and token setup, mic capture, and the s
 ## Gotchas
 
 - `MediaRecorder` assembles the blob in its async `onstop` handler, so the recording appears one tick after `stop()`. The object URL is revoked in a `useEffect` cleanup keyed on the recording.
+- `MediaRecorder` WebM clips are not seekable. `duration` reads `Infinity` and setting `HTMLAudioElement.currentTime` fails silently, so seeking to a flagged span played no audio. `useSpanPlayer` decodes the blob into an `AudioBuffer` and plays exact ranges through `AudioBufferSourceNode.start(0, start, end - start)`, which sidesteps seeking entirely.
 - lint-staged does not prettier-format `.ts` files, only `.md` and `.json`. CI `check:format` runs prettier over everything, so a `.ts` file can pass commit and fail CI. Run prettier before pushing.
 - cspell is a no-op from a linked worktree because `.claude/worktrees/` is gitignored, so it matches zero files. Verify spelling with `cspell --no-gitignore <files>`.
 - e2e text assertions on short words collide with the passage copy. `getByText('thought')` matched `thoughtful`, so exact matching is required for flagged-word checks.

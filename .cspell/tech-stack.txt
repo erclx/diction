@@ -74,6 +74,7 @@ regen
 repr
 ruff
 scannability
+seekable
 serviceworker
 setattr
 shellcheck
