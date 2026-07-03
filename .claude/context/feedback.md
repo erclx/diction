@@ -28,6 +28,7 @@ The explanation subsystem behind the flagged words in `POST /api/passages/score`
 
 - `explain` returns one string per flagged word, in the same order it received them. `api/passages.py` zips the result with the flags using `strict=True`, so a length mismatch is a hard error, not silent truncation.
 - `explain` returns an empty list and makes no model call when there are no flagged words.
+- The explainer is presentation, not measurement, so `api/passages.py` wraps the call in `_explain_or_default`: any raise from the explainer degrades to `default_explanation` per word, and the scored session still persists and returns. Only the scorer may fail the request. An Ollama outage must not discard a computed score.
 - The `StubExplainer` and the LLM fallback both route through `default_explanation`, so canned text stays a single source and the e2e assertions stay stable.
 - `OllamaExplainer.from_settings` raises `ModuleNotFoundError` when the `feedback` extra is absent. The lifespan maps it to an actionable `RuntimeError`, the same shape the scorer uses.
 
