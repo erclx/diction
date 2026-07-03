@@ -66,6 +66,8 @@ The model libraries (torch, torchaudio, transformers, faster-whisper, phonemizer
 
 ## Risks / open questions
 
+These resolve as spikes inside the version that first needs them, not upfront: v0.1 settles GOP and forced alignment, v0.2 the local LLM choice and Piper versus XTTS, and v0.5 prosody comparison. speechocean762 calibration attaches to whichever version first presents a score as trustworthy.
+
 - Forced alignment and GOP scoring accuracy is unproven for this specific model and pipeline combination. It may need tuning or a fallback approach if alignment fails on mispronunciations that deviate significantly from the reference.
 - Prosody and rhythm scoring for stress timing and pitch contour comparison has no drop-in library. The comparison logic needs to be custom-built and validated against known native and non-native samples.
 - The composite accentedness score has no calibration yet. It needs native and non-native reference recordings to set meaningful thresholds before it is presented as a number.

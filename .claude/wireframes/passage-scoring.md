@@ -11,7 +11,7 @@ The single-column practice surface for the passage reading feature. It shows a p
 
 ```plaintext
 ┌──────────────────────────────────────────────┐
-│ Diction                        Backend: ok    │ ← app shell header
+│ Diction   Practice History        ● Backend   │ ← app shell header, Practice active
 ├──────────────────────────────────────────────┤
 │  Passage reading                              │ ← surface title
 │  Read the passage aloud, then score your      │

@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, File, Form, Request, UploadFile
 from pydantic import BaseModel
 from sqlmodel import Session
 
+from diction.api.schemas import FlaggedWordResponse
 from diction.db.engine import get_session
 from diction.db.models import FlaggedWord, PracticeSession
 from diction.scoring.base import PassageScorer
@@ -11,14 +12,6 @@ from diction.scoring.types import ScoreResult
 from diction.storage.sessions import save_session
 
 router = APIRouter(tags=['passages'])
-
-
-class FlaggedWordResponse(BaseModel):
-    word: str
-    start: float
-    end: float
-    phoneme: str
-    explanation: str
 
 
 class PassageScoreResponse(BaseModel):

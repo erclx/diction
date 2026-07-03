@@ -17,6 +17,19 @@
         } catch (e) {}
       })()
     </script>
+    <style>
+      html {
+        background-color: #faf8f3;
+      }
+      html.dark {
+        background-color: #1c1a17;
+      }
+      @media (prefers-color-scheme: dark) {
+        html:not(.light):not(.dark) {
+          background-color: #1c1a17;
+        }
+      }
+    </style>
   </head>
   <body>
     <div id="root"></div>

@@ -34,7 +34,7 @@ export function PassageScoring() {
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-6 p-6">
       <header className="flex flex-col gap-1 text-left">
-        <h2 className="font-serif text-3xl font-semibold">Passage reading</h2>
+        <h2 className="font-serif text-2xl font-semibold">Passage reading</h2>
         <p className="text-muted-foreground">
           Read the passage aloud, then score your pronunciation.
         </p>
@@ -45,7 +45,7 @@ export function PassageScoring() {
           <CardTitle>Read this aloud</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="font-serif text-xl leading-relaxed">
+          <p className="font-serif text-lg leading-relaxed">
             {PRACTICE_PASSAGE}
           </p>
         </CardContent>
