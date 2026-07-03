@@ -23,6 +23,11 @@ scoring = [
     "transformers>=4.44",
 ]
 
+# Opt-in local-LLM feedback stack. Install with `uv sync --extra feedback`.
+feedback = [
+    "ollama>=0.4",
+]
+
 # Opt-in local TTS for native reference audio. Install with `uv sync --extra tts`.
 tts = [
     "piper-tts>=1.2",

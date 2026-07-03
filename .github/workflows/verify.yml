@@ -126,6 +126,8 @@ jobs:
           # No GPU or model stack in CI: serve canned scores and canned
           # reference audio instead of loading the scoring and TTS models.
           DICTION_USE_STUB_SCORER: 'true'
+          # No local LLM in CI: serve canned explanations instead of calling Ollama.
+          DICTION_USE_STUB_EXPLAINER: 'true'
           DICTION_USE_STUB_SYNTH: 'true'
         run: |
           (cd ../backend && uv run uvicorn diction.main:app --app-dir src --port 8000) &

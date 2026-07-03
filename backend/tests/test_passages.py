@@ -5,9 +5,11 @@ from fastapi.testclient import TestClient
 from sqlalchemy import Engine
 from sqlmodel import Session, SQLModel
 
-from diction.api.passages import get_scorer
+from diction.api.passages import get_explainer, get_scorer
 from diction.app import create_app
 from diction.db.engine import get_session, make_engine
+from diction.feedback.base import StubExplainer
+from diction.feedback.types import FlaggedWordContext
 from diction.scoring.audio import ClipTooWeakError
 from diction.scoring.types import FlaggedWordResult, ScoreResult
 from diction.storage import sessions as sessions_storage
@@ -26,6 +28,11 @@ class RaisingScorer:
         raise ClipTooWeakError('duration=0.10s below 1.0s minimum')
 
 
+class RaisingExplainer:
+    def explain(self, flagged_words: list[FlaggedWordContext]) -> list[str]:
+        raise ConnectionError('ollama is not running')
+
+
 @pytest.fixture
 def engine(tmp_path) -> Engine:
     built = make_engine(f'sqlite:///{tmp_path / "test.db"}')
@@ -42,6 +49,7 @@ def client(engine: Engine) -> Iterator[TestClient]:
             yield session
 
     app.dependency_overrides[get_session] = override_session
+    app.dependency_overrides[get_explainer] = lambda: StubExplainer()
     yield TestClient(app)
     app.dependency_overrides.clear()
 
@@ -80,6 +88,31 @@ def test_score_returns_scores_and_persists_the_session(
         assert len(saved) == 1
         assert saved[0].flagged_words[0].word == 'thick'
         assert saved[0].flagged_words[0].phoneme == 'θ'
+
+
+def test_score_persists_template_explanations_when_the_explainer_fails(
+    client: TestClient, engine: Engine
+) -> None:
+    result = ScoreResult(
+        completeness=90.0,
+        accuracy=80.0,
+        fluency=70.0,
+        phoneme_quality=60.0,
+        flagged_words=[
+            FlaggedWordResult(word='thick', start=1.0, end=1.3, phoneme='θ')
+        ],
+    )
+    client.app.dependency_overrides[get_scorer] = lambda: FakeScorer(result)
+    client.app.dependency_overrides[get_explainer] = lambda: RaisingExplainer()
+
+    response = _post(client)
+
+    assert response.status_code == 200
+    assert 'θ' in response.json()['flagged_words'][0]['explanation']
+    with Session(engine) as session:
+        saved = sessions_storage.list_sessions(session)
+        assert len(saved) == 1
+        assert saved[0].flagged_words[0].word == 'thick'
 
 
 def test_score_returns_422_for_a_too_weak_clip(client: TestClient) -> None:

@@ -13,7 +13,7 @@ Non-native speakers rarely get an ongoing feedback loop for pronunciation. One-o
 
 ## Stack
 
-- Backend: FastAPI on Python, wav2vec2 and Whisper for scoring and alignment, SQLite for history
+- Backend: FastAPI on Python, wav2vec2 and Whisper for scoring and alignment, a local LLM via Ollama for feedback, SQLite for history
 - Frontend: Vite, React, and TypeScript
 
 ## Setup

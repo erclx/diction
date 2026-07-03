@@ -63,7 +63,7 @@ sequenceDiagram
     Browser-->>User: show results and reference audio
 ```
 
-Whisper runs first because word-level timings tell the GOP scorer where each word sits in the audio. The LLM step is presentation, not measurement: it rewrites raw phoneme errors into readable feedback. Because every stage is sequential and tolerates multi-second latency, the whole path stays simple to reason about. This is v0.1 territory, with the LLM and reference audio arriving in v0.2.
+Whisper runs first because word-level timings tell the GOP scorer where each word sits in the audio. The LLM step is presentation, not measurement: it rewrites raw phoneme errors into readable feedback, batched once per session over Ollama. Because every stage is sequential and tolerates multi-second latency, the whole path stays simple to reason about. The scoring flow is v0.1, with the LLM explanation step landing in v0.2 alongside reference audio.
 
 ## How sessions turn into ongoing practice
 
