@@ -34,7 +34,7 @@ The explanation subsystem behind the flagged words in `POST /api/passages/score`
 ## Gotchas
 
 - A real LLM varies per call, so its output cannot be asserted in e2e. The `StubExplainer` covers CI. Keep temperature low and the prompt tight so real output stays terse and one line per word.
-- A live spike on `gemma4:26b` returned five clean one-line explanations for five flagged words in 0.8s warm, with the phoneme and articulation named per word. The `/ʒ/` line read articulatorily off (described as a `/v/` variant), so fall back to `gemma4:31b` if that imprecision recurs on real sessions.
+- A live spike on `gemma4:26b` returned five clean one-line explanations for five flagged words in 0.8s warm, with the phoneme and articulation named per word. The `/ʒ/` line described the wrong articulation (a `/v/` variant), so fall back to `gemma4:31b` if that imprecision recurs on real sessions.
 - When the reply line count does not match the flagged-word count, `_parse_reply` logs a warning and falls back to the template for every word, rather than mapping lines to the wrong words.
 - Two models now run in one request. Load the client once in the lifespan and keep `llm_timeout_seconds` bounded so a slow cold model does not brush the frontend's 60s score-fetch ceiling.
 - Prompt injection is not guarded here: single user, fixed passage, no untrusted text. Revisit before free-topic mode in v0.7, which feeds user speech to the LLM.
