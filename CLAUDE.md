@@ -24,7 +24,7 @@ The project uses a three-tier context model. Know which tier holds what before r
 - Do not add features the user did not ask for.
 - When rewriting a section, preserve existing code blocks, tables, and grouped examples unless the user asked to remove them.
 - When planning an edit to `CLAUDE.md`, show the proposed change as a fenced `diff` block in chat first, then wait for approval before calling `Edit`
-- After implementing a UI change, start a worktree dev pair with `bun run dev:all` and share the printed localhost URL so the change can be verified in the browser. The pair is cleaned up on session end.
+- After implementing a change with a runtime surface, start a worktree dev pair with `bun run dev:all`, verify against the running app, and share the printed localhost URL. The pair is cleaned up on session end.
 
 ## Indexes
 

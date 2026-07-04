@@ -5,7 +5,7 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from diction.api import health, passages, reference, sessions
+from diction.api import health, passages, reference, sessions, weak_sounds
 from diction.config import get_settings
 from diction.db.engine import create_db_and_tables
 from diction.feedback.base import StubExplainer
@@ -84,6 +84,7 @@ def create_app() -> FastAPI:
     app.include_router(passages.router, prefix='/api')
     app.include_router(reference.router, prefix='/api')
     app.include_router(sessions.router, prefix='/api')
+    app.include_router(weak_sounds.router, prefix='/api')
 
     @app.exception_handler(ClipTooWeakError)
     async def _handle_clip_too_weak(
