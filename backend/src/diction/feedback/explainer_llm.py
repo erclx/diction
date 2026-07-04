@@ -76,7 +76,7 @@ class OllamaExplainer:
                 {'role': 'system', 'content': _SYSTEM_PROMPT},
                 {'role': 'user', 'content': _build_prompt(flagged_words)},
             ],
-            options={'temperature': 0.2},
+            options={'temperature': 0.2, 'num_ctx': 4096},
             think=False,
         )
         return _parse_reply(reply.message.content, flagged_words)

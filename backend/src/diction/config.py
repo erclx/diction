@@ -19,7 +19,7 @@ class Settings(BaseSettings):
     phoneme_model_id: str = 'facebook/wav2vec2-xlsr-53-espeak-cv-ft'
     whisper_model_id: str = 'large-v3'
 
-    llm_model_id: str = 'gemma4:26b'
+    llm_model_id: str = 'gemma2:9b'
     ollama_base_url: str = 'http://localhost:11434'
     llm_timeout_seconds: float = 30.0
 

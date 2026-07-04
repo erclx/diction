@@ -84,6 +84,15 @@ def test_ollama_explainer_disables_the_reasoning_pass() -> None:
     assert client.calls[0]['think'] is False
 
 
+def test_ollama_explainer_caps_the_context_window() -> None:
+    client = FakeChatClient(content='reason one')
+    explainer = OllamaExplainer(client=client, model_id='test-model')
+
+    explainer.explain([FlaggedWordContext(word='thick', phoneme='θ')])
+
+    assert client.calls[0]['options']['num_ctx'] == 4096
+
+
 def test_ollama_explainer_maps_one_reply_line_to_each_flagged_word() -> None:
     client = FakeChatClient(content='1. tongue behind teeth\n2. release the k')
     explainer = OllamaExplainer(client=client, model_id='test-model')
