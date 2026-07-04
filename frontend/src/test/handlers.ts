@@ -22,6 +22,19 @@ export const handlers = [
       ],
     }),
   ),
+  http.get('http://localhost:8000/api/minimal-pairs', () =>
+    HttpResponse.json([
+      {
+        phoneme_a: 'ɔ',
+        phoneme_b: 'ɒ',
+        label: 'walk vs wok',
+        pairs: [{ word_a: 'walk', word_b: 'wok' }],
+      },
+    ]),
+  ),
+  http.post('http://localhost:8000/api/drills/minimal-pair/score', () =>
+    HttpResponse.json({ flagged_words: [] }),
+  ),
   http.get('http://localhost:8000/api/reference', () =>
     HttpResponse.arrayBuffer(new Uint8Array([82, 73, 70, 70]).buffer, {
       headers: { 'Content-Type': 'audio/wav' },
