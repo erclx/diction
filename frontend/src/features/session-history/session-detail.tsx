@@ -1,4 +1,5 @@
 import { ArrowLeft, Loader2 } from 'lucide-react'
+import { Link } from 'react-router-dom'
 
 import { Button } from '@/components/ui/button'
 import { FlaggedWordList } from '@/features/passage-scoring/flagged-word-list'
@@ -9,7 +10,6 @@ import { SessionNotFoundError, useSessionQuery } from './use-sessions'
 
 interface SessionDetailProps {
   id: number
-  onBack: () => void
 }
 
 const METRICS = [
@@ -19,18 +19,20 @@ const METRICS = [
   { key: 'phoneme_quality', label: 'Phoneme quality' },
 ] as const
 
-export function SessionDetail({ id, onBack }: SessionDetailProps) {
+export function SessionDetail({ id }: SessionDetailProps) {
   const query = useSessionQuery(id)
 
   return (
     <div className="flex flex-col gap-6">
       <Button
+        asChild
         variant="ghost"
-        onClick={onBack}
         className="self-start px-2 text-muted-foreground"
       >
-        <ArrowLeft />
-        Back to history
+        <Link to="/history">
+          <ArrowLeft />
+          Back to history
+        </Link>
       </Button>
 
       {query.isPending && (

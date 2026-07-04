@@ -34,7 +34,7 @@ const MOCK_DETAIL = {
 
 async function openHistory(page: Page): Promise<void> {
   await page.goto('/')
-  await page.getByRole('button', { name: 'History' }).click()
+  await page.getByRole('link', { name: 'History' }).click()
 }
 
 test.describe('session history', () => {
@@ -49,8 +49,9 @@ test.describe('session history', () => {
     await openHistory(page)
 
     await expect(page.getByText('92.2')).toBeVisible()
-    await page.getByRole('button', { name: /passage/ }).click()
+    await page.getByRole('link', { name: /passage/ }).click()
 
+    await expect(page).toHaveURL(/\/history\/12$/)
     await expect(page.getByText('Completeness')).toBeVisible()
     await expect(page.getByText('thought', { exact: true })).toBeVisible()
   })
@@ -63,13 +64,27 @@ test.describe('session history', () => {
     await openHistory(page)
     await page.mouse.move(0, 0)
 
-    await expect(page.getByRole('button', { name: 'History' })).toHaveAttribute(
+    await expect(page.getByRole('link', { name: 'History' })).toHaveAttribute(
       'aria-current',
-      'true',
+      'page',
     )
     await expect(
-      page.getByRole('button', { name: 'Practice' }),
-    ).toHaveAttribute('aria-current', 'false')
+      page.getByRole('link', { name: 'Practice' }),
+    ).not.toHaveAttribute('aria-current')
+  })
+
+  test('should keep the history surface on reload', async ({ page }) => {
+    await page.route(LIST_URL, (route) => route.fulfill({ json: MOCK_LIST }))
+
+    await openHistory(page)
+    await expect(page).toHaveURL(/\/history$/)
+    await page.reload()
+
+    await expect(page.getByText('92.2')).toBeVisible()
+    await expect(page.getByRole('link', { name: 'History' })).toHaveAttribute(
+      'aria-current',
+      'page',
+    )
   })
 
   test('should return to the list from a session detail', async ({ page }) => {
@@ -79,12 +94,29 @@ test.describe('session history', () => {
     await page.route(LIST_URL, (route) => route.fulfill({ json: MOCK_LIST }))
 
     await openHistory(page)
-    await page.getByRole('button', { name: /passage/ }).click()
+    await page.getByRole('link', { name: /passage/ }).click()
     await expect(page.getByText('Completeness')).toBeVisible()
 
-    await page.getByRole('button', { name: 'Back to history' }).click()
+    await page.getByRole('link', { name: 'Back to history' }).click()
 
     await expect(page.getByText('Completeness')).toBeHidden()
+    await expect(page.getByText('92.2')).toBeVisible()
+  })
+
+  test('should deep-link a session detail and support the back button', async ({
+    page,
+  }) => {
+    await page.route(DETAIL_URL, (route) =>
+      route.fulfill({ json: MOCK_DETAIL }),
+    )
+    await page.route(LIST_URL, (route) => route.fulfill({ json: MOCK_LIST }))
+
+    await page.goto('/history/12')
+    await expect(page.getByText('Completeness')).toBeVisible()
+
+    await page.goBack()
+
+    await expect(page).toHaveURL(/\/history$/)
     await expect(page.getByText('92.2')).toBeVisible()
   })
 
@@ -96,8 +128,9 @@ test.describe('session history', () => {
     await openHistory(page)
 
     await expect(page.getByText(/No sessions yet/)).toBeVisible()
-    await page.getByRole('button', { name: 'Read a passage' }).click()
+    await page.getByRole('link', { name: 'Read a passage' }).click()
 
+    await expect(page).toHaveURL(/\/$/)
     await expect(page.getByText(/Read the passage aloud/)).toBeVisible()
   })
 
@@ -119,7 +152,7 @@ test.describe('session history', () => {
     await page.route(LIST_URL, (route) => route.fulfill({ json: MOCK_LIST }))
 
     await openHistory(page)
-    await page.getByRole('button', { name: /passage/ }).click()
+    await page.getByRole('link', { name: /passage/ }).click()
 
     await expect(page.getByRole('alert')).toContainText('no longer exists')
   })

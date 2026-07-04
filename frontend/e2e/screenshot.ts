@@ -99,7 +99,7 @@ async function routeSessions(
 }
 
 async function openHistory(page: Page): Promise<void> {
-  await page.getByRole('button', { name: 'History' }).click()
+  await page.getByRole('link', { name: 'History' }).click()
 }
 
 async function driveToHistoryList(page: Page): Promise<void> {
@@ -112,7 +112,7 @@ async function driveToHistoryDetail(page: Page): Promise<void> {
   await routeSessions(page, MOCK_SESSIONS)
   await openHistory(page)
   await page
-    .getByRole('button', { name: /passage/ })
+    .getByRole('link', { name: /passage/ })
     .first()
     .click()
   await page.getByRole('heading', { name: 'Flagged words' }).waitFor()

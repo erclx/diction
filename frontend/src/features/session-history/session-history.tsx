@@ -1,14 +1,11 @@
-import { useState } from 'react'
+import { useParams } from 'react-router-dom'
 
 import { SessionDetail } from './session-detail'
 import { SessionList } from './session-list'
 
-interface SessionHistoryProps {
-  onStartPractice: () => void
-}
-
-export function SessionHistory({ onStartPractice }: SessionHistoryProps) {
-  const [selectedId, setSelectedId] = useState<number | null>(null)
+export function SessionHistory() {
+  const { sessionId } = useParams()
+  const selectedId = sessionId ? Number(sessionId) : null
 
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-6 p-6">
@@ -20,12 +17,9 @@ export function SessionHistory({ onStartPractice }: SessionHistoryProps) {
       </header>
 
       {selectedId === null ? (
-        <SessionList
-          onSelect={setSelectedId}
-          onStartPractice={onStartPractice}
-        />
+        <SessionList />
       ) : (
-        <SessionDetail id={selectedId} onBack={() => setSelectedId(null)} />
+        <SessionDetail id={selectedId} />
       )}
     </div>
   )

@@ -24,6 +24,10 @@ The backend is Python because the model stack is Python. The frontend is a Vite 
 
 The UI uses shadcn/ui components over Tailwind v4 tokens, with TanStack Query for server state. shadcn vendors component source into the repo rather than pulling a runtime library, so the dashboards and drills stay editable without fighting a component framework, and its semantic token vocabulary maps onto the `DESIGN.md` palette. TanStack Query owns fetch state, caching, and mutation lifecycle for the score and history calls instead of hand-rolled hooks. The tradeoff is more frontend dependencies and two token systems to keep aligned, accepted because the coming dashboard and drill surfaces are component-heavy and share server-state patterns. Dark theme follows the OS through `prefers-color-scheme` with no manual toggle.
 
+### Client-side routing with react-router-dom, not local view state
+
+The app shell routes between surfaces with `react-router-dom` rather than a `useState` view switch, so a refresh keeps the current surface and a session detail is deep-linkable with a working back button. `react-router-dom` was chosen over TanStack Router to avoid a second routing-and-loader paradigm alongside the existing TanStack Query server state. The router owns URL state only, and all fetching stays in TanStack Query. This is the shell foundation the sidebar and the progress dashboard sit on, so routes land before more surfaces do. The tradeoff is a routing layer to maintain for a small surface count, accepted because the surface count is about to grow.
+
 ### Phoneme scoring via GOP, not a cloud pronunciation API
 
 GOP, or Goodness of Pronunciation, scores each phoneme as the posterior probability that the target phoneme was actually produced, computed by an acoustic model trained on native speech. Commercial tools like Azure Pronunciation Assessment, and by extension sites like AnyToSpeech, are built on the same underlying approach. Building it locally instead of calling Azure avoids per-hour cost and keeps audio on-device. The tradeoff is owning the alignment and scoring correctness instead of getting it from a managed API.
