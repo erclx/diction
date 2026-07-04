@@ -24,7 +24,7 @@ The project uses a three-tier context model. Know which tier holds what before r
 - Do not add features the user did not ask for.
 - When rewriting a section, preserve existing code blocks, tables, and grouped examples unless the user asked to remove them.
 - When planning an edit to `CLAUDE.md`, show the proposed change as a fenced `diff` block in chat first, then wait for approval before calling `Edit`
-- After implementing a change with a runtime surface, start a worktree dev pair with `bun run dev:all`, verify against the running app, and share the printed localhost URL. A backend-only endpoint with no UI is a runtime surface too. Curl the real route rather than relying on `TestClient`. The pair is cleaned up on session end.
+- After implementing a change with a runtime surface, start a worktree dev pair with `bun run dev:all`, verify against the running app, and share the printed localhost URL. A backend-only endpoint with no UI is a runtime surface too, so curl its real route live. The pair is cleaned up on session end.
 
 ## Indexes
 
@@ -68,7 +68,7 @@ The project uses a three-tier context model. Know which tier holds what before r
 
 - When cspell flags a word, rewrite typos. Add real terms to the appropriate dictionary in `cspell.json`.
 - Keep dictionary files sorted alphabetically.
-- The out-of-tree cspell pass only covers files as they were when it ran. Run it over the full changed-file set as the last step before pushing, after the final doc edit rather than once mid-work.
+- The out-of-tree cspell pass only covers files as they were when it ran. Run it over the full changed-file set as the last step before pushing, after the final doc edit.
 
 ## Snippets
 
