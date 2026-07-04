@@ -72,6 +72,7 @@ The single-column drill surface for minimal pair production. It shows one word p
 
 - One rep shows a pair and asks for the highlighted target word. The record control cycles idle to recording to recorded, the same capture path as passage scoring.
 - Submitting scores the single target word through `POST /api/drills/minimal-pair/score`. The route runs the scorer but writes no session, so a drill rep never lands in history or the weak-sound rollup.
-- The verdict is binary. An empty flagged list is a pass, any flag is a retry. Both states advance to the next rep, and retry also offers an immediate re-record of the same word.
+- The verdict is binary and keyed to the contrast's target phoneme. A flag on the target sound is a retry, a clip with the target sound clean is a pass even if another phoneme flags, since the drill trains one contrast. Both states advance to the next rep, and retry also offers an immediate re-record of the same word.
+- Each rep drills the `word_a` side of a pair, which carries the harder target phoneme. The `word_b` side sets the contrast on screen but is not itself scored in v1.
 - A too-weak clip shows a re-record prompt distinct from a generic failure, matching the 422 boundary, so a short clip never reads as a false pass.
 - Reference playback speaks the target word, synthesized locally. Synthesis and caching live in `.claude/context/tts.md`.

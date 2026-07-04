@@ -69,6 +69,31 @@ describe('ProductionDrill', () => {
     )
   })
 
+  it('should show the pass state when only a non-target sound is flagged', async () => {
+    server.use(
+      http.post(SCORE_URL, () =>
+        HttpResponse.json({
+          flagged_words: [
+            {
+              word: 'walk',
+              start: 0.5,
+              end: 0.7,
+              phoneme: 'k',
+              explanation: 'Release the final k more.',
+            },
+          ],
+        }),
+      ),
+    )
+    renderWithProviders(<ProductionDrill />)
+
+    await recordAndCheck()
+
+    await waitFor(() =>
+      expect(screen.getByRole('status')).toHaveTextContent(/landed/),
+    )
+  })
+
   it('should surface an actionable message when the clip is too weak', async () => {
     server.use(
       http.post(SCORE_URL, () =>

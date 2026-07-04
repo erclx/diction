@@ -17,6 +17,7 @@ interface Rep {
   target: string
   other: string
   label: string
+  targetPhoneme: string
 }
 
 function buildReps(contrasts: MinimalPairContrast[]): Rep[] {
@@ -25,6 +26,7 @@ function buildReps(contrasts: MinimalPairContrast[]): Rep[] {
       target: pair.word_a,
       other: pair.word_b,
       label: contrast.label,
+      targetPhoneme: contrast.phoneme_a,
     })),
   )
 }
@@ -57,8 +59,13 @@ export function ProductionDrill() {
   }
 
   const isClipTooWeak = scoring.error instanceof ClipTooWeakError
-  const isPass = scoring.isSuccess && scoring.data.flagged_words.length === 0
-  const isRetry = scoring.isSuccess && scoring.data.flagged_words.length > 0
+  const isTargetFlagged =
+    scoring.isSuccess &&
+    scoring.data.flagged_words.some(
+      (flag) => flag.phoneme === rep?.targetPhoneme,
+    )
+  const isPass = scoring.isSuccess && !isTargetFlagged
+  const isRetry = scoring.isSuccess && isTargetFlagged
 
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-6 p-6">
