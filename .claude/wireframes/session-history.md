@@ -5,13 +5,13 @@ description: The history surface where the user browses past sessions and opens 
 
 # Session history
 
-The review surface for saved practice sessions. It reads `GET /api/sessions` for a dated list, newest first, and `GET /api/sessions/{id}` for one session's four scores and flagged words. Reached from the Practice and History nav in the app shell header. A single-column layout at `/history` for the list and `/history/:sessionId` for the detail, so a detail is deep-linkable and the browser back button returns to the list.
+The review surface for saved practice sessions. It reads `GET /api/sessions` for a dated list, newest first, and `GET /api/sessions/{id}` for one session's four scores and flagged words. Reached from the History nav in the app shell sidebar. A single-column layout at `/history` for the list and `/history/:sessionId` for the detail, so a detail is deep-linkable and the browser back button returns to the list.
 
 ## List
 
 ```plaintext
 ┌──────────────────────────────────────────────┐
-│ Diction   Practice History        ● Backend   │ ← app shell header, History active
+│ ☰  History                          ● Backend │ ← app shell top bar, see app-shell.md
 ├──────────────────────────────────────────────┤
 │  Session history                              │ ← surface title
 │  Review your past readings and the words      │
