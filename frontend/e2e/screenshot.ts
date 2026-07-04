@@ -88,6 +88,18 @@ const MOCK_WEAK_SOUNDS = [
   },
 ]
 
+const MOCK_MINIMAL_PAIRS = [
+  {
+    phoneme_a: 'θ',
+    phoneme_b: 'f',
+    label: 'th vs f',
+    pairs: [
+      { word_a: 'thin', word_b: 'fin' },
+      { word_a: 'three', word_b: 'free' },
+    ],
+  },
+]
+
 type Theme = 'light' | 'dark'
 
 interface CaptureCase {
@@ -174,6 +186,43 @@ async function driveToProgressEmpty(page: Page): Promise<void> {
   await page.getByText(/No weak sounds yet/).waitFor()
 }
 
+async function routeMinimalPairs(
+  page: Page,
+  list: readonly unknown[],
+): Promise<void> {
+  await page.route('**/api/minimal-pairs', (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify(list),
+    }),
+  )
+  await page.route('**/api/reference*', (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: 'audio/wav',
+      body: Buffer.from([82, 73, 70, 70]),
+    }),
+  )
+}
+
+async function openEarTraining(page: Page): Promise<void> {
+  await page.getByRole('link', { name: 'Ear training' }).click()
+}
+
+async function driveToEarTraining(page: Page): Promise<void> {
+  await routeMinimalPairs(page, MOCK_MINIMAL_PAIRS)
+  await openEarTraining(page)
+  await page.getByRole('button', { name: 'Start' }).click()
+  await page.getByText('Which word did you hear?').waitFor()
+}
+
+async function driveToEarTrainingEmpty(page: Page): Promise<void> {
+  await routeMinimalPairs(page, [])
+  await openEarTraining(page)
+  await page.getByText(/No drill pairs are available yet/).waitFor()
+}
+
 async function driveToCollapsed(page: Page): Promise<void> {
   await page.getByRole('button', { name: 'Toggle Sidebar' }).click()
 }
@@ -207,6 +256,8 @@ const CASES: readonly CaptureCase[] = [
   { section: 'session-history', name: 'empty', act: driveToHistoryEmpty },
   { section: 'progress-dashboard', name: 'populated', act: driveToProgress },
   { section: 'progress-dashboard', name: 'empty', act: driveToProgressEmpty },
+  { section: 'ear-training', name: 'drill', act: driveToEarTraining },
+  { section: 'ear-training', name: 'empty', act: driveToEarTrainingEmpty },
   { section: 'shell', name: 'sidebar', act: driveToProgress },
   { section: 'shell', name: 'collapsed', act: driveToCollapsed },
   { section: 'shell', name: 'mobile-closed', viewport: NARROW_VIEWPORT },
