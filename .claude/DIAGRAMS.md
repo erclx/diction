@@ -103,15 +103,16 @@ The `react-router-dom` route map for the SPA shell. Each route renders one surfa
 ```mermaid
 flowchart TB
     subgraph Shell["App shell, BrowserRouter"]
-        NAV["Header nav<br/>NavLink"]
+        NAV["Sidebar nav<br/>NavLink"]
     end
 
     NAV -->|/| PRACTICE["Passage practice"]
     NAV -->|/history| LIST["Session list"]
+    NAV -->|/progress| PROGRESS["Progress dashboard"]
     LIST -->|/history/:sessionId| DETAIL["Session detail"]
     DETAIL -->|Back to history| LIST
     UNKNOWN["Unknown path"] -->|redirect| PRACTICE
     BAD_ID["Non-integer :sessionId"] -->|redirect| LIST
 ```
 
-The shell keeps URL state only, while TanStack Query owns every fetch. A refresh or a shared link resolves straight to the surface, so a session detail is deep-linkable and the browser back button walks the route history. An unknown path redirects to Practice, and a non-integer `:sessionId` redirects to the list so a mistyped id lands on the friendly surface rather than a blank one. This shell is the foundation the v0.3 progress dashboard routes onto.
+The shell keeps URL state only, while TanStack Query owns every fetch. A refresh or a shared link resolves straight to the surface, so a session detail is deep-linkable and the browser back button walks the route history. An unknown path redirects to Practice, and a non-integer `:sessionId` redirects to the list so a mistyped id lands on the friendly surface rather than a blank one. The progress dashboard routes onto this same shell at `/progress`, and later surfaces slot in the same way.
