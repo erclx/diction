@@ -34,6 +34,17 @@ find_free_port() {
   printf '%s' "$port"
 }
 
+ensure_deps() {
+  if [ ! -d "$ROOT/frontend/node_modules" ]; then
+    log "installing frontend deps (first run in this worktree)"
+    (cd "$ROOT/frontend" && bun install)
+  fi
+  if [ ! -d "$ROOT/backend/.venv" ]; then
+    log "syncing backend deps (first run in this worktree)"
+    (cd "$ROOT/backend" && uv sync)
+  fi
+}
+
 kill_group() {
   local pid="$1"
   [ -n "$pid" ] || return 0
@@ -60,6 +71,7 @@ stop() {
 }
 
 start() {
+  ensure_deps
   mkdir -p "$(dirname "$PIDFILE")"
 
   local backend_port frontend_port
