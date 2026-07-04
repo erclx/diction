@@ -6,6 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from diction.api import (
+    drills,
     health,
     minimal_pairs,
     passages,
@@ -87,6 +88,7 @@ def create_app() -> FastAPI:
         allow_headers=['*'],
     )
 
+    app.include_router(drills.router, prefix='/api')
     app.include_router(health.router, prefix='/api')
     app.include_router(minimal_pairs.router, prefix='/api')
     app.include_router(passages.router, prefix='/api')
