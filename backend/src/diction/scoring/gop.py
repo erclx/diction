@@ -66,9 +66,7 @@ def _flag_worst_phonemes(
         current = worst_by_word.get(phoneme.word_index)
         if current is None or phoneme.gop < current.gop:
             worst_by_word[phoneme.word_index] = phoneme
-        start, end = word_bounds.get(
-            phoneme.word_index, (phoneme.start, phoneme.end)
-        )
+        start, end = word_bounds.get(phoneme.word_index, (phoneme.start, phoneme.end))
         word_bounds[phoneme.word_index] = (
             min(start, phoneme.start),
             max(end, phoneme.end),
