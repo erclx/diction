@@ -1,4 +1,4 @@
-import { AudioLines, History, Mic, Speech, TrendingUp } from 'lucide-react'
+import { AudioLines, Ear, History, Mic, Speech, TrendingUp } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { Navigate, NavLink, Route, Routes, useLocation } from 'react-router-dom'
 
@@ -16,6 +16,7 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from '@/components/ui/sidebar'
+import { EarTraining } from '@/features/ear-training/ear-training'
 import { PassageScoring } from '@/features/passage-scoring/passage-scoring'
 import { ProductionDrill } from '@/features/production-drill/production-drill'
 import { ProgressDashboard } from '@/features/progress-dashboard/progress-dashboard'
@@ -66,7 +67,10 @@ const NAV_SECTIONS: readonly NavSection[] = [
   { items: [{ to: '/', label: 'Practice', icon: Mic }] },
   {
     label: 'Drills',
-    items: [{ to: '/drills/production', label: 'Production', icon: Speech }],
+    items: [
+      { to: '/drills/ear-training', label: 'Ear training', icon: Ear },
+      { to: '/drills/production', label: 'Production', icon: Speech },
+    ],
   },
   {
     label: 'Review',
@@ -156,6 +160,7 @@ export function App() {
         </header>
         <Routes>
           <Route path="/" element={<PassageScoring />} />
+          <Route path="/drills/ear-training" element={<EarTraining />} />
           <Route path="/drills/production" element={<ProductionDrill />} />
           <Route path="/history" element={<SessionHistory />} />
           <Route path="/history/:sessionId" element={<SessionHistory />} />

@@ -42,6 +42,7 @@ The project uses a three-tier context model. Know which tier holds what before r
 ## Commands
 
 - Run `bun run check` before committing. Full script reference in `.claude/context/development.md`.
+- After pushing a branch or opening a PR, watch its CI to completion in the background with `gh pr checks <n>` and fix any failure before treating the ship as done. A green local `bun run check` does not guarantee a green CI run, since a linked worktree cannot reproduce every gate. The Worktrees section lists which gates diverge.
 - `bun run dev:all` (or `scripts/dev.sh`) starts a frontend and backend pair, picking a free port pair per worktree and wiring `VITE_BACKEND_URL` automatically, so parallel worktrees do not collide. It defaults to the stub model stack. Set `DICTION_DEV_MODELS=real` to use installed models. Use `scripts/dev.sh restart` or `scripts/dev.sh stop` to manage this worktree's pair.
 - Running Playwright e2e from a worktree, do not trust port 5173. `reuseExistingServer` reuses a parallel session's dev server and asserts against stale code. Run the specs through a throwaway config binding a free port with `reuseExistingServer: false`.
 

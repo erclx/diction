@@ -25,7 +25,7 @@ const MOCK_SCORE = {
   ],
 }
 
-const MOCK_MINIMAL_PAIRS = [
+const MOCK_PRODUCTION_PAIRS = [
   {
     phoneme_a: 'ɔ',
     phoneme_b: 'ɒ',
@@ -106,6 +106,18 @@ const MOCK_WEAK_SOUNDS = [
     example_words: ['red', 'around'],
     first_seen: '2026-06-30T18:02:00Z',
     last_seen: '2026-07-02T09:14:00Z',
+  },
+]
+
+const MOCK_MINIMAL_PAIRS = [
+  {
+    phoneme_a: 'θ',
+    phoneme_b: 'f',
+    label: 'th vs f',
+    pairs: [
+      { word_a: 'thin', word_b: 'fin' },
+      { word_a: 'three', word_b: 'free' },
+    ],
   },
 ]
 
@@ -195,6 +207,43 @@ async function driveToProgressEmpty(page: Page): Promise<void> {
   await page.getByText(/No weak sounds yet/).waitFor()
 }
 
+async function routeMinimalPairs(
+  page: Page,
+  list: readonly unknown[],
+): Promise<void> {
+  await page.route('**/api/minimal-pairs', (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify(list),
+    }),
+  )
+  await page.route('**/api/reference*', (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: 'audio/wav',
+      body: Buffer.from([82, 73, 70, 70]),
+    }),
+  )
+}
+
+async function openEarTraining(page: Page): Promise<void> {
+  await page.getByRole('link', { name: 'Ear training' }).click()
+}
+
+async function driveToEarTraining(page: Page): Promise<void> {
+  await routeMinimalPairs(page, MOCK_MINIMAL_PAIRS)
+  await openEarTraining(page)
+  await page.getByRole('button', { name: 'Start' }).click()
+  await page.getByText('Which word did you hear?').waitFor()
+}
+
+async function driveToEarTrainingEmpty(page: Page): Promise<void> {
+  await routeMinimalPairs(page, [])
+  await openEarTraining(page)
+  await page.getByText(/No drill pairs are available yet/).waitFor()
+}
+
 async function driveToCollapsed(page: Page): Promise<void> {
   await page.getByRole('button', { name: 'Toggle Sidebar' }).click()
 }
@@ -218,16 +267,6 @@ async function driveToResults(page: Page): Promise<void> {
   await page.getByRole('heading', { name: 'Flagged words' }).waitFor()
 }
 
-async function routeMinimalPairs(page: Page): Promise<void> {
-  await page.route('**/api/minimal-pairs', (route) =>
-    route.fulfill({
-      status: 200,
-      contentType: 'application/json',
-      body: JSON.stringify(MOCK_MINIMAL_PAIRS),
-    }),
-  )
-}
-
 async function scoreDrill(page: Page, body: unknown): Promise<void> {
   await page.route('**/api/drills/minimal-pair/score', (route) =>
     route.fulfill({
@@ -242,7 +281,7 @@ async function scoreDrill(page: Page, body: unknown): Promise<void> {
 }
 
 async function openProduction(page: Page): Promise<void> {
-  await routeMinimalPairs(page)
+  await routeMinimalPairs(page, MOCK_PRODUCTION_PAIRS)
   await page.getByRole('link', { name: 'Production' }).click()
 }
 
@@ -276,6 +315,8 @@ const CASES: readonly CaptureCase[] = [
   { section: 'session-history', name: 'empty', act: driveToHistoryEmpty },
   { section: 'progress-dashboard', name: 'populated', act: driveToProgress },
   { section: 'progress-dashboard', name: 'empty', act: driveToProgressEmpty },
+  { section: 'ear-training', name: 'drill', act: driveToEarTraining },
+  { section: 'ear-training', name: 'empty', act: driveToEarTrainingEmpty },
   { section: 'shell', name: 'sidebar', act: driveToProgress },
   { section: 'shell', name: 'collapsed', act: driveToCollapsed },
   { section: 'shell', name: 'mobile-closed', viewport: NARROW_VIEWPORT },
