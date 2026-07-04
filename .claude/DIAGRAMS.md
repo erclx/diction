@@ -1,6 +1,6 @@
 # Diagrams
 
-Three views of Diction, driven by `.claude/ARCHITECTURE.md` and `.claude/REQUIREMENTS.md`. The first shows what the system is built from, the second follows a single practice session as it gets scored, and the third shows how saved sessions feed the ongoing training loop that the features hang off.
+Four views of Diction, driven by `.claude/ARCHITECTURE.md` and `.claude/REQUIREMENTS.md`. The first shows what the system is built from, the second follows a single practice session as it gets scored, the third shows how saved sessions feed the ongoing training loop that the features hang off, and the fourth maps the browser routes to the surfaces they render.
 
 ## What the system is made of
 
@@ -95,3 +95,23 @@ flowchart TB
 Two paths enter. Scripted modes compare against a known reference, so they go straight to scoring. Free-topic talk has no reference text, so it transcribes first, then splits into an independent grammar critique and the same pronunciation scoring. Both converge on one session history.
 
 From there the loop closes. The weak-sound tracker aggregates recurring errors across sessions, which drives both the targeted drills and the spaced resurfacing that feeds old misses back into new scripted practice. The dashboard reads the same history for trends. The roadmap builds this loop outward: v0.3 adds the tracker and dashboard, v0.4 the drills, v0.6 the resurfacing, and v0.7 wires in the free-topic path last.
+
+## How the browser routes between surfaces
+
+The `react-router-dom` route map for the SPA shell. Each route renders one surface, and the URL is the single source of truth for which surface shows.
+
+```mermaid
+flowchart TB
+    subgraph Shell["App shell, BrowserRouter"]
+        NAV["Header nav<br/>NavLink"]
+    end
+
+    NAV -->|/| PRACTICE["Passage practice"]
+    NAV -->|/history| LIST["Session list"]
+    LIST -->|/history/:sessionId| DETAIL["Session detail"]
+    DETAIL -->|Back to history| LIST
+    UNKNOWN["Unknown path"] -->|redirect| PRACTICE
+    BAD_ID["Non-integer :sessionId"] -->|redirect| LIST
+```
+
+The shell keeps URL state only, while TanStack Query owns every fetch. A refresh or a shared link resolves straight to the surface, so a session detail is deep-linkable and the browser back button walks the route history. An unknown path redirects to Practice, and a non-integer `:sessionId` redirects to the list so a mistyped id lands on the friendly surface rather than a blank one. This shell is the foundation the v0.3 progress dashboard routes onto.
