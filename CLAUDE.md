@@ -24,13 +24,14 @@ The project uses a three-tier context model. Know which tier holds what before r
 - Do not add features the user did not ask for.
 - When rewriting a section, preserve existing code blocks, tables, and grouped examples unless the user asked to remove them.
 - When planning an edit to `CLAUDE.md`, show the proposed change as a fenced `diff` block in chat first, then wait for approval before calling `Edit`
-- After implementing a change with a runtime surface, start a worktree dev pair with `bun run dev:all`, verify against the running app, and share the printed localhost URL. The pair is cleaned up on session end.
+- After implementing a change with a runtime surface, start a worktree dev pair with `bun run dev:all`, verify against the running app, and share the printed localhost URL. A backend-only endpoint with no UI is a runtime surface too, so curl its real route live. The pair is cleaned up on session end.
 
 ## Indexes
 
 - When a folder has an `index.md`, check it before reading individual files in that folder.
 - For folders where an agent browses to pick a document, `index.md` is regenerated from each file's frontmatter. Do not hand-edit `index.md`. Code folders and scratch folders do not need one.
 - Every `index.md` carries its own frontmatter (`title`, `subtitle`) that the walker preserves. To keep a folder's `index.md` hand-edited, add `auto: false` to its frontmatter.
+- When a diff adds a new top-level source domain folder, draft its `.claude/context/<domain>.md` entry at ship time per `.claude/standards/context.md`. `claude-docs` only refreshes existing entries and never auto-creates.
 
 ## Markdown
 
@@ -42,6 +43,7 @@ The project uses a three-tier context model. Know which tier holds what before r
 
 - Run `bun run check` before committing. Full script reference in `.claude/context/development.md`.
 - `bun run dev:all` (or `scripts/dev.sh`) starts a frontend and backend pair, picking a free port pair per worktree and wiring `VITE_BACKEND_URL` automatically, so parallel worktrees do not collide. It defaults to the stub model stack. Set `DICTION_DEV_MODELS=real` to use installed models. Use `scripts/dev.sh restart` or `scripts/dev.sh stop` to manage this worktree's pair.
+- Running Playwright e2e from a worktree, do not trust port 5173. `reuseExistingServer` reuses a parallel session's dev server and asserts against stale code. Run the specs through a throwaway config binding a free port with `reuseExistingServer: false`.
 
 ## Output
 
@@ -66,6 +68,7 @@ The project uses a three-tier context model. Know which tier holds what before r
 
 - When cspell flags a word, rewrite typos. Add real terms to the appropriate dictionary in `cspell.json`.
 - Keep dictionary files sorted alphabetically.
+- The out-of-tree cspell pass only covers files as they were when it ran. Run it over the full changed-file set as the last step before pushing, after the final doc edit.
 
 ## Snippets
 
@@ -76,7 +79,7 @@ The project uses a three-tier context model. Know which tier holds what before r
 - `.claude/TASKS.md` is gitignored local session scratch. Edit freely. No staging or revert before commits.
 - Only create a task for work that spans multiple sessions or has real dependencies. Handle small edits immediately without a task entry.
 - Do not add tasks retroactively for work already completed. Completed work is visible in git.
-- When a task needs execution detail beyond `.claude/TASKS.md`, create a plan in `.claude/plans/` and link to it from the task block's intro paragraph. When that task ships, delete its plan file.
+- When a task needs execution detail beyond `.claude/TASKS.md`, create a plan in `.claude/plans/` and link to it from the task block's intro paragraph. When that task ships, leave its plan file in place. It stays useful through review and rework. Delete the plan only after the human confirms the merge.
 - Write the plan in the same session as the task block. The session that executes the plan later inherits reasoning context it would otherwise have to re-derive.
 
 ## Memory
@@ -96,3 +99,6 @@ The project uses a three-tier context model. Know which tier holds what before r
 - Do not leave tracked-file edits uncommitted in the main worktree. It is PR-gated, so land every change on a branch: fold it into an in-flight linked worktree, or open its own PR. When that worktree has a live session, hand it the edit to commit rather than writing across worktrees.
 - Shared session scratch (`.claude/plans/`, `.claude/review/`, `.claude/memory/`, `.claude/TASKS.md`) lives at the main worktree root, not inside a linked worktree. From a linked worktree, resolve these paths against the main root via `git worktree list --porcelain | grep -m 1 '^worktree ' | cut -d' ' -f2-`. Fall back to `pwd` if not a git repo.
 - From a linked worktree, every `Edit` or `Write` to a tracked file (source, docs) must use a path starting with `pwd`. Only shared session scratch (`.claude/plans/`, `.claude/review/`, `.claude/memory/`, `.claude/TASKS.md`) resolves to the main worktree root.
+- Never blanket `git add -A` over a dirty tree. Stage feature files explicitly so unrelated main edits do not ride into the feature commit, and restore any that leak with `git checkout origin/main -- <file>` before the PR.
+- Reserve parallel worker tracks for features that touch disjoint files. If two plans share a wiring seam (`config.py`, `app.py`, `pyproject.toml`, `.env.example`, `uv.lock`), hand off one, merge and verify it, then start the second off the updated main.
+- Pre-push `bun run check` can hard-fail in a linked worktree on gates CI does not run. `check:spell` matches 0 files under the gitignored worktree path, `check:frontend` fails with no `frontend/node_modules`, and mypy flags the locally-installed `scoring` extra. Run `cd frontend && bun install` before the first push, and add `--no-must-find-files` to `check:spell` in root `package.json` to end the spell false-fail. Push `--no-verify` only after confirming the finding is a worktree artifact outside your diff.
