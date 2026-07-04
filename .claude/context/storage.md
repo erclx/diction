@@ -12,6 +12,7 @@ The persistence layer every practice mode writes through. One SQLite file, one e
 - `db/models.py` owns the `PracticeSession` and `FlaggedWord` table models.
 - `db/engine.py` owns the engine, `create_db_and_tables`, and the `get_session` request dependency.
 - `storage/sessions.py` owns `save_session`, `get_session_by_id`, and `list_sessions` so routes stay thin.
+- `storage/weak_sounds.py` owns `aggregate_weak_sounds`, a read-only cross-session rollup of `FlaggedWord` grouped by `phoneme` for the weak-sound priority list.
 
 ## Decisions
 
