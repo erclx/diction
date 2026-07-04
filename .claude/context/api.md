@@ -15,6 +15,7 @@ The HTTP layer the React SPA talks to. Every router mounts under `/api` in `crea
 - `api/reference.py` owns `GET /api/reference`, returning native TTS wav bytes for a text query.
 - `api/weak_sounds.py` owns `GET /api/weak-sounds`, a cross-session phoneme rollup for the priority list.
 - `api/minimal_pairs.py` owns `GET /api/minimal-pairs`, serving curated drill contrasts with an optional `phoneme` filter.
+- `api/drills.py` owns `POST /api/drills/minimal-pair/score`, scoring one drill word through the shared scorer and returning its flagged words, with no persistence.
 - `api/schemas.py` owns `FlaggedWordResponse`, the one response model shared across routers (`passages` and `sessions` both return it).
 
 ## Decisions
@@ -29,6 +30,7 @@ The HTTP layer the React SPA talks to. Every router mounts under `/api` in `crea
 - Every route lives under the `/api` prefix applied at `include_router`. No handler carries its own prefix, and the frontend keys off `/api`.
 - `ClipTooWeakError` maps to a 422 body of `{error: 'clip_too_weak', detail}` through an app-level exception handler in `app.py`, not inside `passages`. The route stays ignorant of the too-weak boundary, and the frontend reads this shape to show a re-record prompt distinct from a generic failure.
 - A scored passage is always persisted before the response returns. There is no score-without-save path, and an explainer failure falls back to `default_explanation` template text yet still persists, so a down LLM never fails a score.
+- The drill score route is the deliberate inverse of the passage route. It reuses the same scorer and the same `ClipTooWeakError` 422 boundary, but writes no session and never calls the LLM explainer, returning `default_explanation` template text directly. A single-word rep stays out of session history and the weak-sound rollup, which is why the route carries no `get_session` or `get_explainer` dependency.
 - `read_reference` caps `text` at 600 chars via query validation, strips whitespace, 422s on empty-after-strip, and returns raw `audio/wav` bytes with `Cache-Control: public, max-age=86400` rather than JSON.
 - `GET /api/sessions/{session_id}` 404s with `detail='Session not found'`. A non-integer id is a FastAPI path-coercion 422, which the frontend route guard redirects on rather than surfacing.
 
