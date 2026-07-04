@@ -15,10 +15,10 @@ const CONTRASTS = [
     pairs: [{ word_a: 'thin', word_b: 'fin' }],
   },
   {
-    phoneme_a: 'ɔ',
-    phoneme_b: 'ɒ',
-    label: 'walk vs wok',
-    pairs: [{ word_a: 'walk', word_b: 'wok' }],
+    phoneme_a: 'ɹ',
+    phoneme_b: 'l',
+    label: 'r vs l',
+    pairs: [{ word_a: 'road', word_b: 'load' }],
   },
 ]
 
@@ -49,12 +49,12 @@ function serve(weakSounds: unknown[], contrasts: unknown[] = CONTRASTS) {
 }
 
 describe('TargetedDrills', () => {
-  it('should rank the queue by frequency and link the top sound to its drill', async () => {
-    serve([weakSound('θ', 5, ['thought']), weakSound('ɔ', 8, ['walk'])])
+  it('should keep the ranked queue order and link the top sound to its drill', async () => {
+    serve([weakSound('θ', 8, ['thought']), weakSound('ɹ', 5, ['red'])])
     renderWithProviders(<TargetedDrills />)
 
-    const higher = await screen.findByText('walk vs wok')
-    const lower = screen.getByText('th vs f')
+    const higher = await screen.findByText('th vs f')
+    const lower = screen.getByText('r vs l')
     expect(
       higher.compareDocumentPosition(lower) & Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy()
@@ -62,12 +62,12 @@ describe('TargetedDrills', () => {
     const earLinks = screen.getAllByRole('link', { name: 'Ear training' })
     expect(earLinks[0]).toHaveAttribute(
       'href',
-      `/drills/ear-training?phoneme=${encodeURIComponent('ɔ')}`,
+      `/drills/ear-training?phoneme=${encodeURIComponent('θ')}`,
     )
     const productionLinks = screen.getAllByRole('link', { name: 'Production' })
     expect(productionLinks[0]).toHaveAttribute(
       'href',
-      `/drills/production?phoneme=${encodeURIComponent('ɔ')}`,
+      `/drills/production?phoneme=${encodeURIComponent('θ')}`,
     )
   })
 

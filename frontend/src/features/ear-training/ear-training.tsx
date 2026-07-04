@@ -7,8 +7,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useReferenceAudio } from '@/features/reference-audio/use-reference-audio'
 import { cn } from '@/lib/utils'
 
-import type { MinimalPairContrast } from './minimal-pair'
-import { useMinimalPairsQuery } from './use-minimal-pairs'
+import type { MinimalPairContrast } from '@/features/minimal-pairs/minimal-pair'
+import { filterByPhoneme } from '@/features/minimal-pairs/minimal-pair'
+import { useMinimalPairsQuery } from '@/features/minimal-pairs/use-minimal-pairs'
 
 type Side = 'a' | 'b'
 
@@ -21,19 +22,6 @@ interface Round {
 
 function targetWordOf(round: Round): string {
   return round.targetSide === 'a' ? round.wordA : round.wordB
-}
-
-function filterByPhoneme(
-  contrasts: readonly MinimalPairContrast[],
-  phoneme: string | null,
-): MinimalPairContrast[] {
-  if (phoneme === null || phoneme === '') {
-    return [...contrasts]
-  }
-  return contrasts.filter(
-    (contrast) =>
-      contrast.phoneme_a === phoneme || contrast.phoneme_b === phoneme,
-  )
 }
 
 function pickRound(

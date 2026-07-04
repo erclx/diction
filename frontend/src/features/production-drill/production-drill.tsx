@@ -10,8 +10,9 @@ import { useRecorder } from '@/features/passage-scoring/use-recorder'
 import { ClipTooWeakError } from '@/features/passage-scoring/use-score-passage'
 import { cn } from '@/lib/utils'
 
-import type { MinimalPairContrast } from './use-minimal-pairs'
-import { useMinimalPairs } from './use-minimal-pairs'
+import type { MinimalPairContrast } from '@/features/minimal-pairs/minimal-pair'
+import { filterByPhoneme } from '@/features/minimal-pairs/minimal-pair'
+import { useMinimalPairsQuery } from '@/features/minimal-pairs/use-minimal-pairs'
 import { useScoreWord } from './use-score-word'
 
 interface Rep {
@@ -19,19 +20,6 @@ interface Rep {
   other: string
   label: string
   targetPhoneme: string
-}
-
-function filterByPhoneme(
-  contrasts: readonly MinimalPairContrast[],
-  phoneme: string | null,
-): MinimalPairContrast[] {
-  if (phoneme === null || phoneme === '') {
-    return [...contrasts]
-  }
-  return contrasts.filter(
-    (contrast) =>
-      contrast.phoneme_a === phoneme || contrast.phoneme_b === phoneme,
-  )
 }
 
 function buildReps(contrasts: MinimalPairContrast[]): Rep[] {
@@ -46,7 +34,7 @@ function buildReps(contrasts: MinimalPairContrast[]): Rep[] {
 }
 
 export function ProductionDrill() {
-  const pairs = useMinimalPairs()
+  const pairs = useMinimalPairsQuery()
   const recorder = useRecorder()
   const scoring = useScoreWord()
   const [searchParams] = useSearchParams()

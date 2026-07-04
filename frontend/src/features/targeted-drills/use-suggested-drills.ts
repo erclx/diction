@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 
-import type { MinimalPairContrast } from '@/features/ear-training/minimal-pair'
-import { useMinimalPairsQuery } from '@/features/ear-training/use-minimal-pairs'
+import type { MinimalPairContrast } from '@/features/minimal-pairs/minimal-pair'
+import { useMinimalPairsQuery } from '@/features/minimal-pairs/use-minimal-pairs'
 import { useWeakSoundsQuery } from '@/features/progress-dashboard/use-weak-sounds'
 import type { WeakSound } from '@/features/progress-dashboard/weak-sound'
 
@@ -30,15 +30,12 @@ function buildSuggestions(
   weakSounds: readonly WeakSound[],
   contrasts: readonly MinimalPairContrast[],
 ): SuggestedDrill[] {
-  return [...weakSounds]
-    .sort((first, second) => second.occurrence_count - first.occurrence_count)
-    .slice(0, SUGGESTION_LIMIT)
-    .map((weakSound) => ({
-      phoneme: weakSound.phoneme,
-      occurrenceCount: weakSound.occurrence_count,
-      exampleWords: weakSound.example_words,
-      contrast: contrastForPhoneme(contrasts, weakSound.phoneme),
-    }))
+  return weakSounds.slice(0, SUGGESTION_LIMIT).map((weakSound) => ({
+    phoneme: weakSound.phoneme,
+    occurrenceCount: weakSound.occurrence_count,
+    exampleWords: weakSound.example_words,
+    contrast: contrastForPhoneme(contrasts, weakSound.phoneme),
+  }))
 }
 
 export interface SuggestedDrillsResult {
