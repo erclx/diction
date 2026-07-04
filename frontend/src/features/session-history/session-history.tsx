@@ -1,11 +1,15 @@
-import { useParams } from 'react-router-dom'
+import { Navigate, useParams } from 'react-router-dom'
 
 import { SessionDetail } from './session-detail'
 import { SessionList } from './session-list'
 
 export function SessionHistory() {
   const { sessionId } = useParams()
-  const selectedId = sessionId ? Number(sessionId) : null
+  const parsedId = sessionId === undefined ? null : Number(sessionId)
+
+  if (parsedId !== null && (!Number.isInteger(parsedId) || parsedId <= 0)) {
+    return <Navigate to="/history" replace />
+  }
 
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-6 p-6">
@@ -16,11 +20,7 @@ export function SessionHistory() {
         </p>
       </header>
 
-      {selectedId === null ? (
-        <SessionList />
-      ) : (
-        <SessionDetail id={selectedId} />
-      )}
+      {parsedId === null ? <SessionList /> : <SessionDetail id={parsedId} />}
     </div>
   )
 }

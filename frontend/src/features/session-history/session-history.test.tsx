@@ -30,4 +30,17 @@ describe('SessionHistory', () => {
     expect(await screen.findByText('Completeness')).toBeInTheDocument()
     expect(screen.getByText('thought', { exact: true })).toBeInTheDocument()
   })
+
+  it('should redirect an invalid session id to the list', async () => {
+    renderWithProviders(
+      <Routes>
+        <Route path="/history" element={<SessionHistory />} />
+        <Route path="/history/:sessionId" element={<SessionHistory />} />
+      </Routes>,
+      { initialEntries: ['/history/abc'] },
+    )
+
+    expect(await screen.findByText('92.2')).toBeInTheDocument()
+    expect(screen.queryByText('Completeness')).not.toBeInTheDocument()
+  })
 })

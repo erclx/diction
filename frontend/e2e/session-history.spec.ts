@@ -103,7 +103,19 @@ test.describe('session history', () => {
     await expect(page.getByText('92.2')).toBeVisible()
   })
 
-  test('should deep-link a session detail and support the back button', async ({
+  test('should render a session detail from a deep link', async ({ page }) => {
+    await page.route(DETAIL_URL, (route) =>
+      route.fulfill({ json: MOCK_DETAIL }),
+    )
+    await page.route(LIST_URL, (route) => route.fulfill({ json: MOCK_LIST }))
+
+    await page.goto('/history/12')
+
+    await expect(page.getByText('Completeness')).toBeVisible()
+    await expect(page.getByText('thought', { exact: true })).toBeVisible()
+  })
+
+  test('should return to the list with the browser back button', async ({
     page,
   }) => {
     await page.route(DETAIL_URL, (route) =>
@@ -111,13 +123,21 @@ test.describe('session history', () => {
     )
     await page.route(LIST_URL, (route) => route.fulfill({ json: MOCK_LIST }))
 
-    await page.goto('/history/12')
+    await openHistory(page)
+    await page.getByRole('link', { name: /passage/ }).click()
     await expect(page.getByText('Completeness')).toBeVisible()
 
     await page.goBack()
 
     await expect(page).toHaveURL(/\/history$/)
     await expect(page.getByText('92.2')).toBeVisible()
+  })
+
+  test('should redirect an unknown path to practice', async ({ page }) => {
+    await page.goto('/does-not-exist')
+
+    await expect(page).toHaveURL(/\/$/)
+    await expect(page.getByText(/Read the passage aloud/)).toBeVisible()
   })
 
   test('should show an onboarding empty state and route back to practice', async ({

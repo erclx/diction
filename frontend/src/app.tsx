@@ -1,4 +1,4 @@
-import { NavLink, Route, Routes } from 'react-router-dom'
+import { Navigate, NavLink, Route, Routes } from 'react-router-dom'
 
 import { buttonVariants } from '@/components/ui/button'
 import { PassageScoring } from '@/features/passage-scoring/passage-scoring'
@@ -83,6 +83,7 @@ export function App() {
           <Route path="/" element={<PassageScoring />} />
           <Route path="/history" element={<SessionHistory />} />
           <Route path="/history/:sessionId" element={<SessionHistory />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
     </div>
