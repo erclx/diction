@@ -14,7 +14,7 @@ from diction.scoring.base import StubScorer
 from diction.tts.base import StubSynthesizer
 from diction.tts.cache import CachedSynthesizer, ReferenceAudioCache
 
-FRONTEND_ORIGIN = 'http://localhost:5173'
+LOCALHOST_ORIGIN_REGEX = r'http://localhost:\d+'
 
 
 @asynccontextmanager
@@ -74,7 +74,7 @@ def create_app() -> FastAPI:
 
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=[FRONTEND_ORIGIN],
+        allow_origin_regex=LOCALHOST_ORIGIN_REGEX,
         allow_credentials=True,
         allow_methods=['*'],
         allow_headers=['*'],
