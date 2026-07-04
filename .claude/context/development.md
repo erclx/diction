@@ -28,12 +28,14 @@ The local dev box is the RTX 5090 target machine named in `.claude/REQUIREMENTS.
 | Command                      | Where    | Purpose                                             |
 | ---------------------------- | -------- | --------------------------------------------------- |
 | `bun run dev:all`            | root     | Run backend and frontend together, open the browser |
+| `scripts/dev.sh restart`     | root     | Restart this worktree's pair                        |
+| `scripts/dev.sh stop`        | root     | Stop this worktree's pair                           |
 | `cd backend && bun run dev`  | backend  | FastAPI on `http://localhost:8000` with reload      |
 | `cd frontend && bun run dev` | frontend | Vite dev server on `http://localhost:5173`          |
 
-The frontend calls the backend at `http://localhost:8000`. Root `bun run dev:all` starts both and opens `http://localhost:5173`, so the health check and API-backed views resolve without starting each subtree by hand. `Ctrl-C` stops both.
+Root `bun run dev:all` starts both, opens the frontend, and prints the chosen URLs. On the first run in a fresh worktree it installs the frontend and backend dependencies when they are missing. It allocates a free port pair, defaulting to frontend 5173 and backend 8000 but stepping up when a port is busy, and exports `VITE_BACKEND_URL` so the frontend targets its own backend. Multiple worktrees can run pairs at once without collision. Each worktree records its pair in a pidfile under `.claude/.tmp/dev/`, so `scripts/dev.sh restart` and `scripts/dev.sh stop` act only on that worktree's pair. `Ctrl-C` also stops both.
 
-Backend startup builds the real `GopScorer`, `OllamaExplainer`, and `PiperSynthesizer` by default, so it needs the `scoring`, `feedback`, and `tts` extras installed. Without them, run `DICTION_USE_STUB_SCORER=true DICTION_USE_STUB_EXPLAINER=true DICTION_USE_STUB_SYNTH=true bun run dev:all` for the stubs. Startup fails with an actionable message for whichever stack is missing.
+`bun run dev:all` defaults to the stub `GopScorer`, `OllamaExplainer`, and `PiperSynthesizer`, so a fresh checkout boots without the `scoring`, `feedback`, and `tts` extras. Set `DICTION_DEV_MODELS=real` to load the installed models instead. A standalone `cd backend && bun run dev` still builds the real stack by default, so it needs the extras or the matching `DICTION_USE_STUB_*` flags, and startup fails with an actionable message for whichever stack is missing. The backend honors `DICTION_BACKEND_PORT` for its listen port.
 
 ## Verify
 
@@ -50,15 +52,15 @@ Root `bun run check` runs shared format, spell, and shell checks, then the backe
 
 Run from `backend/`. Each wraps `uv run` so Python tools resolve against the venv.
 
-| Command             | Purpose                                 |
-| ------------------- | --------------------------------------- |
-| `bun run dev`       | Start uvicorn with reload on port 8000  |
-| `bun run lint`      | `ruff check`                            |
-| `bun run lint:fix`  | `ruff check --fix` then `ruff format`   |
-| `bun run typecheck` | `mypy src` in strict mode               |
-| `bun run test`      | `pytest`                                |
-| `bun run test:run`  | `pytest` (used by `check`)              |
-| `bun run check`     | Format, lint, typecheck, and unit tests |
+| Command             | Purpose                                                            |
+| ------------------- | ------------------------------------------------------------------ |
+| `bun run dev`       | Start uvicorn with reload on `DICTION_BACKEND_PORT` (default 8000) |
+| `bun run lint`      | `ruff check`                                                       |
+| `bun run lint:fix`  | `ruff check --fix` then `ruff format`                              |
+| `bun run typecheck` | `mypy src` in strict mode                                          |
+| `bun run test`      | `pytest`                                                           |
+| `bun run test:run`  | `pytest` (used by `check`)                                         |
+| `bun run check`     | Format, lint, typecheck, and unit tests                            |
 
 ## Frontend scripts
 

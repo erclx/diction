@@ -24,6 +24,7 @@ The project uses a three-tier context model. Know which tier holds what before r
 - Do not add features the user did not ask for.
 - When rewriting a section, preserve existing code blocks, tables, and grouped examples unless the user asked to remove them.
 - When planning an edit to `CLAUDE.md`, show the proposed change as a fenced `diff` block in chat first, then wait for approval before calling `Edit`
+- After implementing a UI change, start a worktree dev pair with `bun run dev:all` and share the printed localhost URL so the change can be verified in the browser. The pair is cleaned up on session end.
 
 ## Indexes
 
@@ -40,6 +41,7 @@ The project uses a three-tier context model. Know which tier holds what before r
 ## Commands
 
 - Run `bun run check` before committing. Full script reference in `.claude/context/development.md`.
+- `bun run dev:all` (or `scripts/dev.sh`) starts a frontend and backend pair, picking a free port pair per worktree and wiring `VITE_BACKEND_URL` automatically, so parallel worktrees do not collide. It defaults to the stub model stack. Set `DICTION_DEV_MODELS=real` to use installed models. Use `scripts/dev.sh restart` or `scripts/dev.sh stop` to manage this worktree's pair.
 
 ## Output
 
@@ -91,5 +93,6 @@ The project uses a three-tier context model. Know which tier holds what before r
 ## Worktrees
 
 - Implementation work runs in a linked worktree. From the main worktree, enter one with `/claude-worktree` before editing tracked files for a feature.
+- Do not leave tracked-file edits uncommitted in the main worktree. It is PR-gated, so land every change on a branch: fold it into an in-flight linked worktree, or open its own PR. When that worktree has a live session, hand it the edit to commit rather than writing across worktrees.
 - Shared session scratch (`.claude/plans/`, `.claude/review/`, `.claude/memory/`, `.claude/TASKS.md`) lives at the main worktree root, not inside a linked worktree. From a linked worktree, resolve these paths against the main root via `git worktree list --porcelain | grep -m 1 '^worktree ' | cut -d' ' -f2-`. Fall back to `pwd` if not a git repo.
 - From a linked worktree, every `Edit` or `Write` to a tracked file (source, docs) must use a path starting with `pwd`. Only shared session scratch (`.claude/plans/`, `.claude/review/`, `.claude/memory/`, `.claude/TASKS.md`) resolves to the main worktree root.

@@ -76,5 +76,5 @@ These resolve as spikes inside the version that first needs them, not upfront: v
 - Prosody and rhythm scoring for stress timing and pitch contour comparison has no drop-in library. The comparison logic needs to be custom-built and validated against known native and non-native samples.
 - The composite accentedness score has no calibration yet. It needs native and non-native reference recordings to set meaningful thresholds before it is presented as a number.
 - Free-topic conversation mode combines two independent model outputs, pronunciation scoring and LLM grammar critique, that have never been tested together. How to present combined feedback without overwhelming the user is unresolved.
-- No decision yet on which specific local LLM size and model family balances feedback quality against inference speed on the target hardware
+- Resolved in v0.3: the explainer runs `gemma2:9b` capped at `num_ctx=4096`, which loads at ~7.4 GB and stays fully on GPU with the scoring stack resident. gemma4:26b at its default 128K context filled the card and offloaded the LLM to CPU once scoring loaded. Free-topic grammar critique may still want a larger model, revisit when that mode lands.
 - speechocean762 is a possible reference dataset for calibration and testing but has not been evaluated for licensing or practical fit

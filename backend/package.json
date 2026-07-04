@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "scripts": {
-    "dev": "uv run uvicorn diction.main:app --app-dir src --reload --port 8000",
+    "dev": "uv run uvicorn diction.main:app --app-dir src --reload --port ${DICTION_BACKEND_PORT:-8000}",
     "typecheck": "uv run mypy src",
     "lint": "uv run ruff check .",
     "lint:fix": "uv run ruff check --fix .",

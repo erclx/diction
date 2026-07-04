@@ -63,6 +63,8 @@ phonemize
 phonemized
 phonemizer
 phonemizing
+pidfile
+pids
 piper
 pkill
 pretrained
@@ -80,6 +82,7 @@ scannability
 seekable
 serviceworker
 setattr
+setsid
 shellcheck
 shfmt
 sidepanel
