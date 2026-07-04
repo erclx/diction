@@ -22,8 +22,12 @@ paths:
 - Run blocking GPU inference in the threadpool. Use a `def` route or `run_in_threadpool`, never an `async def` body, per `.claude/rules/framework/220-fastapi.md`.
 - Decode uploaded audio at the boundary with `ffmpeg` to 16 kHz mono. Do not assume the browser sends WAV.
 - Keep the `phonemizer` phone `Separator` when phonemizing. Without it every phoneme drops as unknown and the score is a false pass.
+- Wrap a secondary enrichment call that runs after the primary result (an LLM explanation after a score) in a try/except at the route boundary that degrades to a fallback. Only the primary model may fail the request. The computed result must still persist and return.
 
 ## Testing
 
 - Unit-test the GOP aggregation and thresholds against synthetic posteriors, with no model download.
 - Keep the scoring math in a model-free module so those tests need neither a GPU nor the `scoring` extra.
+- Before trusting a model-backed feature, run it against the real stack (the Ollama model, the Piper voice, the `scoring` extra), not only stub and unit tests. A real-API mismatch or a slow reasoning pass ships green otherwise.
+- Set `think=False` for reasoning models doing terse structured output. The hidden thinking pass otherwise dominates latency for no gain on the answer.
+- When a change adds a model or service to the app `lifespan`, wire its `DICTION_USE_STUB_*` flag into `.github/workflows/verify.yml` and boot the backend on that flag before shipping. Unit tests never start the app.
