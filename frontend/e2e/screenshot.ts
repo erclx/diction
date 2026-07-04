@@ -25,6 +25,27 @@ const MOCK_SCORE = {
   ],
 }
 
+const MOCK_MINIMAL_PAIRS = [
+  {
+    phoneme_a: 'ɔ',
+    phoneme_b: 'ɒ',
+    label: 'walk vs wok',
+    pairs: [{ word_a: 'walk', word_b: 'wok' }],
+  },
+]
+
+const MOCK_DRILL_FLAGGED = {
+  flagged_words: [
+    {
+      word: 'walk',
+      start: 0.1,
+      end: 0.5,
+      phoneme: 'ɔ',
+      explanation: 'Round the vowel more.',
+    },
+  ],
+}
+
 const MOCK_SESSIONS = [
   {
     id: 12,
@@ -197,11 +218,59 @@ async function driveToResults(page: Page): Promise<void> {
   await page.getByRole('heading', { name: 'Flagged words' }).waitFor()
 }
 
+async function routeMinimalPairs(page: Page): Promise<void> {
+  await page.route('**/api/minimal-pairs', (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify(MOCK_MINIMAL_PAIRS),
+    }),
+  )
+}
+
+async function scoreDrill(page: Page, body: unknown): Promise<void> {
+  await page.route('**/api/drills/minimal-pair/score', (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify(body),
+    }),
+  )
+  await page.getByRole('button', { name: 'Record', exact: true }).click()
+  await page.getByRole('button', { name: 'Stop' }).click()
+  await page.getByRole('button', { name: 'Check' }).click()
+}
+
+async function openProduction(page: Page): Promise<void> {
+  await routeMinimalPairs(page)
+  await page.getByRole('link', { name: 'Production' }).click()
+}
+
+async function driveToProductionIdle(page: Page): Promise<void> {
+  await openProduction(page)
+  await page.getByRole('button', { name: 'Record', exact: true }).waitFor()
+}
+
+async function driveToProductionPass(page: Page): Promise<void> {
+  await openProduction(page)
+  await scoreDrill(page, { flagged_words: [] })
+  await page.getByText(/landed/).waitFor()
+}
+
+async function driveToProductionRetry(page: Page): Promise<void> {
+  await openProduction(page)
+  await scoreDrill(page, MOCK_DRILL_FLAGGED)
+  await page.getByText(/Not quite/).waitFor()
+}
+
 const NARROW_VIEWPORT = { width: 390, height: 800 }
 
 const CASES: readonly CaptureCase[] = [
   { section: 'passage-scoring', name: 'idle' },
   { section: 'passage-scoring', name: 'results', act: driveToResults },
+  { section: 'production-drill', name: 'idle', act: driveToProductionIdle },
+  { section: 'production-drill', name: 'pass', act: driveToProductionPass },
+  { section: 'production-drill', name: 'retry', act: driveToProductionRetry },
   { section: 'session-history', name: 'list', act: driveToHistoryList },
   { section: 'session-history', name: 'detail', act: driveToHistoryDetail },
   { section: 'session-history', name: 'empty', act: driveToHistoryEmpty },
