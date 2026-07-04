@@ -35,7 +35,7 @@ def test_phoneme_filter_returns_only_contrasts_training_that_phoneme() -> None:
     )
 
 
-def test_phoneme_filter_matches_a_tracked_weak_sound_alphabet() -> None:
+def test_phoneme_filter_round_trips_a_known_key() -> None:
     client = make_client()
 
     response = client.get('/api/minimal-pairs', params={'phoneme': 'ð'})
