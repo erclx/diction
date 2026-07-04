@@ -1,8 +1,16 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, type RenderResult } from '@testing-library/react'
 import type { ReactElement } from 'react'
+import { MemoryRouter } from 'react-router-dom'
 
-export function renderWithProviders(ui: ReactElement): RenderResult {
+interface RenderOptions {
+  initialEntries?: string[]
+}
+
+export function renderWithProviders(
+  ui: ReactElement,
+  options: RenderOptions = {},
+): RenderResult {
   const queryClient = new QueryClient({
     defaultOptions: {
       queries: { retry: false },
@@ -11,6 +19,10 @@ export function renderWithProviders(ui: ReactElement): RenderResult {
   })
 
   return render(
-    <QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>,
+    <QueryClientProvider client={queryClient}>
+      <MemoryRouter initialEntries={options.initialEntries ?? ['/']}>
+        {ui}
+      </MemoryRouter>
+    </QueryClientProvider>,
   )
 }

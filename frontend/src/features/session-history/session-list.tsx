@@ -1,4 +1,5 @@
 import { Loader2 } from 'lucide-react'
+import { Link } from 'react-router-dom'
 
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
@@ -6,11 +7,6 @@ import { cn } from '@/lib/utils'
 import { formatSessionDate } from './format'
 import type { SessionListItem } from './session'
 import { useSessionsQuery } from './use-sessions'
-
-interface SessionListProps {
-  onSelect: (id: number) => void
-  onStartPractice: () => void
-}
 
 function accuracyTone(value: number): string {
   if (value >= 90) {
@@ -24,15 +20,13 @@ function accuracyTone(value: number): string {
 
 interface SessionRowProps {
   session: SessionListItem
-  onSelect: (id: number) => void
 }
 
-function SessionRow({ session, onSelect }: SessionRowProps) {
+function SessionRow({ session }: SessionRowProps) {
   return (
     <li>
-      <button
-        type="button"
-        onClick={() => onSelect(session.id)}
+      <Link
+        to={`/history/${session.id}`}
         className="flex w-full items-center justify-between gap-4 rounded-lg border p-4 text-left transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
       >
         <div className="flex flex-col gap-1">
@@ -51,12 +45,12 @@ function SessionRow({ session, onSelect }: SessionRowProps) {
         >
           {session.accuracy.toFixed(1)}
         </span>
-      </button>
+      </Link>
     </li>
   )
 }
 
-export function SessionList({ onSelect, onStartPractice }: SessionListProps) {
+export function SessionList() {
   const query = useSessionsQuery()
 
   if (query.isPending) {
@@ -91,7 +85,9 @@ export function SessionList({ onSelect, onStartPractice }: SessionListProps) {
         <p className="text-muted-foreground">
           No sessions yet. Score a passage to start your history.
         </p>
-        <Button onClick={onStartPractice}>Read a passage</Button>
+        <Button asChild>
+          <Link to="/">Read a passage</Link>
+        </Button>
       </div>
     )
   }
@@ -99,7 +95,7 @@ export function SessionList({ onSelect, onStartPractice }: SessionListProps) {
   return (
     <ul className="flex flex-col gap-3">
       {query.data.map((session) => (
-        <SessionRow key={session.id} session={session} onSelect={onSelect} />
+        <SessionRow key={session.id} session={session} />
       ))}
     </ul>
   )

@@ -17,9 +17,18 @@ describe('App', () => {
     expect(await screen.findByText('Backend: ok')).toBeInTheDocument()
   })
 
-  it('should show the passage reading prompt', () => {
-    renderWithProviders(<App />)
+  it('should show the passage reading prompt at the root route', () => {
+    renderWithProviders(<App />, { initialEntries: ['/'] })
 
     expect(screen.getByText(/Read the passage aloud/)).toBeInTheDocument()
+  })
+
+  it('should show the session history at the history route', async () => {
+    renderWithProviders(<App />, { initialEntries: ['/history'] })
+
+    expect(
+      screen.getByRole('heading', { name: 'Session history' }),
+    ).toBeInTheDocument()
+    expect(await screen.findByText('92.2')).toBeInTheDocument()
   })
 })

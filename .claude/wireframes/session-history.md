@@ -5,7 +5,7 @@ description: The history surface where the user browses past sessions and opens 
 
 # Session history
 
-The review surface for saved practice sessions. It reads `GET /api/sessions` for a dated list, newest first, and `GET /api/sessions/{id}` for one session's four scores and flagged words. Reached from the Practice and History nav in the app shell header. A single-column layout that swaps between a list and a detail view in place, no route change.
+The review surface for saved practice sessions. It reads `GET /api/sessions` for a dated list, newest first, and `GET /api/sessions/{id}` for one session's four scores and flagged words. Reached from the Practice and History nav in the app shell header. A single-column layout at `/history` for the list and `/history/:sessionId` for the detail, so a detail is deep-linkable and the browser back button returns to the list.
 
 ## List
 
@@ -69,7 +69,7 @@ The review surface for saved practice sessions. It reads `GET /api/sessions` for
 
 ## Behavior
 
-- The surface swaps the list for the detail in place on row select, and `Back to history` swaps it back. Selection is local view state.
+- A row links to `/history/:sessionId` to open the detail, and `Back to history` links to `/history`. Selection reads from the route param, so a refresh or a shared link lands on the same view.
 - Rows show only the date, mode, and headline accuracy, so the list read stays cheap. The full score set and flagged words load on the detail read.
 - The headline accuracy and the detail metrics share one band coloring with the passage surface: green at 90 and above, amber at 75 to 89, red below 75.
 - Flagged words render without a play control here, unlike the passage surface, because only scores and flagged words are stored, not the recorded audio.

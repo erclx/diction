@@ -1,14 +1,15 @@
-import { useState } from 'react'
+import { Navigate, useParams } from 'react-router-dom'
 
 import { SessionDetail } from './session-detail'
 import { SessionList } from './session-list'
 
-interface SessionHistoryProps {
-  onStartPractice: () => void
-}
+export function SessionHistory() {
+  const { sessionId } = useParams()
+  const parsedId = sessionId === undefined ? null : Number(sessionId)
 
-export function SessionHistory({ onStartPractice }: SessionHistoryProps) {
-  const [selectedId, setSelectedId] = useState<number | null>(null)
+  if (parsedId !== null && (!Number.isInteger(parsedId) || parsedId <= 0)) {
+    return <Navigate to="/history" replace />
+  }
 
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-6 p-6">
@@ -19,14 +20,7 @@ export function SessionHistory({ onStartPractice }: SessionHistoryProps) {
         </p>
       </header>
 
-      {selectedId === null ? (
-        <SessionList
-          onSelect={setSelectedId}
-          onStartPractice={onStartPractice}
-        />
-      ) : (
-        <SessionDetail id={selectedId} onBack={() => setSelectedId(null)} />
-      )}
+      {parsedId === null ? <SessionList /> : <SessionDetail id={parsedId} />}
     </div>
   )
 }
