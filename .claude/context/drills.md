@@ -5,7 +5,7 @@ description: Curated minimal-pair drill content keyed by phoneme contrast, and i
 
 # Drills
 
-The shared v0.4 foundation. Minimal pair production, ear-training, and the targeted-drill selector all read the same content: given a phoneme, the word pairs that train it.
+The shared v0.4 foundation. Minimal pair production, ear-training, and the targeted-drill selector all read the same content: given a phoneme, the word pairs that train it. The targeted-drill home joins this dataset against `GET /api/weak-sounds` client-side to rank what to practice, so the phoneme keys here must match what the weak-sound tracker stores. That join lives in `.claude/context/frontend.md`.
 
 ## Layer responsibilities
 
