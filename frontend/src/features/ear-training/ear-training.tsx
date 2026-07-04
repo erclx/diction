@@ -1,6 +1,6 @@
 import { AudioLines, Check, Loader2, X } from 'lucide-react'
-import { useEffect, useRef, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { Link, useSearchParams } from 'react-router-dom'
 
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -21,6 +21,19 @@ interface Round {
 
 function targetWordOf(round: Round): string {
   return round.targetSide === 'a' ? round.wordA : round.wordB
+}
+
+function filterByPhoneme(
+  contrasts: readonly MinimalPairContrast[],
+  phoneme: string | null,
+): MinimalPairContrast[] {
+  if (phoneme === null || phoneme === '') {
+    return [...contrasts]
+  }
+  return contrasts.filter(
+    (contrast) =>
+      contrast.phoneme_a === phoneme || contrast.phoneme_b === phoneme,
+  )
 }
 
 function pickRound(
@@ -164,14 +177,19 @@ interface EarTrainingProps {
 
 export function EarTraining({ random = Math.random }: EarTrainingProps) {
   const query = useMinimalPairsQuery()
+  const [searchParams] = useSearchParams()
+  const phoneme = searchParams.get('phoneme')
   const [round, setRound] = useState<Round | null>(null)
   const [roundId, setRoundId] = useState(0)
   const [score, setScore] = useState<ScoreState>({ correct: 0, attempted: 0 })
 
-  const contrasts = query.data
+  const contrasts = useMemo(
+    () => filterByPhoneme(query.data ?? [], phoneme),
+    [query.data, phoneme],
+  )
 
   const handleStart = () => {
-    if (contrasts === undefined || contrasts.length === 0) {
+    if (contrasts.length === 0) {
       return
     }
     setRound(pickRound(contrasts, random))
@@ -185,7 +203,7 @@ export function EarTraining({ random = Math.random }: EarTrainingProps) {
   }
 
   const handleNext = () => {
-    if (contrasts === undefined || contrasts.length === 0) {
+    if (contrasts.length === 0) {
       return
     }
     setRoundId((id) => id + 1)
@@ -224,7 +242,7 @@ export function EarTraining({ random = Math.random }: EarTrainingProps) {
       )}
 
       {query.isSuccess &&
-        (query.data.length === 0 ? (
+        (contrasts.length === 0 ? (
           <Card>
             <CardContent className="flex flex-col items-center gap-3 py-6 text-center">
               <p className="text-muted-foreground">

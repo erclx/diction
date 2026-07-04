@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { ArrowRight, Loader2, Mic, RotateCcw, Square } from 'lucide-react'
+import { useSearchParams } from 'react-router-dom'
 
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -20,6 +21,19 @@ interface Rep {
   targetPhoneme: string
 }
 
+function filterByPhoneme(
+  contrasts: readonly MinimalPairContrast[],
+  phoneme: string | null,
+): MinimalPairContrast[] {
+  if (phoneme === null || phoneme === '') {
+    return [...contrasts]
+  }
+  return contrasts.filter(
+    (contrast) =>
+      contrast.phoneme_a === phoneme || contrast.phoneme_b === phoneme,
+  )
+}
+
 function buildReps(contrasts: MinimalPairContrast[]): Rep[] {
   return contrasts.flatMap((contrast) =>
     contrast.pairs.map((pair) => ({
@@ -35,9 +49,14 @@ export function ProductionDrill() {
   const pairs = useMinimalPairs()
   const recorder = useRecorder()
   const scoring = useScoreWord()
+  const [searchParams] = useSearchParams()
+  const phoneme = searchParams.get('phoneme')
   const [repIndex, setRepIndex] = useState(0)
 
-  const reps = useMemo(() => buildReps(pairs.data ?? []), [pairs.data])
+  const reps = useMemo(
+    () => buildReps(filterByPhoneme(pairs.data ?? [], phoneme)),
+    [pairs.data, phoneme],
+  )
   const rep = reps.length > 0 ? reps[repIndex % reps.length] : null
 
   function handleScore() {

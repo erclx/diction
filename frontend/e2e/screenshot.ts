@@ -244,6 +244,24 @@ async function driveToEarTrainingEmpty(page: Page): Promise<void> {
   await page.getByText(/No drill pairs are available yet/).waitFor()
 }
 
+async function openTargetedDrills(page: Page): Promise<void> {
+  await routeWeakSounds(page, MOCK_WEAK_SOUNDS)
+  await routeMinimalPairs(page, MOCK_MINIMAL_PAIRS)
+  await page.getByRole('link', { name: 'Targeted' }).click()
+}
+
+async function driveToTargetedDrills(page: Page): Promise<void> {
+  await openTargetedDrills(page)
+  await page.getByText('th vs f').waitFor()
+}
+
+async function driveToTargetedDrillsEmpty(page: Page): Promise<void> {
+  await routeWeakSounds(page, [])
+  await routeMinimalPairs(page, MOCK_MINIMAL_PAIRS)
+  await page.getByRole('link', { name: 'Targeted' }).click()
+  await page.getByText(/No weak sounds yet/).waitFor()
+}
+
 async function driveToCollapsed(page: Page): Promise<void> {
   await page.getByRole('button', { name: 'Toggle Sidebar' }).click()
 }
@@ -317,6 +335,12 @@ const CASES: readonly CaptureCase[] = [
   { section: 'progress-dashboard', name: 'empty', act: driveToProgressEmpty },
   { section: 'ear-training', name: 'drill', act: driveToEarTraining },
   { section: 'ear-training', name: 'empty', act: driveToEarTrainingEmpty },
+  { section: 'targeted-drills', name: 'queue', act: driveToTargetedDrills },
+  {
+    section: 'targeted-drills',
+    name: 'empty',
+    act: driveToTargetedDrillsEmpty,
+  },
   { section: 'shell', name: 'sidebar', act: driveToProgress },
   { section: 'shell', name: 'collapsed', act: driveToCollapsed },
   { section: 'shell', name: 'mobile-closed', viewport: NARROW_VIEWPORT },

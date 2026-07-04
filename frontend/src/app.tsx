@@ -1,4 +1,12 @@
-import { AudioLines, Ear, History, Mic, Speech, TrendingUp } from 'lucide-react'
+import {
+  AudioLines,
+  Ear,
+  History,
+  Mic,
+  Speech,
+  Target,
+  TrendingUp,
+} from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { Navigate, NavLink, Route, Routes, useLocation } from 'react-router-dom'
 
@@ -21,6 +29,7 @@ import { PassageScoring } from '@/features/passage-scoring/passage-scoring'
 import { ProductionDrill } from '@/features/production-drill/production-drill'
 import { ProgressDashboard } from '@/features/progress-dashboard/progress-dashboard'
 import { SessionHistory } from '@/features/session-history/session-history'
+import { TargetedDrills } from '@/features/targeted-drills/targeted-drills'
 import { ThemeToggle } from '@/features/theme/theme-toggle'
 import { cn } from '@/lib/utils'
 
@@ -56,6 +65,7 @@ interface NavItem {
   to: string
   label: string
   icon: LucideIcon
+  end?: boolean
 }
 
 interface NavSection {
@@ -68,6 +78,7 @@ const NAV_SECTIONS: readonly NavSection[] = [
   {
     label: 'Drills',
     items: [
+      { to: '/drills', label: 'Targeted', icon: Target, end: true },
       { to: '/drills/ear-training', label: 'Ear training', icon: Ear },
       { to: '/drills/production', label: 'Production', icon: Speech },
     ],
@@ -89,7 +100,9 @@ function matchesRoute(to: string, pathname: string): boolean {
 
 function useSectionTitle(): string {
   const { pathname } = useLocation()
-  const active = NAV_ITEMS.find((item) => matchesRoute(item.to, pathname))
+  const active = NAV_ITEMS.filter((item) =>
+    matchesRoute(item.to, pathname),
+  ).sort((first, second) => second.to.length - first.to.length)[0]
   return active?.label ?? 'Practice'
 }
 
@@ -110,7 +123,7 @@ function ViewNav() {
                     tooltip={item.label}
                     className="aria-[current=page]:bg-sidebar-accent aria-[current=page]:font-medium aria-[current=page]:text-sidebar-accent-foreground"
                   >
-                    <NavLink to={item.to} end={item.to === '/'}>
+                    <NavLink to={item.to} end={item.end ?? item.to === '/'}>
                       <item.icon />
                       <span>{item.label}</span>
                     </NavLink>
@@ -160,6 +173,7 @@ export function App() {
         </header>
         <Routes>
           <Route path="/" element={<PassageScoring />} />
+          <Route path="/drills" element={<TargetedDrills />} />
           <Route path="/drills/ear-training" element={<EarTraining />} />
           <Route path="/drills/production" element={<ProductionDrill />} />
           <Route path="/history" element={<SessionHistory />} />
