@@ -174,6 +174,15 @@ async function driveToProgressEmpty(page: Page): Promise<void> {
   await page.getByText(/No weak sounds yet/).waitFor()
 }
 
+async function driveToCollapsed(page: Page): Promise<void> {
+  await page.getByRole('button', { name: 'Toggle Sidebar' }).click()
+}
+
+async function driveToMobileMenu(page: Page): Promise<void> {
+  await page.getByRole('button', { name: 'Toggle Sidebar' }).click()
+  await page.getByRole('link', { name: 'Progress' }).waitFor()
+}
+
 async function driveToResults(page: Page): Promise<void> {
   await page.route('**/api/passages/score', (route) =>
     route.fulfill({
@@ -198,10 +207,13 @@ const CASES: readonly CaptureCase[] = [
   { section: 'session-history', name: 'empty', act: driveToHistoryEmpty },
   { section: 'progress-dashboard', name: 'populated', act: driveToProgress },
   { section: 'progress-dashboard', name: 'empty', act: driveToProgressEmpty },
+  { section: 'shell', name: 'sidebar', act: driveToProgress },
+  { section: 'shell', name: 'collapsed', act: driveToCollapsed },
+  { section: 'shell', name: 'mobile-closed', viewport: NARROW_VIEWPORT },
   {
     section: 'shell',
-    name: 'nav-narrow',
-    act: driveToHistoryList,
+    name: 'mobile-open',
+    act: driveToMobileMenu,
     viewport: NARROW_VIEWPORT,
   },
 ]
@@ -241,11 +253,16 @@ async function capture(
     if (testCase.act) {
       await testCase.act(page)
     }
-    await page.mouse.move(0, 0)
+    const viewport = testCase.viewport ?? VIEWPORT
+    await page.mouse.move(viewport.width - 4, viewport.height - 4)
     const sectionDir = path.join(OUT_DIR, testCase.section)
     await mkdir(sectionDir, { recursive: true })
     const file = path.join(sectionDir, `${testCase.name}--${theme}.png`)
-    await page.screenshot({ path: file, fullPage: true })
+    await page.screenshot({
+      path: file,
+      fullPage: true,
+      animations: 'disabled',
+    })
     console.log(`captured ${file}`)
   } finally {
     await context.close()

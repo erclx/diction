@@ -5,13 +5,13 @@ description: The progress surface where the user sees their score trend over tim
 
 # Progress dashboard
 
-The progress surface at `/progress`. It reads two existing endpoints and renders no new capture path. `GET /api/sessions` feeds a score trend across past sessions, and `GET /api/weak-sounds` feeds a ranked list of recurring problem phonemes. Reached from the Progress nav in the app shell header. A single-column layout stacking a score-trend panel above a weak-sound panel, each in its own card.
+The progress surface at `/progress`. It reads two existing endpoints and renders no new capture path. `GET /api/sessions` feeds a score trend across past sessions, and `GET /api/weak-sounds` feeds a ranked list of recurring problem phonemes. Reached from the Progress nav in the app shell sidebar. A single-column layout stacking a score-trend panel above a weak-sound panel, each in its own card.
 
 ## Populated
 
 ```plaintext
 ┌──────────────────────────────────────────────┐
-│ Diction  Practice History Progress  ● Backend │ ← app shell header, Progress active
+│ ☰  Progress                         ● Backend │ ← app shell top bar, see app-shell.md
 ├──────────────────────────────────────────────┤
 │  Progress                                     │ ← surface title
 │  Track your score trend and the sounds that   │

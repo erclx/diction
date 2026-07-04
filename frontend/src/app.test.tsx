@@ -1,4 +1,4 @@
-import { screen } from '@testing-library/react'
+import { screen, within } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 
 import { App } from './app'
@@ -30,5 +30,35 @@ describe('App', () => {
       screen.getByRole('heading', { name: 'Session history' }),
     ).toBeInTheDocument()
     expect(await screen.findByText('92.2')).toBeInTheDocument()
+  })
+
+  it('should render every nav item in the sidebar', () => {
+    renderWithProviders(<App />)
+
+    const nav = screen.getByRole('navigation', { name: 'Views' })
+
+    expect(
+      within(nav).getByRole('link', { name: 'Practice' }),
+    ).toBeInTheDocument()
+    expect(
+      within(nav).getByRole('link', { name: 'History' }),
+    ).toBeInTheDocument()
+    expect(
+      within(nav).getByRole('link', { name: 'Progress' }),
+    ).toBeInTheDocument()
+  })
+
+  it('should mark the nav item for the current route as active', () => {
+    renderWithProviders(<App />, { initialEntries: ['/progress'] })
+
+    const nav = screen.getByRole('navigation', { name: 'Views' })
+
+    expect(within(nav).getByRole('link', { name: 'Progress' })).toHaveAttribute(
+      'aria-current',
+      'page',
+    )
+    expect(
+      within(nav).getByRole('link', { name: 'Practice' }),
+    ).not.toHaveAttribute('aria-current')
   })
 })

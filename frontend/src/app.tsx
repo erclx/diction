@@ -1,6 +1,21 @@
-import { Navigate, NavLink, Route, Routes } from 'react-router-dom'
+import { AudioLines, History, Mic, TrendingUp } from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
+import { Navigate, NavLink, Route, Routes, useLocation } from 'react-router-dom'
 
-import { buttonVariants } from '@/components/ui/button'
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarHeader,
+  SidebarInset,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarProvider,
+  SidebarTrigger,
+} from '@/components/ui/sidebar'
 import { PassageScoring } from '@/features/passage-scoring/passage-scoring'
 import { ProgressDashboard } from '@/features/progress-dashboard/progress-dashboard'
 import { SessionHistory } from '@/features/session-history/session-history'
@@ -35,52 +50,105 @@ function BackendStatus({ health }: BackendStatusProps) {
   )
 }
 
-const NAV_ITEMS: readonly { to: string; label: string }[] = [
-  { to: '/', label: 'Practice' },
-  { to: '/history', label: 'History' },
-  { to: '/progress', label: 'Progress' },
+interface NavItem {
+  to: string
+  label: string
+  icon: LucideIcon
+}
+
+interface NavSection {
+  label?: string
+  items: readonly NavItem[]
+}
+
+const NAV_SECTIONS: readonly NavSection[] = [
+  { items: [{ to: '/', label: 'Practice', icon: Mic }] },
+  {
+    label: 'Review',
+    items: [
+      { to: '/history', label: 'History', icon: History },
+      { to: '/progress', label: 'Progress', icon: TrendingUp },
+    ],
+  },
 ]
+
+const NAV_ITEMS = NAV_SECTIONS.flatMap((section) => section.items)
+
+function matchesRoute(to: string, pathname: string): boolean {
+  return to === '/' ? pathname === '/' : pathname.startsWith(to)
+}
+
+function useSectionTitle(): string {
+  const { pathname } = useLocation()
+  const active = NAV_ITEMS.find((item) => matchesRoute(item.to, pathname))
+  return active?.label ?? 'Practice'
+}
 
 function ViewNav() {
   return (
-    <nav className="flex items-center gap-1" aria-label="Views">
-      {NAV_ITEMS.map((item) => (
-        <NavLink
-          key={item.to}
-          to={item.to}
-          end={item.to === '/'}
-          className={({ isActive }) =>
-            cn(
-              buttonVariants({ variant: 'ghost', size: 'sm' }),
-              isActive
-                ? 'font-semibold text-foreground'
-                : 'text-muted-foreground',
-            )
-          }
-        >
-          {item.label}
-        </NavLink>
+    <nav aria-label="Views" className="flex flex-col gap-2">
+      {NAV_SECTIONS.map((section) => (
+        <SidebarGroup key={section.label ?? section.items[0].to}>
+          {section.label ? (
+            <SidebarGroupLabel>{section.label}</SidebarGroupLabel>
+          ) : null}
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {section.items.map((item) => (
+                <SidebarMenuItem key={item.to}>
+                  <SidebarMenuButton
+                    asChild
+                    tooltip={item.label}
+                    className="aria-[current=page]:bg-sidebar-accent aria-[current=page]:font-medium aria-[current=page]:text-sidebar-accent-foreground"
+                  >
+                    <NavLink to={item.to} end={item.to === '/'}>
+                      <item.icon />
+                      <span>{item.label}</span>
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
       ))}
     </nav>
   )
+}
+
+function SectionTitle() {
+  const title = useSectionTitle()
+
+  return <span className="font-medium">{title}</span>
 }
 
 export function App() {
   const health = useBackendHealth()
 
   return (
-    <div className="min-h-svh">
-      <header className="flex items-center justify-between gap-3 border-b px-4 py-3 sm:px-6">
-        <div className="flex min-w-0 items-center gap-3 sm:gap-6">
-          <h1 className="font-serif text-lg font-semibold">Diction</h1>
+    <SidebarProvider>
+      <Sidebar collapsible="icon">
+        <SidebarHeader>
+          <div className="flex items-center gap-2 px-2 py-1.5">
+            <AudioLines className="size-5 shrink-0 text-primary" />
+            <h1 className="font-serif text-lg font-semibold group-data-[collapsible=icon]:hidden">
+              Diction
+            </h1>
+          </div>
+        </SidebarHeader>
+        <SidebarContent>
           <ViewNav />
-        </div>
-        <div className="flex shrink-0 items-center gap-3">
-          <BackendStatus health={health} />
-          <ThemeToggle />
-        </div>
-      </header>
-      <main>
+        </SidebarContent>
+      </Sidebar>
+      <SidebarInset>
+        <header className="flex h-14 shrink-0 items-center gap-3 border-b px-4">
+          <SidebarTrigger className="-ml-1" />
+          <SectionTitle />
+          <div className="ml-auto flex items-center gap-3">
+            <BackendStatus health={health} />
+            <ThemeToggle />
+          </div>
+        </header>
         <Routes>
           <Route path="/" element={<PassageScoring />} />
           <Route path="/history" element={<SessionHistory />} />
@@ -88,7 +156,7 @@ export function App() {
           <Route path="/progress" element={<ProgressDashboard />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
-      </main>
-    </div>
+      </SidebarInset>
+    </SidebarProvider>
   )
 }
