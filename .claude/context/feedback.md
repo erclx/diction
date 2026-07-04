@@ -21,8 +21,9 @@ The explanation subsystem behind the flagged words in `POST /api/passages/score`
 - All flagged words go in one batched prompt per session, not one call per word, to keep latency and model load bounded.
 - The Ollama client is imported lazily inside `OllamaExplainer.from_settings`, so importing the protocol or the stub never pulls the optional `feedback` dependency. This differs from the scorer, whose model imports sit at module top.
 - For v0.2 the explainer receives only the target phoneme and word. Capturing the substituted phoneme is a scoring-pipeline change deferred until explanations read too generic.
-- The default `llm_model_id` is `gemma4:26b`, confirmed against the user's local Ollama library. Ollama's OpenAI-compatible endpoint means a later LM Studio swap is a base-URL change.
-- The chat call passes `think=False`. `gemma4` is a reasoning model that otherwise emits a long hidden thinking pass before the short answer. A live spike measured one warm call at 3.3s with reasoning versus 0.24s without, for the same output, so reasoning is disabled for these terse one-line explanations.
+- The default `llm_model_id` is `gemma2:9b`, chosen so the explainer fits VRAM alongside the resident scoring stack. gemma4:26b at its 128K default context loaded at 22 GB and offloaded to CPU once Whisper and wav2vec2 also loaded, dropping each explanation to ~3.3s on CPU. gemma2:9b at `num_ctx=4096` loads at 7.4 GB and stays fully on GPU. Ollama's OpenAI-compatible endpoint means a later LM Studio swap is a base-URL change.
+- The chat call caps context with `num_ctx=4096`, well above the one-short-line-per-word prompt, to stop the window ballooning VRAM at the model's default context.
+- The chat call passes `think=False`. This mattered for gemma4, a reasoning model that otherwise emits a long hidden thinking pass before the short answer, and stays set as cheap insurance against any reasoning-capable swap.
 
 ## Hidden contracts
 
@@ -35,7 +36,7 @@ The explanation subsystem behind the flagged words in `POST /api/passages/score`
 ## Gotchas
 
 - A real LLM varies per call, so its output cannot be asserted in e2e. The `StubExplainer` covers CI. Keep temperature low and the prompt tight so real output stays terse and one line per word.
-- A live spike on `gemma4:26b` returned five clean one-line explanations for five flagged words in 0.8s warm, with the phoneme and articulation named per word. The `/ʒ/` line described the wrong articulation (a `/v/` variant), so fall back to `gemma4:31b` if that imprecision recurs on real sessions.
+- A spike on `gemma2:9b` at `num_ctx=4096` evaluated the real explainer prompt in ~0.43s on GPU and returned correct one-line-per-word coaching. Full-stack confirmation with the scorer also resident is still pending per rule 360, so treat the latency and quality as measured-in-isolation until that run lands.
 - When the reply line count does not match the flagged-word count, `_parse_reply` logs a warning and falls back to the template for every word, rather than mapping lines to the wrong words.
 - Two models now run in one request. Load the client once in the lifespan and keep `llm_timeout_seconds` bounded so a slow cold model does not brush the frontend's 60s score-fetch ceiling.
 - Prompt injection is not guarded here: single user, fixed passage, no untrusted text. Revisit before free-topic mode in v0.7, which feeds user speech to the LLM.
