@@ -61,18 +61,24 @@ def _flag_worst_phonemes(
     aligned: list[AlignedPhoneme],
 ) -> list[FlaggedWordResult]:
     worst_by_word: dict[int, AlignedPhoneme] = {}
+    word_bounds: dict[int, tuple[float, float]] = {}
     for phoneme in aligned:
         current = worst_by_word.get(phoneme.word_index)
         if current is None or phoneme.gop < current.gop:
             worst_by_word[phoneme.word_index] = phoneme
+        start, end = word_bounds.get(phoneme.word_index, (phoneme.start, phoneme.end))
+        word_bounds[phoneme.word_index] = (
+            min(start, phoneme.start),
+            max(end, phoneme.end),
+        )
     return [
         FlaggedWordResult(
             word=phoneme.word,
-            start=phoneme.start,
-            end=phoneme.end,
+            start=word_bounds[word_index][0],
+            end=word_bounds[word_index][1],
             phoneme=phoneme.phoneme,
         )
-        for _, phoneme in sorted(worst_by_word.items())
+        for word_index, phoneme in sorted(worst_by_word.items())
         if phoneme.gop < GOP_FLAG_THRESHOLD
     ]
 
