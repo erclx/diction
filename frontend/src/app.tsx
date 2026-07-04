@@ -2,6 +2,7 @@ import { Navigate, NavLink, Route, Routes } from 'react-router-dom'
 
 import { buttonVariants } from '@/components/ui/button'
 import { PassageScoring } from '@/features/passage-scoring/passage-scoring'
+import { ProgressDashboard } from '@/features/progress-dashboard/progress-dashboard'
 import { SessionHistory } from '@/features/session-history/session-history'
 import { ThemeToggle } from '@/features/theme/theme-toggle'
 import { cn } from '@/lib/utils'
@@ -37,6 +38,7 @@ function BackendStatus({ health }: BackendStatusProps) {
 const NAV_ITEMS: readonly { to: string; label: string }[] = [
   { to: '/', label: 'Practice' },
   { to: '/history', label: 'History' },
+  { to: '/progress', label: 'Progress' },
 ]
 
 function ViewNav() {
@@ -83,6 +85,7 @@ export function App() {
           <Route path="/" element={<PassageScoring />} />
           <Route path="/history" element={<SessionHistory />} />
           <Route path="/history/:sessionId" element={<SessionHistory />} />
+          <Route path="/progress" element={<ProgressDashboard />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>

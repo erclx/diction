@@ -69,6 +69,25 @@ const MOCK_SESSION_DETAIL = {
   ],
 }
 
+const MOCK_WEAK_SOUNDS = [
+  {
+    phoneme: 'θ',
+    occurrence_count: 5,
+    word_count: 3,
+    example_words: ['thought', 'three', 'path'],
+    first_seen: '2026-06-28T07:41:00Z',
+    last_seen: '2026-07-02T09:14:00Z',
+  },
+  {
+    phoneme: 'ɹ',
+    occurrence_count: 3,
+    word_count: 2,
+    example_words: ['red', 'around'],
+    first_seen: '2026-06-30T18:02:00Z',
+    last_seen: '2026-07-02T09:14:00Z',
+  },
+]
+
 type Theme = 'light' | 'dark'
 
 interface CaptureCase {
@@ -124,6 +143,37 @@ async function driveToHistoryEmpty(page: Page): Promise<void> {
   await page.getByText(/No sessions yet/).waitFor()
 }
 
+async function routeWeakSounds(
+  page: Page,
+  list: readonly unknown[],
+): Promise<void> {
+  await page.route('**/api/weak-sounds', (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify(list),
+    }),
+  )
+}
+
+async function openProgress(page: Page): Promise<void> {
+  await page.getByRole('link', { name: 'Progress' }).click()
+}
+
+async function driveToProgress(page: Page): Promise<void> {
+  await routeSessions(page, MOCK_SESSIONS)
+  await routeWeakSounds(page, MOCK_WEAK_SOUNDS)
+  await openProgress(page)
+  await page.getByText('thought, three, path').waitFor()
+}
+
+async function driveToProgressEmpty(page: Page): Promise<void> {
+  await routeSessions(page, [])
+  await routeWeakSounds(page, [])
+  await openProgress(page)
+  await page.getByText(/No weak sounds yet/).waitFor()
+}
+
 async function driveToResults(page: Page): Promise<void> {
   await page.route('**/api/passages/score', (route) =>
     route.fulfill({
@@ -146,6 +196,8 @@ const CASES: readonly CaptureCase[] = [
   { section: 'session-history', name: 'list', act: driveToHistoryList },
   { section: 'session-history', name: 'detail', act: driveToHistoryDetail },
   { section: 'session-history', name: 'empty', act: driveToHistoryEmpty },
+  { section: 'progress-dashboard', name: 'populated', act: driveToProgress },
+  { section: 'progress-dashboard', name: 'empty', act: driveToProgressEmpty },
   {
     section: 'shell',
     name: 'nav-narrow',

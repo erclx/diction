@@ -38,6 +38,18 @@ export const handlers = [
       },
     ]),
   ),
+  http.get('http://localhost:8000/api/weak-sounds', () =>
+    HttpResponse.json([
+      {
+        phoneme: 'θ',
+        occurrence_count: 5,
+        word_count: 3,
+        example_words: ['thought', 'three', 'path'],
+        first_seen: '2026-06-28T07:41:00Z',
+        last_seen: '2026-07-02T09:14:00Z',
+      },
+    ]),
+  ),
   http.get('http://localhost:8000/api/sessions/:id', () =>
     HttpResponse.json({
       id: 12,
