@@ -9,9 +9,9 @@ total, so a low voice and a high voice reading the same sentence with the same
 melody and timing score as a match.
 
 The tolerances here are placeholders carried from the spike. They set the
-distance at which a score reaches zero, and must be recalibrated against real
-native and non-native recordings before the numbers are shown as final, the
-same calibration discipline the GOP threshold carries.
+distance at which a score reaches zero, and the spike must recalibrate them
+against real native and non-native recordings before the numbers are shown as
+final, the same calibration discipline the GOP threshold carries.
 """
 
 import math
