@@ -34,64 +34,31 @@ async function recordAndCheck(): Promise<void> {
 }
 
 describe('ProductionDrill', () => {
-  it('should show the pass state when the target sound is not flagged', async () => {
+  it('should show the sound quality score returned for the clip', async () => {
+    server.use(
+      http.post(SCORE_URL, () => HttpResponse.json({ phoneme_quality: 82.4 })),
+    )
     renderWithProviders(<ProductionDrill />)
 
     await recordAndCheck()
 
     await waitFor(() =>
-      expect(screen.getByRole('status')).toHaveTextContent(/landed/),
+      expect(screen.getByRole('status')).toHaveTextContent('82'),
     )
   })
 
-  it('should show the retry state when the target sound is flagged', async () => {
+  it('should show a low score as a number without a pass or retry verdict', async () => {
     server.use(
-      http.post(SCORE_URL, () =>
-        HttpResponse.json({
-          flagged_words: [
-            {
-              word: 'walk',
-              start: 0.1,
-              end: 0.5,
-              phoneme: 'ɔ',
-              explanation: 'Round the vowel more.',
-            },
-          ],
-        }),
-      ),
+      http.post(SCORE_URL, () => HttpResponse.json({ phoneme_quality: 41 })),
     )
     renderWithProviders(<ProductionDrill />)
 
     await recordAndCheck()
 
     await waitFor(() =>
-      expect(screen.getByRole('status')).toHaveTextContent(/try/i),
+      expect(screen.getByRole('status')).toHaveTextContent('41'),
     )
-  })
-
-  it('should show the pass state when only a non-target sound is flagged', async () => {
-    server.use(
-      http.post(SCORE_URL, () =>
-        HttpResponse.json({
-          flagged_words: [
-            {
-              word: 'walk',
-              start: 0.5,
-              end: 0.7,
-              phoneme: 'k',
-              explanation: 'Release the final k more.',
-            },
-          ],
-        }),
-      ),
-    )
-    renderWithProviders(<ProductionDrill />)
-
-    await recordAndCheck()
-
-    await waitFor(() =>
-      expect(screen.getByRole('status')).toHaveTextContent(/landed/),
-    )
+    expect(screen.getByRole('status')).not.toHaveTextContent(/landed|try/i)
   })
 
   it('should surface an actionable message when the clip is too weak', async () => {

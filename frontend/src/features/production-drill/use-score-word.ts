@@ -2,14 +2,11 @@ import { useMutation } from '@tanstack/react-query'
 import { z } from 'zod'
 
 import { BACKEND_URL } from '@/config'
-import {
-  ClipTooWeakSchema,
-  FlaggedWordSchema,
-} from '@/features/passage-scoring/score-result'
+import { ClipTooWeakSchema } from '@/features/passage-scoring/score-result'
 import { ClipTooWeakError } from '@/features/passage-scoring/use-score-passage'
 
 export const WordScoreSchema = z.object({
-  flagged_words: z.array(FlaggedWordSchema),
+  phoneme_quality: z.number(),
 })
 
 export type WordScore = z.infer<typeof WordScoreSchema>
