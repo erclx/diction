@@ -1,11 +1,13 @@
 ---
 title: Minimal pair production
-description: The production drill surface where the user says one word of a minimal pair and gets pass-or-retry feedback on the target sound
+description: The production drill surface where the user says one word of a minimal pair and sees a sound-quality score for the target
 ---
 
 # Minimal pair production
 
-The single-column drill surface for minimal pair production. It shows one word pair, prompts the user to say the highlighted target, captures a recording, and returns a binary pass-or-retry verdict from `POST /api/drills/minimal-pair/score`. It is the speak-and-check counterpart to ear-training.
+The single-column drill surface for minimal pair production. It shows one word pair, prompts the user to say the highlighted target, captures a recording, and returns a continuous sound-quality score from `POST /api/drills/minimal-pair/score`. It is the speak-and-check counterpart to ear-training.
+
+The surface shows a directional score rather than a binary pass-or-retry verdict, because the phoneme flag threshold is an uncalibrated placeholder that misfires on vowel contrasts. A number the user compares across attempts avoids asserting a pass or fail the scorer cannot yet defend. The binary verdict returns once the thresholds are calibrated against real recordings. See `.claude/plans/feature-score-calibration.md`.
 
 ## Idle
 
@@ -34,22 +36,14 @@ The single-column drill surface for minimal pair production. It shows one word p
 │         [ ↺ Record again ]  [ Check ]         │ ← re-record or submit
 ```
 
-## Pass
+## Scored
 
 ```plaintext
 │                 [ ▶ 0:00 ──────── 🔊 ]        │
 │  ┌──────────────────────────────────────┐    │
-│  │        Nice, "walk" landed.           │    │ ← success banner, dynamic
-│  └──────────────────────────────────────┘    │
-│                [ Next word → ]                │ ← advance to the next rep
-```
-
-## Retry
-
-```plaintext
-│                 [ ▶ 0:00 ──────── 🔊 ]        │
-│  ┌──────────────────────────────────────┐    │
-│  │    Not quite, try "walk" again.       │    │ ← retry banner, dynamic
+│  │                  72                   │    │ ← score, dynamic, neutral styling
+│  │   Sound quality for "walk", higher    │    │ ← caption, dynamic target word
+│  │              is cleaner               │    │
 │  └──────────────────────────────────────┘    │
 │      [ ↺ Try again ]   [ Next word → ]        │ ← re-record the same word or advance
 ```
@@ -62,8 +56,8 @@ The single-column drill surface for minimal pair production. It shows one word p
 - Pair line: target word highlighted and the other muted, dynamic
 - Prompt caption: `Say "<target>"`, dynamic
 - Controls: `Record`, `Stop`, `Record again`, `Check`, `Try again`, `Next word`
-- Pass banner: `Nice, "<target>" landed.`, dynamic
-- Retry banner: `Not quite, try "<target>" again.`, dynamic
+- Score: the rounded `phoneme_quality` number, dynamic
+- Score caption: `Sound quality for "<target>", higher is cleaner`, dynamic
 - Clip too weak: `Recording was too short or quiet, record again and speak clearly.`
 - Generic failure: `Scoring failed, check the backend is running and try again.`
 - Empty dataset: `No minimal-pair drills are available yet.`
@@ -72,7 +66,7 @@ The single-column drill surface for minimal pair production. It shows one word p
 
 - One rep shows a pair and asks for the highlighted target word. The record control cycles idle to recording to recorded, the same capture path as passage scoring.
 - Submitting scores the single target word through `POST /api/drills/minimal-pair/score`. The route runs the scorer but writes no session, so a drill rep never lands in history or the weak-sound rollup.
-- The verdict is binary and keyed to the contrast's target phoneme. A flag on the target sound is a retry, a clip with the target sound clean is a pass even if another phoneme flags, since the drill trains one contrast. Both states advance to the next rep, and retry also offers an immediate re-record of the same word.
+- The result is a single sound-quality number for the target word, shown in neutral styling with no pass-or-fail color. Higher is cleaner. The score is directional, meant to be compared across the user's own attempts, not read against a fixed threshold. From here the user can re-record the same word or advance to the next rep.
 - Each rep drills the `word_a` side of a pair, which carries the harder target phoneme. The `word_b` side sets the contrast on screen but is not itself scored in v1.
 - A too-weak clip shows a re-record prompt distinct from a generic failure, matching the 422 boundary, so a short clip never reads as a false pass.
 - Reference playback speaks the target word, synthesized locally. Synthesis and caching live in `.claude/context/tts.md`.

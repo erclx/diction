@@ -33,7 +33,7 @@ export const handlers = [
     ]),
   ),
   http.post('http://localhost:8000/api/drills/minimal-pair/score', () =>
-    HttpResponse.json({ flagged_words: [] }),
+    HttpResponse.json({ phoneme_quality: 82 }),
   ),
   http.get('http://localhost:8000/api/reference', () =>
     HttpResponse.arrayBuffer(new Uint8Array([82, 73, 70, 70]).buffer, {

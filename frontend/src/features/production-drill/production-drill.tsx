@@ -8,7 +8,6 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { ReferenceButton } from '@/features/reference-audio/reference-button'
 import { useRecorder } from '@/features/passage-scoring/use-recorder'
 import { ClipTooWeakError } from '@/features/passage-scoring/use-score-passage'
-import { cn } from '@/lib/utils'
 
 import type { MinimalPairContrast } from '@/features/minimal-pairs/minimal-pair'
 import { filterByPhoneme } from '@/features/minimal-pairs/minimal-pair'
@@ -19,7 +18,6 @@ interface Rep {
   target: string
   other: string
   label: string
-  targetPhoneme: string
 }
 
 function buildReps(contrasts: MinimalPairContrast[]): Rep[] {
@@ -28,7 +26,6 @@ function buildReps(contrasts: MinimalPairContrast[]): Rep[] {
       target: pair.word_a,
       other: pair.word_b,
       label: contrast.label,
-      targetPhoneme: contrast.phoneme_a,
     })),
   )
 }
@@ -66,13 +63,6 @@ export function ProductionDrill() {
   }
 
   const isClipTooWeak = scoring.error instanceof ClipTooWeakError
-  const isTargetFlagged =
-    scoring.isSuccess &&
-    scoring.data.flagged_words.some(
-      (flag) => flag.phoneme === rep?.targetPhoneme,
-    )
-  const isPass = scoring.isSuccess && !isTargetFlagged
-  const isRetry = scoring.isSuccess && isTargetFlagged
 
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-6 p-6">
@@ -199,31 +189,19 @@ export function ProductionDrill() {
             </p>
           )}
 
-          {isPass && (
+          {scoring.isSuccess && (
             <div className="flex flex-col items-center gap-3">
-              <p
+              <div
                 role="status"
-                className="w-full rounded-lg border border-success/50 bg-success/10 p-3 text-center text-sm text-success"
+                className="flex w-full flex-col items-center gap-1 rounded-lg border border-border bg-muted/40 p-4 text-center"
               >
-                Nice, “{rep.target}” landed.
-              </p>
-              <Button onClick={handleNext}>
-                Next word
-                <ArrowRight />
-              </Button>
-            </div>
-          )}
-
-          {isRetry && (
-            <div className="flex flex-col items-center gap-3">
-              <p
-                role="status"
-                className={cn(
-                  'w-full rounded-lg border border-warning/50 bg-warning/10 p-3 text-center text-sm text-warning',
-                )}
-              >
-                Not quite, try “{rep.target}” again.
-              </p>
+                <span className="text-3xl font-semibold tabular-nums">
+                  {Math.round(scoring.data.phoneme_quality)}
+                </span>
+                <span className="text-sm text-muted-foreground">
+                  Sound quality for “{rep.target}”, higher is cleaner
+                </span>
+              </div>
               <div className="flex gap-2">
                 <Button variant="outline" onClick={handleRecordAgain}>
                   <RotateCcw />
