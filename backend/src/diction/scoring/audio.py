@@ -11,6 +11,7 @@ from dataclasses import dataclass
 
 TARGET_SAMPLE_RATE = 16_000
 MIN_CLIP_SECONDS = 1.0
+MIN_WORD_CLIP_SECONDS = 0.4
 MIN_CLIP_RMS = 0.005
 
 
@@ -60,10 +61,10 @@ def decode_audio(data: bytes) -> DecodedAudio:
     return DecodedAudio(samples=samples, sample_rate=TARGET_SAMPLE_RATE)
 
 
-def ensure_scorable(audio: DecodedAudio) -> None:
-    if audio.duration < MIN_CLIP_SECONDS:
+def ensure_scorable(audio: DecodedAudio, min_seconds: float = MIN_CLIP_SECONDS) -> None:
+    if audio.duration < min_seconds:
         raise ClipTooWeakError(
-            f'duration={audio.duration:.2f}s below {MIN_CLIP_SECONDS}s minimum'
+            f'duration={audio.duration:.2f}s below {min_seconds}s minimum'
         )
     rms = _rms(audio.samples)
     if rms < MIN_CLIP_RMS:

@@ -8,7 +8,11 @@ from sqlmodel import Session, SQLModel
 from diction.api.drills import get_scorer
 from diction.app import create_app
 from diction.db.engine import get_session, make_engine
-from diction.scoring.audio import ClipTooWeakError
+from diction.scoring.audio import (
+    MIN_CLIP_SECONDS,
+    MIN_WORD_CLIP_SECONDS,
+    ClipTooWeakError,
+)
 from diction.scoring.types import FlaggedWordResult, ScoreResult
 from diction.storage import sessions as sessions_storage
 
@@ -16,13 +20,19 @@ from diction.storage import sessions as sessions_storage
 class FakeScorer:
     def __init__(self, result: ScoreResult) -> None:
         self._result = result
+        self.received_min_clip_seconds: float | None = None
 
-    def score(self, passage: str, audio: bytes) -> ScoreResult:
+    def score(
+        self, passage: str, audio: bytes, min_clip_seconds: float = MIN_CLIP_SECONDS
+    ) -> ScoreResult:
+        self.received_min_clip_seconds = min_clip_seconds
         return self._result
 
 
 class RaisingScorer:
-    def score(self, passage: str, audio: bytes) -> ScoreResult:
+    def score(
+        self, passage: str, audio: bytes, min_clip_seconds: float = MIN_CLIP_SECONDS
+    ) -> ScoreResult:
         raise ClipTooWeakError('duration=0.10s below 1.0s minimum')
 
 
@@ -109,3 +119,12 @@ def test_too_weak_clip_returns_422(client: TestClient) -> None:
 
     assert response.status_code == 422
     assert response.json()['error'] == 'clip_too_weak'
+
+
+def test_drill_route_requests_the_word_clip_floor(client: TestClient) -> None:
+    scorer = FakeScorer(_clean_result())
+    client.app.dependency_overrides[get_scorer] = lambda: scorer
+
+    _post(client)
+
+    assert scorer.received_min_clip_seconds == MIN_WORD_CLIP_SECONDS

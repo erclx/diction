@@ -17,6 +17,7 @@ from transformers import AutoModelForCTC, AutoProcessor
 
 from diction.config import Settings
 from diction.scoring.audio import (
+    MIN_CLIP_SECONDS,
     TARGET_SAMPLE_RATE,
     ClipTooWeakError,
     decode_audio,
@@ -43,9 +44,11 @@ class GopScorer:
             compute_type=compute_type,
         )
 
-    def score(self, passage: str, audio: bytes) -> ScoreResult:
+    def score(
+        self, passage: str, audio: bytes, min_clip_seconds: float = MIN_CLIP_SECONDS
+    ) -> ScoreResult:
         decoded = decode_audio(audio)
-        ensure_scorable(decoded)
+        ensure_scorable(decoded, min_seconds=min_clip_seconds)
         waveform = np.frombuffer(decoded.samples.tobytes(), dtype=np.float32)
         duration = decoded.duration
 
