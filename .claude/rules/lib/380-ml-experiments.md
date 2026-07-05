@@ -24,4 +24,4 @@ paths:
 
 ## Reproducibility
 
-- Keep the harness and its fitted outputs in the repo with a README covering re-run steps, extra dependencies, and cache reuse. Gitignore regenerable raw data.
+- Keep the harness and its fitted outputs in the repo with a README covering re-run steps, extra dependencies, and cache reuse. Gitignore raw data that a re-run rebuilds.

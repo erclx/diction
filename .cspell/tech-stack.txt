@@ -43,6 +43,7 @@ lessac
 linecap
 linejoin
 lintstagedrc
+mispeech
 mkdocs
 mkhl
 monkeypatch
@@ -70,6 +71,7 @@ pids
 piper
 pkill
 pretrained
+pyarrow
 pycache
 pydantic
 pykaldi

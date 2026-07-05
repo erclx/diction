@@ -56,4 +56,4 @@ this corpus.
 - `distributions.json`: per-phoneme good-vs-bad GOP summary.
 - `baselines.json`: the fitted table, source of `phoneme_baselines.py`.
 - `NOTES.md`: dataset evaluation and the fitted-result log.
-- `pairs*.jsonl`: raw measured pairs, regenerable, gitignored.
+- `pairs*.jsonl`: raw measured pairs, gitignored, rebuilt by a `measure.py` re-run.
