@@ -1,17 +1,22 @@
 from typing import Protocol
 
+from diction.scoring.audio import MIN_CLIP_SECONDS
 from diction.scoring.types import FlaggedWordResult, ScoreResult
 
 
 class PassageScorer(Protocol):
-    def score(self, passage: str, audio: bytes) -> ScoreResult: ...
+    def score(
+        self, passage: str, audio: bytes, min_clip_seconds: float = MIN_CLIP_SECONDS
+    ) -> ScoreResult: ...
 
 
 class StubScorer:
     """Canned scores behind the real contract. Used in CI, where there is no GPU
     and no model download. Deterministic so e2e assertions stay stable."""
 
-    def score(self, passage: str, audio: bytes) -> ScoreResult:
+    def score(
+        self, passage: str, audio: bytes, min_clip_seconds: float = MIN_CLIP_SECONDS
+    ) -> ScoreResult:
         return ScoreResult(
             completeness=92.0,
             accuracy=88.0,

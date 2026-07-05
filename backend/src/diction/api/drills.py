@@ -5,6 +5,7 @@ from pydantic import BaseModel
 
 from diction.api.schemas import FlaggedWordResponse
 from diction.feedback.base import default_explanation
+from diction.scoring.audio import MIN_WORD_CLIP_SECONDS
 from diction.scoring.base import PassageScorer
 
 router = APIRouter(tags=['drills'])
@@ -24,7 +25,9 @@ def score_minimal_pair(
     word: Annotated[str, Form()],
     audio: Annotated[UploadFile, File()],
 ) -> MinimalPairScoreResponse:
-    result = scorer.score(word, audio.file.read())
+    result = scorer.score(
+        word, audio.file.read(), min_clip_seconds=MIN_WORD_CLIP_SECONDS
+    )
     return MinimalPairScoreResponse(
         flagged_words=[
             FlaggedWordResponse(
