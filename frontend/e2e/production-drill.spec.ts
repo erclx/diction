@@ -12,17 +12,7 @@ const MOCK_PAIRS = [
   },
 ]
 
-const FLAGGED_SCORE = {
-  flagged_words: [
-    {
-      word: 'walk',
-      start: 0.1,
-      end: 0.5,
-      phoneme: 'ɔ',
-      explanation: 'Round the vowel more.',
-    },
-  ],
-}
+const WORD_SCORE = { phoneme_quality: 72 }
 
 async function recordClip(page: Page): Promise<void> {
   await page.getByRole('button', { name: 'Record', exact: true }).click()
@@ -40,18 +30,16 @@ test.describe('production drill', () => {
     await page.route(PAIRS_URL, (route) => route.fulfill({ json: MOCK_PAIRS }))
   })
 
-  test('should pass and advance to the next word when the sound lands', async ({
+  test('should show the sound quality score and advance to the next word', async ({
     page,
   }) => {
-    await page.route(SCORE_URL, (route) =>
-      route.fulfill({ json: { flagged_words: [] } }),
-    )
+    await page.route(SCORE_URL, (route) => route.fulfill({ json: WORD_SCORE }))
     await page.goto('/drills/production')
 
     await recordClip(page)
     await page.getByRole('button', { name: 'Check' }).click()
 
-    await expect(page.getByRole('status')).toContainText('landed')
+    await expect(page.getByRole('status')).toContainText('72')
 
     await page.getByRole('button', { name: 'Next word' }).click()
 
@@ -61,18 +49,23 @@ test.describe('production drill', () => {
     await expect(page.getByRole('status')).toBeHidden()
   })
 
-  test('should prompt a retry when the target sound is flagged', async ({
+  test('should let the user re-record the same word with try again', async ({
     page,
   }) => {
-    await page.route(SCORE_URL, (route) =>
-      route.fulfill({ json: FLAGGED_SCORE }),
-    )
+    await page.route(SCORE_URL, (route) => route.fulfill({ json: WORD_SCORE }))
     await page.goto('/drills/production')
 
     await recordClip(page)
     await page.getByRole('button', { name: 'Check' }).click()
 
-    await expect(page.getByRole('status')).toContainText('Not quite')
+    await expect(page.getByRole('status')).toContainText('72')
+
+    await page.getByRole('button', { name: 'Try again' }).click()
+
+    await expect(
+      page.getByRole('button', { name: 'Record', exact: true }),
+    ).toBeVisible()
+    await expect(page.getByRole('status')).toBeHidden()
   })
 
   test('should prompt a re-record when the clip is too weak', async ({
