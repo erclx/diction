@@ -1,6 +1,7 @@
 addopts
 aitk
 appuser
+arpabet
 asyncio
 autoplay
 axios
