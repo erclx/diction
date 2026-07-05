@@ -44,6 +44,8 @@ The surface shows a directional score rather than a binary pass-or-retry verdict
 │  │                  72                   │    │ ← score, dynamic, neutral styling
 │  │   Sound quality for "walk", higher    │    │ ← caption, dynamic target word
 │  │              is cleaner               │    │
+│  │  Compare across your own tries, not   │    │ ← cross-word caveat, fine print
+│  │            between words              │    │
 │  └──────────────────────────────────────┘    │
 │      [ ↺ Try again ]   [ Next word → ]        │ ← re-record the same word or advance
 ```
@@ -58,6 +60,7 @@ The surface shows a directional score rather than a binary pass-or-retry verdict
 - Controls: `Record`, `Stop`, `Record again`, `Check`, `Try again`, `Next word`
 - Score: the rounded `phoneme_quality` number, dynamic
 - Score caption: `Sound quality for "<target>", higher is cleaner`, dynamic
+- Score caveat: `Compare across your own tries, not between words`, fine print
 - Clip too weak: `Recording was too short or quiet, record again and speak clearly.`
 - Generic failure: `Scoring failed, check the backend is running and try again.`
 - Empty dataset: `No minimal-pair drills are available yet.`

@@ -201,6 +201,9 @@ export function ProductionDrill() {
                 <span className="text-sm text-muted-foreground">
                   Sound quality for “{rep.target}”, higher is cleaner
                 </span>
+                <span className="text-xs text-muted-foreground">
+                  Compare across your own tries, not between words
+                </span>
               </div>
               <div className="flex gap-2">
                 <Button variant="outline" onClick={handleRecordAgain}>
