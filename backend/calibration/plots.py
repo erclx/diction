@@ -1,3 +1,4 @@
+# cspell:disable-file  matplotlib and seaborn API keywords are not dictionary words
 """Publication figures for the calibration case study. Reads the fitted data and
 the raw measured pairs, writes static PNGs to figures/. Harness-only: needs
 matplotlib and seaborn (`uv pip install matplotlib seaborn`), not app deps.

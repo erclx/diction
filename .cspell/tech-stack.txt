@@ -43,6 +43,7 @@ lessac
 linecap
 linejoin
 lintstagedrc
+matplotlib
 mispeech
 mkdocs
 mkhl
@@ -83,6 +84,7 @@ regen
 repr
 ruff
 scannability
+seaborn
 seekable
 serviceworker
 setattr
