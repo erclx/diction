@@ -27,14 +27,15 @@ Needs the model stack (a GPU helps) plus the dataset library:
 
 ```bash
 cd backend
-uv sync --extra scoring       # torch, wav2vec2, phonemizer, ...
-uv pip install datasets       # harness-only, not an app dependency
+uv sync --extra scoring              # torch, wav2vec2, phonemizer, ...
+uv pip install datasets matplotlib seaborn  # harness-only, not app deps
 
 PYTHONPATH=src uv run python calibration/measure.py 300        # smoke test first
 PYTHONPATH=src uv run python calibration/measure.py 2500       # full test split
 PYTHONPATH=src uv run python calibration/measure.py 2500 train # held-out split
 uv run --project . python calibration/analyze.py              # fit -> baselines.json
 PYTHONPATH=src uv run python calibration/validate.py          # held-out check
+uv run --project . python calibration/plots.py               # figures -> figures/
 ```
 
 Always smoke-test on a few hundred rows before the full sweep. The join and the
@@ -53,6 +54,8 @@ this corpus.
 - `measure.py`: GPU sweep, pairs each phoneme's GOP with its human label.
 - `analyze.py`: fits the per-phoneme baselines and writes `baselines.json`.
 - `validate.py`: applies the shipped thresholds to the held-out split.
+- `plots.py`: draws the case-study figures into `figures/`.
+- `CASE_STUDY.md`: the write-up, in editorial voice, embedding the figures.
 - `distributions.json`: per-phoneme good-vs-bad GOP summary.
 - `baselines.json`: the fitted table, source of `phoneme_baselines.py`.
 - `NOTES.md`: dataset evaluation and the fitted-result log.
