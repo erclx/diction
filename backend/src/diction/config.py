@@ -13,6 +13,7 @@ class Settings(BaseSettings):
 
     db_path: Path = BACKEND_ROOT / 'diction.db'
     use_stub_scorer: bool = False
+    use_stub_prosody: bool = False
     use_stub_explainer: bool = False
     use_stub_synth: bool = False
 

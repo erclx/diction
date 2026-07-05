@@ -10,6 +10,7 @@ from diction.api import (
     health,
     minimal_pairs,
     passages,
+    prosody,
     reference,
     sessions,
     weak_sounds,
@@ -19,6 +20,7 @@ from diction.db.engine import create_db_and_tables
 from diction.feedback.base import StubExplainer
 from diction.scoring.audio import ClipTooWeakError
 from diction.scoring.base import StubScorer
+from diction.scoring.prosody_base import StubProsodyScorer
 from diction.tts.base import StubSynthesizer
 from diction.tts.cache import CachedSynthesizer, ReferenceAudioCache
 
@@ -42,6 +44,20 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
             ) from error
 
         app.state.scorer = GopScorer(settings)
+
+    if settings.use_stub_prosody:
+        app.state.prosody_scorer = StubProsodyScorer()
+    else:
+        try:
+            from diction.scoring.prosody_real import ProsodyScorer
+        except ModuleNotFoundError as error:
+            raise RuntimeError(
+                'The scoring model stack is not installed. Run '
+                "'uv sync --extra scoring', or set DICTION_USE_STUB_PROSODY=true "
+                'to run against the stub prosody scorer.'
+            ) from error
+
+        app.state.prosody_scorer = ProsodyScorer(settings)
 
     if settings.use_stub_explainer:
         app.state.explainer = StubExplainer()
@@ -92,6 +108,7 @@ def create_app() -> FastAPI:
     app.include_router(health.router, prefix='/api')
     app.include_router(minimal_pairs.router, prefix='/api')
     app.include_router(passages.router, prefix='/api')
+    app.include_router(prosody.router, prefix='/api')
     app.include_router(reference.router, prefix='/api')
     app.include_router(sessions.router, prefix='/api')
     app.include_router(weak_sounds.router, prefix='/api')
