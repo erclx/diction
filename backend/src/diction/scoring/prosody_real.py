@@ -19,6 +19,8 @@ from dataclasses import dataclass
 import numpy as np
 import torch
 import torchaudio.functional
+from phonemizer import phonemize
+from phonemizer.separator import Separator
 
 from diction.config import Settings
 from diction.scoring.audio import (
@@ -27,7 +29,13 @@ from diction.scoring.audio import (
     decode_audio,
     ensure_scorable,
 )
-from diction.scoring.prosody import ProsodyResult, compare_prosody
+from diction.scoring.prosody import (
+    ProsodyAnalysis,
+    ProsodyResult,
+    analyze_prosody,
+    build_stress_marks,
+    compare_prosody,
+)
 from diction.scoring.transcription import WhisperTranscriber
 
 
@@ -55,6 +63,42 @@ class ProsodyScorer:
             reference_timings=reference.timings,
             learner_timings=learner.timings,
         )
+
+    def analyze(
+        self,
+        reference_text: str,
+        reference_audio: bytes,
+        learner_audio: bytes,
+        min_clip_seconds: float = MIN_CLIP_SECONDS,
+    ) -> ProsodyAnalysis:
+        reference = self._analyze(reference_audio)
+        learner = self._analyze(learner_audio, min_clip_seconds=min_clip_seconds)
+        words, syllables = self._syllables(reference_text)
+        return analyze_prosody(
+            reference_pitch=reference.pitch,
+            learner_pitch=learner.pitch,
+            reference_timings=reference.timings,
+            learner_timings=learner.timings,
+            stress_marks=build_stress_marks(words, syllables),
+        )
+
+    def _syllables(self, text: str) -> tuple[list[str], list[list[str]]]:
+        words = [word for word in text.split() if word]
+        if not words:
+            return [], []
+        phonemized = phonemize(
+            words,
+            language='en-us',
+            backend='espeak',
+            separator=Separator(phone='', syllable=' ', word='|'),
+            strip=True,
+            with_stress=True,
+        )
+        syllables_per_word = [
+            [syllable for syllable in line.split(' ') if syllable]
+            for line in phonemized
+        ]
+        return words, syllables_per_word
 
     def _analyze(
         self, audio: bytes, min_clip_seconds: float | None = None
