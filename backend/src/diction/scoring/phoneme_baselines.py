@@ -1,27 +1,18 @@
 """Fitted per-phoneme GOP baselines from the speechocean762 calibration.
 
-Produced by the harness in `.claude/.tmp/score-calibration/` over the 2500-clip
-speechocean762 test split: the real wav2vec2 GOP measured against human
-per-phoneme accuracy labels. Plain data with no model import, so `gop.py` and
-its tests stay runnable without the `scoring` extra or a GPU.
-
-Method and the full fitted table live in `.claude/context/scoring.md`.
+Plain data with no model import, so `gop.py` and its tests stay runnable
+without the `scoring` extra or a GPU. The experiment that produced these, the
+method, and the findings live in `.claude/context/calibration.md`. The harness
+that regenerates the table is in `backend/calibration/`.
 """
 
-# Flag a phoneme when its GOP falls this many standard deviations below the
-# native mean. 1.6 targets about 8% false flags on native speech and catches
-# about 77% of clearly-wrong renderings (human accuracy <= 1).
+# Flag a phoneme when its GOP falls this many standard deviations below its own
+# native mean. Tuned to favor few false flags on native speech.
 FLAG_K = 1.6
 
-# Minimum separation (AUC of GOP over clean vs clearly-wrong) for a phoneme to
-# earn a binary flag. Every fitted phoneme clears it today; the gate is the
-# safeguard for a future phoneme whose GOP does not separate. A phoneme absent
-# from the table below is uncalibrated and never flags.
-RELIABILITY_AUC = 0.75
-
 # phoneme (raw espeak IPA token, as the scorer emits) -> (native_mean, native_std)
-# of the GOP distribution on clean reads. Only phonemes that clear RELIABILITY_AUC
-# appear here.
+# on clean reads. Only phonemes whose GOP separates clean from wrong appear here.
+# A phoneme absent from the table is uncalibrated and never flags.
 PHONEME_BASELINES: dict[str, tuple[float, float]] = {
     'd': (-0.688, 1.442),
     'f': (-0.257, 0.889),
