@@ -7,6 +7,9 @@ loop: labeled data in, a per-phoneme threshold out, validated on held-out data.
 Kept in the repo so the calibration can be reproduced or re-run against a newer
 model without rebuilding the setup. It is not imported by the app.
 
+This file is the runbook. The method, decisions, and findings live in
+`.claude/context/calibration.md`, and the narrative write-up is `CASE_STUDY.md`.
+
 ## The loop
 
 1. **Data.** speechocean762 (Apache-2.0): 5000 English clips from non-native
@@ -58,5 +61,4 @@ this corpus.
 - `CASE_STUDY.md`: the write-up, in editorial voice, embedding the figures.
 - `distributions.json`: per-phoneme good-vs-bad GOP summary.
 - `baselines.json`: the fitted table, source of `phoneme_baselines.py`.
-- `NOTES.md`: dataset evaluation and the fitted-result log.
 - `pairs*.jsonl`: raw measured pairs, gitignored, rebuilt by a `measure.py` re-run.

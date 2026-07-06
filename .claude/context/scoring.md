@@ -27,7 +27,7 @@ The pronunciation-scoring pipeline behind `POST /api/passages/score`. It turns a
 
 ## Calibration
 
-The flag threshold and `normalize_gop` are calibrated against speechocean762, not tuned by hand. The harness that produced them lives in `.claude/.tmp/score-calibration/`: it runs the real wav2vec2 GOP over the 2500-clip test split and pairs each phoneme's GOP with the corpus's human accuracy label. speechocean762 is Apache-2.0, adopted after evaluation. The fit was validated on the untouched train split.
+The flag threshold and `normalize_gop` are calibrated, not hand-tuned. The experiment that fit them, the dataset, the method, and the findings live in `.claude/context/calibration.md`. What the runtime does with the fitted values:
 
 - **Per-phoneme flag, not one global cutoff.** Native GOP baselines differ sharply by phoneme (clean means span -0.13 for `f` to -2.64 for `θ`), so a single constant cannot separate good from bad across them. `phoneme_baselines.py` holds each phoneme's native mean and standard deviation. `gop.py` flags the most abnormal phoneme in a word when it falls more than `FLAG_K` (1.6) standard deviations below its own mean. That targets about 8% false flags on native speech and catches about 77% of clearly-wrong renderings.
 - **Reliability gate.** Only phonemes whose GOP separates clean from clearly-wrong (AUC at least 0.75) get a baseline and can flag. All 27 fitted phonemes clear it, including the vowels the spike thought were unresolvable. A phoneme absent from the table is uncalibrated and never flags, so passage scoring never false-flags a sound it cannot judge.
