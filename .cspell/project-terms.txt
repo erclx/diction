@@ -12,6 +12,7 @@ mispronounced
 nativeness
 phoneme
 phonemes
+phonemization
 prosody
 Ryzen
 schwa

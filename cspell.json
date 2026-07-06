@@ -12,9 +12,14 @@
       "name": "tech-stack",
       "path": ".cspell/tech-stack.txt",
       "addWords": true
+    },
+    {
+      "name": "ipa",
+      "path": ".cspell/ipa.txt",
+      "addWords": true
     }
   ],
-  "dictionaries": ["project-terms", "tech-stack"],
+  "dictionaries": ["project-terms", "tech-stack", "ipa"],
   "ignorePaths": [
     ".cspell/**",
     ".git/**",
