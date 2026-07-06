@@ -29,7 +29,7 @@ CONTRAST = {'θ', 'ð', 'ɹ', 'ɪ', 'iː', 'æ', 'ɛ', 'v', 'w', 's', 'ʃ', 'f'}
 
 
 def style() -> None:
-    sns.set_theme(style='whitegrid', context='talk')
+    sns.set_theme(style='whitegrid', context='notebook')
     plt.rcParams.update(
         {
             'font.family': 'DejaVu Sans',
@@ -42,6 +42,12 @@ def style() -> None:
             'figure.facecolor': 'white',
             'savefig.facecolor': 'white',
             'grid.color': '#e7e0d3',
+            'axes.titlesize': 17,
+            'axes.titlepad': 14,
+            'axes.labelsize': 13,
+            'axes.labelpad': 10,
+            'xtick.labelsize': 12,
+            'ytick.labelsize': 13,
         }
     )
 
@@ -81,7 +87,8 @@ def load_pairs() -> tuple[dict[str, list[float]], dict[str, list[float]]]:
 def fig_baselines(rows: list[dict[str, object]]) -> None:
     rows = sorted(rows, key=lambda r: r['good_mean'])
     ys = range(len(rows))
-    fig, ax = plt.subplots(figsize=(9, 10))
+    fig, ax = plt.subplots(figsize=(9.5, 13))
+    ax.margins(y=0.015)
     ax.axvline(-5.0, color=NEUTRAL, linestyle='--', linewidth=2, zorder=1)
     ax.text(
         -5.0,
@@ -168,7 +175,7 @@ def fig_distributions(
         ('w', 'w  ·  walk'),
     ]
     by_ipa = {r['ipa']: r for r in rows}
-    fig, axes = plt.subplots(1, 3, figsize=(15, 4.6), sharey=True)
+    fig, axes = plt.subplots(1, 3, figsize=(15, 5.2), sharey=True)
     for ax, (ipa, label) in zip(axes, picks, strict=True):
         r = by_ipa[ipa]
         sns.histplot(
@@ -214,9 +221,9 @@ def fig_distributions(
 def fig_separation(rows: list[dict[str, object]]) -> None:
     rows = sorted(rows, key=lambda r: r['auc'])
     ys = range(len(rows))
-    fig, ax = plt.subplots(figsize=(8.5, 9.5))
+    fig, ax = plt.subplots(figsize=(9.5, 13))
     colors = [ACCENT if r['contrast'] else '#cdbfa8' for r in rows]
-    ax.barh(list(ys), [r['auc'] for r in rows], color=colors, height=0.72)
+    ax.barh(list(ys), [r['auc'] for r in rows], color=colors, height=0.6)
     ax.axvline(0.75, color=BAD, linestyle='--', linewidth=2)
     ax.text(
         0.75,
