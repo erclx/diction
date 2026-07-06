@@ -46,7 +46,7 @@ The flag threshold and `normalize_gop` are calibrated, not hand-tuned. The exper
 ## Hidden contracts
 
 - `aggregate_scores` raises `ClipTooWeakError` on an empty alignment rather than returning zeros, so unscorable input never reads as a perfect score.
-- The flagged-word shape (`word`, `start`, `end`, `phoneme`) maps one-to-one onto `FlaggedWord`, persisted with `mode='passage'`.
+- The flagged-word shape (`word`, `start`, `end`, `phoneme`) maps one-to-one onto `FlaggedWord`, persisted with `mode='passage'`. The `start` and `end` are the union of the word's forced-aligned phoneme frames, so they carry the aligner's boundary error. The stored values stay raw. The frontend `padSpan` in `use-span-player.ts` widens the played slice by a fixed 100ms each side, clamped to the clip, so a slightly-off boundary still contains the word instead of playing silence. Whether that margin is enough waits on the boundary-accuracy eval against an aligned corpus, tracked in `.claude/TASKS.md`.
 - `ClipTooWeakError` maps to `422 {"error": "clip_too_weak"}` through an app exception handler, distinct from a low score.
 
 ## Gotchas
