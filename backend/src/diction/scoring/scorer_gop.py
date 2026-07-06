@@ -117,6 +117,12 @@ class GopScorer:
         tokenizer = self._processor.tokenizer
         target_id = tokenizer.convert_tokens_to_ids(target_phoneme)
         competitor_id = tokenizer.convert_tokens_to_ids(competitor_phoneme)
+        unknown = (None, tokenizer.unk_token_id)
+        if target_id in unknown or competitor_id in unknown:
+            raise ValueError(
+                'contrast phoneme is not a model token: '
+                f'{target_phoneme!r} vs {competitor_phoneme!r}'
+            )
 
         gops = [float(emission[s.start : s.end, s.token].mean()) for s in spans]
         target_substituted = any(
@@ -188,6 +194,8 @@ class GopScorer:
             raise ClipTooWeakError(
                 'could not align the passage to the audio'
             ) from error
+        if len(spans) != len(token_word_index):
+            raise ClipTooWeakError('alignment did not cover the passage')
         return spans, token_word_index
 
 

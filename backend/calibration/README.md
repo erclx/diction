@@ -10,6 +10,11 @@ model without rebuilding the setup. It is not imported by the app.
 This file is the runbook. The method, decisions, and findings live in
 `.claude/context/calibration.md`, and the narrative write-up is `CASE_STUDY.md`.
 
+A separate eval lives alongside it: `contrast_eval.py` measures whether the
+production drill's pass-or-retry verdict tells the target sound of a minimal pair
+from its competitor, written up in `CONTRAST_EVAL.md`. It is a different question
+from the threshold fit, so it stays out of the case study.
+
 ## The loop
 
 1. **Data.** speechocean762 (Apache-2.0): 5000 English clips from non-native
@@ -58,6 +63,9 @@ this corpus.
 - `analyze.py`: fits the per-phoneme baselines and writes `baselines.json`.
 - `validate.py`: applies the shipped thresholds to the held-out split.
 - `plots.py`: draws the case-study figures into `figures/`.
+- `contrast_eval.py`: separate minimal-pair verdict eval, writes `contrast_eval.json`.
+- `contrast_plots.py`: draws the verdict-error figure into `figures/`.
+- `CONTRAST_EVAL.md`: findings for the minimal-pair verdict eval.
 - `CASE_STUDY.md`: the write-up, in editorial voice, embedding the figures.
 - `distributions.json`: per-phoneme good-vs-bad GOP summary.
 - `baselines.json`: the fitted table, source of `phoneme_baselines.py`.
