@@ -32,8 +32,6 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     create_db_and_tables()
     settings = get_settings()
 
-    # The GOP and prosody scorers share one Whisper instance so the second
-    # scorer adds no Whisper VRAM. Load it once when either real path is active.
     transcriber = None
     if not settings.use_stub_scorer or not settings.use_stub_prosody:
         try:
