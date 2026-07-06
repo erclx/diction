@@ -1,27 +1,24 @@
-"""The real prosody scorer. Imports torch, torchaudio, and faster-whisper, all
-in the optional `scoring` dependency group, and only inside this module so
-importing the scorer protocol or the stub never pulls them in.
+"""The real prosody scorer. Imports torch and torchaudio, in the optional
+`scoring` dependency group, only inside this module so importing the scorer
+protocol or the stub never pulls them in.
 
 Pitch comes from `torchaudio.functional.detect_pitch_frequency`, a model-free
 tracker already reachable through the resident torchaudio, so no new model
-loads for the f0 contour. Word timings come from faster-whisper.
+loads for the f0 contour. Word timings come from the shared `WhisperTranscriber`
+the GOP scorer also uses, so the prosody path adds no second Whisper instance.
 
-Two real-stack tasks are deferred to the spike's hands-on validation, both
-requiring the GPU box this code cannot reach in CI. First, the extractor loads
-its own Whisper instance; the GOP scorer already holds one, and sharing a single
-instance to halve the resident VRAM is pending the VRAM-footprint measurement in
-`.claude/ARCHITECTURE.md`. Second, `detect_pitch_frequency` is naive and can
-return garbage f0 on a noisy mic recording; the contour must be validated on
-real native and non-native recordings before the intonation score is trusted.
+One real-stack task is deferred to the spike's hands-on validation on the GPU
+box this code cannot reach in CI: `detect_pitch_frequency` is naive and can
+return garbage f0 on a noisy mic recording, so the contour must be validated on
+real native and non-native recordings, and the voiced-frame index comparison may
+need to key on time instead, before the intonation score is trusted.
 """
 
-import io
 from dataclasses import dataclass
 
 import numpy as np
 import torch
 import torchaudio.functional
-from faster_whisper import WhisperModel
 
 from diction.config import Settings
 from diction.scoring.audio import (
@@ -31,6 +28,7 @@ from diction.scoring.audio import (
     ensure_scorable,
 )
 from diction.scoring.prosody import ProsodyResult, compare_prosody
+from diction.scoring.transcription import WhisperTranscriber
 
 
 @dataclass(frozen=True, slots=True)
@@ -40,14 +38,8 @@ class _ClipAnalysis:
 
 
 class ProsodyScorer:
-    def __init__(self, settings: Settings) -> None:
-        self._device = 'cuda' if torch.cuda.is_available() else 'cpu'
-        compute_type = 'float16' if self._device == 'cuda' else 'int8'
-        self._whisper = WhisperModel(
-            settings.whisper_model_id,
-            device=self._device,
-            compute_type=compute_type,
-        )
+    def __init__(self, settings: Settings, transcriber: WhisperTranscriber) -> None:
+        self._transcriber = transcriber
 
     def score(
         self,
@@ -84,9 +76,4 @@ class ProsodyScorer:
         return [float(frequency) for frequency in frequencies.squeeze(0)]
 
     def _timings(self, audio: bytes) -> list[tuple[float, float]]:
-        segments, _ = self._whisper.transcribe(io.BytesIO(audio), word_timestamps=True)
-        return [
-            (word.start, word.end)
-            for segment in segments
-            for word in (segment.words or [])
-        ]
+        return [(start, end) for _, start, end in self._transcriber.word_timings(audio)]

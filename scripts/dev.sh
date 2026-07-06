@@ -85,6 +85,7 @@ start() {
     log "model stack: real (installed extras)"
   else
     export DICTION_USE_STUB_SCORER=true
+    export DICTION_USE_STUB_PROSODY=true
     export DICTION_USE_STUB_EXPLAINER=true
     export DICTION_USE_STUB_SYNTH=true
     log "model stack: stub (set DICTION_DEV_MODELS=real to use installed models)"

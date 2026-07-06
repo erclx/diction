@@ -145,3 +145,12 @@ def test_score_rejects_blank_reference_text(client: TestClient) -> None:
     response = _post(client, reference_text='   ')
 
     assert response.status_code == 422
+
+
+def test_score_rejects_reference_text_over_the_length_limit(client: TestClient) -> None:
+    scorer = FakeProsodyScorer(ProsodyResult(rhythm_match=50.0, intonation_match=50.0))
+    client.app.dependency_overrides[get_prosody_scorer] = lambda: scorer
+
+    response = _post(client, reference_text='word ' * 200)
+
+    assert response.status_code == 422

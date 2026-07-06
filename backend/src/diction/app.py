@@ -31,33 +31,37 @@ LOCALHOST_ORIGIN_REGEX = r'http://localhost:\d+'
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     create_db_and_tables()
     settings = get_settings()
-    if settings.use_stub_scorer:
-        app.state.scorer = StubScorer()
-    else:
+
+    # The GOP and prosody scorers share one Whisper instance so the second
+    # scorer adds no Whisper VRAM. Load it once when either real path is active.
+    transcriber = None
+    if not settings.use_stub_scorer or not settings.use_stub_prosody:
         try:
-            from diction.scoring.scorer_gop import GopScorer
+            from diction.scoring.transcription import WhisperTranscriber
         except ModuleNotFoundError as error:
             raise RuntimeError(
                 'The scoring model stack is not installed. Run '
                 "'uv sync --extra scoring', or set DICTION_USE_STUB_SCORER=true "
-                'to run against the stub scorer.'
+                'and DICTION_USE_STUB_PROSODY=true to run against the stubs.'
             ) from error
 
-        app.state.scorer = GopScorer(settings)
+        transcriber = WhisperTranscriber(settings)
+
+    if settings.use_stub_scorer:
+        app.state.scorer = StubScorer()
+    else:
+        from diction.scoring.scorer_gop import GopScorer
+
+        assert transcriber is not None
+        app.state.scorer = GopScorer(settings, transcriber)
 
     if settings.use_stub_prosody:
         app.state.prosody_scorer = StubProsodyScorer()
     else:
-        try:
-            from diction.scoring.prosody_real import ProsodyScorer
-        except ModuleNotFoundError as error:
-            raise RuntimeError(
-                'The scoring model stack is not installed. Run '
-                "'uv sync --extra scoring', or set DICTION_USE_STUB_PROSODY=true "
-                'to run against the stub prosody scorer.'
-            ) from error
+        from diction.scoring.prosody_real import ProsodyScorer
 
-        app.state.prosody_scorer = ProsodyScorer(settings)
+        assert transcriber is not None
+        app.state.prosody_scorer = ProsodyScorer(settings, transcriber)
 
     if settings.use_stub_explainer:
         app.state.explainer = StubExplainer()

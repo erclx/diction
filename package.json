@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev:all": "./scripts/dev.sh",
+    "dev:real": "DICTION_DEV_MODELS=real bun run dev:all",
     "check:spell": "cspell '**' '.*/**' '.*' --no-progress --color --show-context --no-must-find-files",
     "check:format": "prettier --check --log-level warn --ignore-path .gitignore --ignore-path .prettierignore . && shfmt --diff --indent 2 scripts/",
     "check:shell": "find scripts -name '*.sh' -exec shellcheck --severity=warning {} +",
