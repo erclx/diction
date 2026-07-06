@@ -41,10 +41,10 @@ Both scores and the drawn contour read as directional, not as a settled grade. P
 
 ```plaintext
 │  ┌──────────────────────────────────────┐    │
-│  │        ╭─╮                            │    │ ← reference pitch contour, solid
+│  │        ╭─╮  ┊         ┊                │    │ ← reference pitch contour, solid
 │  │   ╭────╯ ╰──╮      ╭╌╌╮               │    │
-│  │ ╭╌╯         ╰╌╌╮ ╭╌╯  ╰╌╮             │    │ ← learner contour, dashed overlay
-│  │  ─ Reference   ╌ You                  │    │ ← contour legend
+│  │ ╭╌╯      ┊  ╰╌╌╮ ╭╌╯ ┊╰╌╮             │    │ ← learner contour, dashed overlay
+│  │  ─ Reference   ╌ You  ┊ ← word bounds │    │ ← contour legend and per-word gridlines
 │  │  [ðə] [bə ˈnɑː nə] ...                 │    │ ← syllables, stressed one highlighted
 │  └──────────────────────────────────────┘    │
 │  ┌──────────────────┐  ┌──────────────────┐   │
@@ -76,5 +76,5 @@ Both scores and the drawn contour read as directional, not as a settled grade. P
 - One line shows at a time. The reference control plays the native rendering of that line, synthesized locally. Synthesis and caching live in `.claude/context/tts.md`.
 - The record control cycles idle to recording to recorded, the same capture path as passage scoring.
 - Submitting sends the line text plus the clip to `POST /api/prosody/analyze`, which synthesizes the same reference internally, draws both pitch contours, and marks the reference's stressed syllables. The route writes no session, so a rep never lands in history or the weak-sound rollup in v1.
-- The reference contour draws solid and the learner contour dashes over it on the same pitch scale, so the shapes compare directly rather than by absolute pitch. Both scores show as neutral numbers with a directional caveat, never colored grade bands, because the prosody score and the contour are uncalibrated and read as directional until calibration and the real-recording validation land.
+- The reference contour draws solid and the learner contour dashes over it on the same pitch scale, so the shapes compare directly rather than by absolute pitch. Both contours sit on a shared linguistic timeline, evenly split by faint per-word gridlines, so the same horizontal position is the same point in the sentence for both readers regardless of tempo. Both scores show as neutral numbers with a directional caveat, never colored grade bands, because the prosody score and the contour are uncalibrated and read as directional until calibration and the real-recording validation land.
 - `Next line` advances to the next prompt and clears the recording and results. `Record again` re-records the same line.
