@@ -15,5 +15,10 @@
     }
   ],
   "dictionaries": ["project-terms", "tech-stack"],
-  "ignorePaths": [".cspell/**", ".git/**", "backend/calibration/plots.py"]
+  "ignorePaths": [
+    ".cspell/**",
+    ".git/**",
+    "backend/calibration/contrast_plots.py",
+    "backend/calibration/plots.py"
+  ]
 }
