@@ -1,0 +1,580 @@
+{
+  "tally": {
+    "old_fp": 16,
+    "new_fp": 2,
+    "old_fr": 3,
+    "new_fr": 5,
+    "errors": 7
+  },
+  "rows": [
+    {
+      "label": "th vs f",
+      "target": "θ",
+      "word": "thin",
+      "spoken": "thin",
+      "kind": "correct",
+      "old_retry": false,
+      "new_retry": false
+    },
+    {
+      "label": "th vs f",
+      "target": "θ",
+      "word": "thin",
+      "spoken": "fin",
+      "kind": "wrong",
+      "old_retry": false,
+      "new_retry": true
+    },
+    {
+      "label": "th vs f",
+      "target": "θ",
+      "word": "thought",
+      "spoken": "thought",
+      "kind": "correct",
+      "old_retry": false,
+      "new_retry": false
+    },
+    {
+      "label": "th vs f",
+      "target": "θ",
+      "word": "thought",
+      "spoken": "fought",
+      "kind": "wrong",
+      "old_retry": false,
+      "new_retry": true
+    },
+    {
+      "label": "th vs f",
+      "target": "θ",
+      "word": "three",
+      "spoken": "three",
+      "kind": "correct",
+      "old_retry": false,
+      "new_retry": true
+    },
+    {
+      "label": "th vs f",
+      "target": "θ",
+      "word": "three",
+      "spoken": "free",
+      "kind": "wrong",
+      "old_retry": false,
+      "new_retry": true
+    },
+    {
+      "label": "th vs f",
+      "target": "θ",
+      "word": "sheath",
+      "spoken": "sheath",
+      "kind": "correct",
+      "old_retry": false,
+      "new_retry": false
+    },
+    {
+      "label": "th vs f",
+      "target": "θ",
+      "word": "sheath",
+      "spoken": "sheaf",
+      "kind": "wrong",
+      "old_retry": false,
+      "new_retry": true
+    },
+    {
+      "label": "th vs s",
+      "target": "θ",
+      "word": "thin",
+      "spoken": "thin",
+      "kind": "correct",
+      "old_retry": false,
+      "new_retry": true
+    },
+    {
+      "label": "th vs s",
+      "target": "θ",
+      "word": "thin",
+      "spoken": "sin",
+      "kind": "wrong",
+      "old_retry": false,
+      "new_retry": true
+    },
+    {
+      "label": "th vs s",
+      "target": "θ",
+      "word": "thick",
+      "spoken": "thick",
+      "kind": "correct",
+      "error": "clip_too_weak"
+    },
+    {
+      "label": "th vs s",
+      "target": "θ",
+      "word": "thick",
+      "spoken": "sick",
+      "kind": "wrong",
+      "old_retry": false,
+      "new_retry": true
+    },
+    {
+      "label": "th vs s",
+      "target": "θ",
+      "word": "thought",
+      "spoken": "thought",
+      "kind": "correct",
+      "old_retry": false,
+      "new_retry": false
+    },
+    {
+      "label": "th vs s",
+      "target": "θ",
+      "word": "thought",
+      "spoken": "sought",
+      "kind": "wrong",
+      "old_retry": false,
+      "new_retry": true
+    },
+    {
+      "label": "th vs s",
+      "target": "θ",
+      "word": "path",
+      "spoken": "path",
+      "kind": "correct",
+      "old_retry": false,
+      "new_retry": false
+    },
+    {
+      "label": "th vs s",
+      "target": "θ",
+      "word": "path",
+      "spoken": "pass",
+      "kind": "wrong",
+      "old_retry": false,
+      "new_retry": true
+    },
+    {
+      "label": "th vs d",
+      "target": "ð",
+      "word": "they",
+      "spoken": "they",
+      "kind": "correct",
+      "old_retry": false,
+      "new_retry": true
+    },
+    {
+      "label": "th vs d",
+      "target": "ð",
+      "word": "they",
+      "spoken": "day",
+      "kind": "wrong",
+      "old_retry": false,
+      "new_retry": true
+    },
+    {
+      "label": "th vs d",
+      "target": "ð",
+      "word": "then",
+      "spoken": "then",
+      "kind": "correct",
+      "old_retry": false,
+      "new_retry": true
+    },
+    {
+      "label": "th vs d",
+      "target": "ð",
+      "word": "then",
+      "spoken": "den",
+      "kind": "wrong",
+      "old_retry": false,
+      "new_retry": true
+    },
+    {
+      "label": "th vs d",
+      "target": "ð",
+      "word": "though",
+      "spoken": "though",
+      "kind": "correct",
+      "old_retry": false,
+      "new_retry": true
+    },
+    {
+      "label": "th vs d",
+      "target": "ð",
+      "word": "though",
+      "spoken": "dough",
+      "kind": "wrong",
+      "old_retry": false,
+      "new_retry": true
+    },
+    {
+      "label": "th vs d",
+      "target": "ð",
+      "word": "worthy",
+      "spoken": "worthy",
+      "kind": "correct",
+      "old_retry": false,
+      "new_retry": false
+    },
+    {
+      "label": "th vs d",
+      "target": "ð",
+      "word": "worthy",
+      "spoken": "wordy",
+      "kind": "wrong",
+      "old_retry": false,
+      "new_retry": true
+    },
+    {
+      "label": "r vs l",
+      "target": "ɹ",
+      "word": "right",
+      "spoken": "right",
+      "kind": "correct",
+      "old_retry": false,
+      "new_retry": false
+    },
+    {
+      "label": "r vs l",
+      "target": "ɹ",
+      "word": "right",
+      "spoken": "light",
+      "kind": "wrong",
+      "old_retry": true,
+      "new_retry": true
+    },
+    {
+      "label": "r vs l",
+      "target": "ɹ",
+      "word": "road",
+      "spoken": "road",
+      "kind": "correct",
+      "old_retry": false,
+      "new_retry": false
+    },
+    {
+      "label": "r vs l",
+      "target": "ɹ",
+      "word": "road",
+      "spoken": "load",
+      "kind": "wrong",
+      "old_retry": true,
+      "new_retry": true
+    },
+    {
+      "label": "r vs l",
+      "target": "ɹ",
+      "word": "rice",
+      "spoken": "rice",
+      "kind": "correct",
+      "old_retry": false,
+      "new_retry": false
+    },
+    {
+      "label": "r vs l",
+      "target": "ɹ",
+      "word": "rice",
+      "spoken": "lice",
+      "kind": "wrong",
+      "old_retry": true,
+      "new_retry": true
+    },
+    {
+      "label": "r vs l",
+      "target": "ɹ",
+      "word": "pray",
+      "spoken": "pray",
+      "kind": "correct",
+      "old_retry": false,
+      "new_retry": false
+    },
+    {
+      "label": "r vs l",
+      "target": "ɹ",
+      "word": "pray",
+      "spoken": "play",
+      "kind": "wrong",
+      "old_retry": true,
+      "new_retry": true
+    },
+    {
+      "label": "short i vs long ee",
+      "target": "ɪ",
+      "word": "ship",
+      "spoken": "ship",
+      "kind": "correct",
+      "error": "clip_too_weak"
+    },
+    {
+      "label": "short i vs long ee",
+      "target": "ɪ",
+      "word": "ship",
+      "spoken": "sheep",
+      "kind": "wrong",
+      "old_retry": false,
+      "new_retry": true
+    },
+    {
+      "label": "short i vs long ee",
+      "target": "ɪ",
+      "word": "bit",
+      "spoken": "bit",
+      "kind": "correct",
+      "old_retry": false,
+      "new_retry": false
+    },
+    {
+      "label": "short i vs long ee",
+      "target": "ɪ",
+      "word": "bit",
+      "spoken": "beat",
+      "kind": "wrong",
+      "error": "clip_too_weak"
+    },
+    {
+      "label": "short i vs long ee",
+      "target": "ɪ",
+      "word": "sit",
+      "spoken": "sit",
+      "kind": "correct",
+      "error": "clip_too_weak"
+    },
+    {
+      "label": "short i vs long ee",
+      "target": "ɪ",
+      "word": "sit",
+      "spoken": "seat",
+      "kind": "wrong",
+      "old_retry": false,
+      "new_retry": true
+    },
+    {
+      "label": "short i vs long ee",
+      "target": "ɪ",
+      "word": "live",
+      "spoken": "live",
+      "kind": "correct",
+      "old_retry": false,
+      "new_retry": false
+    },
+    {
+      "label": "short i vs long ee",
+      "target": "ɪ",
+      "word": "live",
+      "spoken": "leave",
+      "kind": "wrong",
+      "old_retry": false,
+      "new_retry": false
+    },
+    {
+      "label": "short a vs short e",
+      "target": "æ",
+      "word": "bad",
+      "spoken": "bad",
+      "kind": "correct",
+      "old_retry": false,
+      "new_retry": false
+    },
+    {
+      "label": "short a vs short e",
+      "target": "æ",
+      "word": "bad",
+      "spoken": "bed",
+      "kind": "wrong",
+      "old_retry": false,
+      "new_retry": true
+    },
+    {
+      "label": "short a vs short e",
+      "target": "æ",
+      "word": "bat",
+      "spoken": "bat",
+      "kind": "correct",
+      "error": "clip_too_weak"
+    },
+    {
+      "label": "short a vs short e",
+      "target": "æ",
+      "word": "bat",
+      "spoken": "bet",
+      "kind": "wrong",
+      "old_retry": true,
+      "new_retry": true
+    },
+    {
+      "label": "short a vs short e",
+      "target": "æ",
+      "word": "man",
+      "spoken": "man",
+      "kind": "correct",
+      "old_retry": false,
+      "new_retry": false
+    },
+    {
+      "label": "short a vs short e",
+      "target": "æ",
+      "word": "man",
+      "spoken": "men",
+      "kind": "wrong",
+      "old_retry": true,
+      "new_retry": true
+    },
+    {
+      "label": "short a vs short e",
+      "target": "æ",
+      "word": "pan",
+      "spoken": "pan",
+      "kind": "correct",
+      "old_retry": false,
+      "new_retry": false
+    },
+    {
+      "label": "short a vs short e",
+      "target": "æ",
+      "word": "pan",
+      "spoken": "pen",
+      "kind": "wrong",
+      "old_retry": true,
+      "new_retry": true
+    },
+    {
+      "label": "v vs w",
+      "target": "v",
+      "word": "vine",
+      "spoken": "vine",
+      "kind": "correct",
+      "old_retry": true,
+      "new_retry": false
+    },
+    {
+      "label": "v vs w",
+      "target": "v",
+      "word": "vine",
+      "spoken": "wine",
+      "kind": "wrong",
+      "old_retry": true,
+      "new_retry": true
+    },
+    {
+      "label": "v vs w",
+      "target": "v",
+      "word": "vest",
+      "spoken": "vest",
+      "kind": "correct",
+      "old_retry": false,
+      "new_retry": false
+    },
+    {
+      "label": "v vs w",
+      "target": "v",
+      "word": "vest",
+      "spoken": "west",
+      "kind": "wrong",
+      "old_retry": true,
+      "new_retry": true
+    },
+    {
+      "label": "v vs w",
+      "target": "v",
+      "word": "vet",
+      "spoken": "vet",
+      "kind": "correct",
+      "old_retry": true,
+      "new_retry": false
+    },
+    {
+      "label": "v vs w",
+      "target": "v",
+      "word": "vet",
+      "spoken": "wet",
+      "kind": "wrong",
+      "old_retry": true,
+      "new_retry": false
+    },
+    {
+      "label": "v vs w",
+      "target": "v",
+      "word": "veil",
+      "spoken": "veil",
+      "kind": "correct",
+      "old_retry": true,
+      "new_retry": false
+    },
+    {
+      "label": "v vs w",
+      "target": "v",
+      "word": "veil",
+      "spoken": "wail",
+      "kind": "wrong",
+      "old_retry": true,
+      "new_retry": true
+    },
+    {
+      "label": "s vs sh",
+      "target": "s",
+      "word": "sip",
+      "spoken": "sip",
+      "kind": "correct",
+      "old_retry": false,
+      "new_retry": false
+    },
+    {
+      "label": "s vs sh",
+      "target": "s",
+      "word": "sip",
+      "spoken": "ship",
+      "kind": "wrong",
+      "error": "clip_too_weak"
+    },
+    {
+      "label": "s vs sh",
+      "target": "s",
+      "word": "sea",
+      "spoken": "sea",
+      "kind": "correct",
+      "old_retry": false,
+      "new_retry": false
+    },
+    {
+      "label": "s vs sh",
+      "target": "s",
+      "word": "sea",
+      "spoken": "she",
+      "kind": "wrong",
+      "error": "clip_too_weak"
+    },
+    {
+      "label": "s vs sh",
+      "target": "s",
+      "word": "sock",
+      "spoken": "sock",
+      "kind": "correct",
+      "old_retry": false,
+      "new_retry": false
+    },
+    {
+      "label": "s vs sh",
+      "target": "s",
+      "word": "sock",
+      "spoken": "shock",
+      "kind": "wrong",
+      "old_retry": true,
+      "new_retry": true
+    },
+    {
+      "label": "s vs sh",
+      "target": "s",
+      "word": "mass",
+      "spoken": "mass",
+      "kind": "correct",
+      "old_retry": false,
+      "new_retry": false
+    },
+    {
+      "label": "s vs sh",
+      "target": "s",
+      "word": "mass",
+      "spoken": "mash",
+      "kind": "wrong",
+      "old_retry": true,
+      "new_retry": true
+    }
+  ]
+}
