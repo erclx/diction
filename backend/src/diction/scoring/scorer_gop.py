@@ -10,7 +10,6 @@ blocking and must run in a threadpool, never inside an async handler, per
 import numpy as np
 import torch
 import torchaudio.functional
-from faster_whisper import WhisperModel
 from phonemizer import phonemize
 from phonemizer.separator import Separator
 from transformers import AutoModelForCTC, AutoProcessor
@@ -25,11 +24,12 @@ from diction.scoring.audio import (
 )
 from diction.scoring.gop import AlignedPhoneme, aggregate_scores
 from diction.scoring.text import normalize_word
+from diction.scoring.transcription import WhisperTranscriber
 from diction.scoring.types import ScoreResult
 
 
 class GopScorer:
-    def __init__(self, settings: Settings) -> None:
+    def __init__(self, settings: Settings, transcriber: WhisperTranscriber) -> None:
         self._device = 'cuda' if torch.cuda.is_available() else 'cpu'
         self._processor = AutoProcessor.from_pretrained(settings.phoneme_model_id)
         self._model = (
@@ -37,12 +37,7 @@ class GopScorer:
             .to(self._device)
             .eval()
         )
-        compute_type = 'float16' if self._device == 'cuda' else 'int8'
-        self._whisper = WhisperModel(
-            settings.whisper_model_id,
-            device=self._device,
-            compute_type=compute_type,
-        )
+        self._transcriber = transcriber
 
     def score(
         self, passage: str, audio: bytes, min_clip_seconds: float = MIN_CLIP_SECONDS
@@ -66,14 +61,10 @@ class GopScorer:
         )
 
     def _transcribe(self, audio: bytes) -> list[tuple[str, float, float]]:
-        import io
-
-        segments, _ = self._whisper.transcribe(io.BytesIO(audio), word_timestamps=True)
-        words: list[tuple[str, float, float]] = []
-        for segment in segments:
-            for word in segment.words or []:
-                words.append((normalize_word(word.word), word.start, word.end))
-        return words
+        return [
+            (normalize_word(word), start, end)
+            for word, start, end in self._transcriber.word_timings(audio)
+        ]
 
     def _emission(self, waveform: np.ndarray) -> torch.Tensor:
         inputs = self._processor(

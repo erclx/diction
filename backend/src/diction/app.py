@@ -10,6 +10,7 @@ from diction.api import (
     health,
     minimal_pairs,
     passages,
+    prosody,
     reference,
     sessions,
     weak_sounds,
@@ -19,6 +20,7 @@ from diction.db.engine import create_db_and_tables
 from diction.feedback.base import StubExplainer
 from diction.scoring.audio import ClipTooWeakError
 from diction.scoring.base import StubScorer
+from diction.scoring.prosody_base import StubProsodyScorer
 from diction.tts.base import StubSynthesizer
 from diction.tts.cache import CachedSynthesizer, ReferenceAudioCache
 
@@ -29,19 +31,35 @@ LOCALHOST_ORIGIN_REGEX = r'http://localhost:\d+'
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     create_db_and_tables()
     settings = get_settings()
-    if settings.use_stub_scorer:
-        app.state.scorer = StubScorer()
-    else:
+
+    transcriber = None
+    if not settings.use_stub_scorer or not settings.use_stub_prosody:
         try:
-            from diction.scoring.scorer_gop import GopScorer
+            from diction.scoring.transcription import WhisperTranscriber
         except ModuleNotFoundError as error:
             raise RuntimeError(
                 'The scoring model stack is not installed. Run '
                 "'uv sync --extra scoring', or set DICTION_USE_STUB_SCORER=true "
-                'to run against the stub scorer.'
+                'and DICTION_USE_STUB_PROSODY=true to run against the stubs.'
             ) from error
 
-        app.state.scorer = GopScorer(settings)
+        transcriber = WhisperTranscriber(settings)
+
+    if settings.use_stub_scorer:
+        app.state.scorer = StubScorer()
+    else:
+        from diction.scoring.scorer_gop import GopScorer
+
+        assert transcriber is not None
+        app.state.scorer = GopScorer(settings, transcriber)
+
+    if settings.use_stub_prosody:
+        app.state.prosody_scorer = StubProsodyScorer()
+    else:
+        from diction.scoring.prosody_real import ProsodyScorer
+
+        assert transcriber is not None
+        app.state.prosody_scorer = ProsodyScorer(settings, transcriber)
 
     if settings.use_stub_explainer:
         app.state.explainer = StubExplainer()
@@ -92,6 +110,7 @@ def create_app() -> FastAPI:
     app.include_router(health.router, prefix='/api')
     app.include_router(minimal_pairs.router, prefix='/api')
     app.include_router(passages.router, prefix='/api')
+    app.include_router(prosody.router, prefix='/api')
     app.include_router(reference.router, prefix='/api')
     app.include_router(sessions.router, prefix='/api')
     app.include_router(weak_sounds.router, prefix='/api')
