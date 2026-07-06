@@ -11,53 +11,90 @@ from diction.scoring.prosody import (
     ProsodyResult,
     StressMark,
     analyze_prosody,
+    apply_voicing,
     build_stress_marks,
     compare_prosody,
     intonation_match,
+    median_smooth,
     rhythm_match,
+    word_timed_contour,
 )
 from diction.tts.base import StubSynthesizer
+
+# Two words evenly spanning the clip, so a frame's normalized position equals its
+# fraction of the clip and equal-melody readings align regardless of tempo.
+TWO_WORDS = [(0.0, 0.5), (0.5, 1.0)]
 
 
 def _rising(points: int) -> list[float]:
     return [100.0 + step * 12.0 for step in range(points)]
 
 
-def test_intonation_match_is_high_for_identical_contours() -> None:
-    contour = _rising(20)
+def _track(
+    frequencies: list[float], duration: float = 1.0
+) -> list[tuple[float, float]]:
+    if len(frequencies) == 1:
+        return [(0.0, frequencies[0])]
+    step = duration / (len(frequencies) - 1)
+    return [(index * step, frequency) for index, frequency in enumerate(frequencies)]
 
-    result = intonation_match(contour, contour)
+
+def _words(count: int, duration: float) -> list[tuple[float, float]]:
+    span = duration / count
+    return [(index * span, (index + 1) * span) for index in range(count)]
+
+
+def test_intonation_match_is_high_for_identical_contours() -> None:
+    track = _track(_rising(20))
+
+    result = intonation_match(track, track, TWO_WORDS, TWO_WORDS)
 
     assert result > 99.0
 
 
 def test_intonation_match_is_low_for_a_flattened_contour() -> None:
-    varied = _rising(20)
-    flat = [120.0] * 20
+    varied = _track(_rising(20))
+    flat = _track([120.0] * 20)
 
-    varied_score = intonation_match(varied, varied)
-    flat_score = intonation_match(varied, flat)
+    varied_score = intonation_match(varied, varied, TWO_WORDS, TWO_WORDS)
+    flat_score = intonation_match(varied, flat, TWO_WORDS, TWO_WORDS)
 
     assert flat_score < varied_score
     assert flat_score < 50.0
 
 
 def test_intonation_match_is_low_for_an_inverted_contour() -> None:
-    rising = _rising(20)
-    falling = list(reversed(rising))
+    rising = _track(_rising(20))
+    falling = _track(list(reversed(_rising(20))))
 
-    assert intonation_match(rising, falling) < intonation_match(rising, rising)
+    matched = intonation_match(rising, rising, TWO_WORDS, TWO_WORDS)
+    inverted = intonation_match(rising, falling, TWO_WORDS, TWO_WORDS)
+
+    assert inverted < matched
 
 
 def test_intonation_match_ignores_absolute_pitch_offset() -> None:
-    low_voice = _rising(20)
-    high_voice = [frequency * 2.0 for frequency in low_voice]
+    low_voice = _track(_rising(20))
+    high_voice = _track([frequency * 2.0 for frequency in _rising(20)])
 
-    assert intonation_match(low_voice, high_voice) > 99.0
+    assert intonation_match(low_voice, high_voice, TWO_WORDS, TWO_WORDS) > 99.0
+
+
+def test_intonation_match_is_high_across_a_tempo_difference() -> None:
+    melody = _rising(20)
+    slow = _track(melody, duration=2.0)
+    fast = _track(melody, duration=1.0)
+
+    result = intonation_match(slow, fast, _words(2, 2.0), _words(2, 1.0))
+
+    assert result > 99.0
 
 
 def test_intonation_match_is_zero_when_a_contour_has_no_voiced_frames() -> None:
-    assert intonation_match([0.0, 0.0], _rising(10)) == 0.0
+    silent = _track([0.0, 0.0])
+    voiced = _track(_rising(10))
+
+    assert intonation_match(silent, voiced, TWO_WORDS, TWO_WORDS) == 0.0
 
 
 def test_rhythm_match_is_high_for_identical_timings() -> None:
@@ -83,14 +120,43 @@ def test_rhythm_match_is_low_for_an_evened_out_delivery() -> None:
 
 
 def test_compare_prosody_returns_both_axes() -> None:
-    contour = _rising(20)
-    timings = [(0.0, 0.4), (0.4, 1.0)]
+    track = _track(_rising(20))
+    timings = [(0.0, 0.5), (0.5, 1.0)]
 
-    result = compare_prosody(contour, contour, timings, timings)
+    result = compare_prosody(track, track, timings, timings)
 
     assert isinstance(result, ProsodyResult)
     assert result.rhythm_match > 99.0
     assert result.intonation_match > 99.0
+
+
+def test_word_timed_contour_is_empty_without_voiced_frames() -> None:
+    contour = word_timed_contour([(0.0, 0.0), (0.5, 0.0)], TWO_WORDS)
+
+    assert contour == []
+
+
+def test_median_smooth_removes_a_single_frame_spike() -> None:
+    values = [100.0, 100.0, 400.0, 100.0, 100.0]
+
+    smoothed = median_smooth(values, 3)
+
+    assert max(smoothed) < 400.0
+
+
+def test_median_smooth_returns_the_input_when_the_window_exceeds_length() -> None:
+    values = [100.0, 200.0]
+
+    assert median_smooth(values, 5) == values
+
+
+def test_apply_voicing_zeros_frames_below_the_energy_threshold() -> None:
+    frequencies = [120.0, 130.0, 140.0]
+    energies = [1.0, 0.05, 1.0]
+
+    voiced = apply_voicing(frequencies, energies, 0.15)
+
+    assert voiced == [120.0, 0.0, 140.0]
 
 
 def test_build_stress_marks_marks_the_primary_stressed_syllable() -> None:
@@ -114,11 +180,11 @@ def test_build_stress_marks_uses_secondary_stress_when_no_primary_is_present() -
 
 
 def test_analyze_prosody_exposes_resampled_contours_and_the_scalars() -> None:
-    contour = _rising(20)
-    timings = [(0.0, 0.4), (0.4, 1.0)]
+    track = _track(_rising(20))
+    timings = [(0.0, 0.5), (0.5, 1.0)]
     marks = [StressMark(word='hi', syllables=['haɪ'], stress_index=0)]
 
-    analysis = analyze_prosody(contour, contour, timings, timings, marks)
+    analysis = analyze_prosody(track, track, timings, timings, marks)
 
     assert len(analysis.reference_contour) == CONTOUR_RESAMPLE_POINTS
     assert len(analysis.learner_contour) == CONTOUR_RESAMPLE_POINTS

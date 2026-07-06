@@ -7,11 +7,12 @@ tracker already reachable through the resident torchaudio, so no new model
 loads for the f0 contour. Word timings come from the shared `WhisperTranscriber`
 the GOP scorer also uses, so the prosody path adds no second Whisper instance.
 
-One real-stack task is deferred to the spike's hands-on validation on the GPU
-box this code cannot reach in CI: `detect_pitch_frequency` is naive and can
-return garbage f0 on a noisy mic recording, so the contour must be validated on
-real native and non-native recordings, and the voiced-frame index comparison may
-need to key on time instead, before the intonation score is trusted.
+The tracker is naive and reports a pitch even for near-silence, so the raw f0 is
+median-smoothed to drop octave jumps and gated by frame energy so unvoiced frames
+drop out. Each frame carries its timestamp, so `prosody.py` compares the two
+contours on a shared linguistic timeline rather than by voiced-frame index, the
+#21 open item. The remaining deferred task is calibrating the tolerances against
+real native and non-native recordings before the numbers are shown as final.
 """
 
 from dataclasses import dataclass
@@ -30,18 +31,28 @@ from diction.scoring.audio import (
     ensure_scorable,
 )
 from diction.scoring.prosody import (
+    PitchTrack,
     ProsodyAnalysis,
     ProsodyResult,
     analyze_prosody,
+    apply_voicing,
     build_stress_marks,
     compare_prosody,
+    median_smooth,
 )
 from diction.scoring.transcription import WhisperTranscriber
+
+# Median-filter window over f0 frames, wide enough to drop a single-frame octave
+# jump without flattening a real pitch movement.
+PITCH_SMOOTH_WINDOW = 5
+# A frame quieter than this fraction of the loudest frame is treated as unvoiced,
+# since the tracker still reports a pitch for near-silence.
+VOICING_ENERGY_RATIO = 0.15
 
 
 @dataclass(frozen=True, slots=True)
 class _ClipAnalysis:
-    pitch: list[float]
+    pitch: PitchTrack
     timings: list[tuple[float, float]]
 
 
@@ -108,16 +119,44 @@ class ProsodyScorer:
             ensure_scorable(decoded, min_seconds=min_clip_seconds)
         waveform = np.frombuffer(decoded.samples.tobytes(), dtype=np.float32)
         return _ClipAnalysis(
-            pitch=self._pitch(waveform),
+            pitch=self._pitch(waveform, decoded.duration),
             timings=self._timings(audio),
         )
 
-    def _pitch(self, waveform: np.ndarray) -> list[float]:
+    def _pitch(self, waveform: np.ndarray, duration: float) -> PitchTrack:
         tensor = torch.from_numpy(waveform.copy()).unsqueeze(0)
         frequencies = torchaudio.functional.detect_pitch_frequency(
             tensor, TARGET_SAMPLE_RATE
         )
-        return [float(frequency) for frequency in frequencies.squeeze(0)]
+        raw = [float(frequency) for frequency in frequencies.squeeze(0)]
+        smoothed = median_smooth(raw, PITCH_SMOOTH_WINDOW)
+        energies = _frame_energies(waveform, len(smoothed))
+        voiced = apply_voicing(smoothed, energies, VOICING_ENERGY_RATIO)
+        return list(zip(_frame_times(len(voiced), duration), voiced, strict=True))
 
     def _timings(self, audio: bytes) -> list[tuple[float, float]]:
         return [(start, end) for _, start, end in self._transcriber.word_timings(audio)]
+
+
+def _frame_energies(waveform: np.ndarray, frame_count: int) -> list[float]:
+    """Per-frame RMS energy, one value per pitch frame, so voicing gates on the
+    same grid as the f0 track. The waveform is split into `frame_count` equal
+    chunks and each chunk's RMS is taken."""
+    if frame_count <= 0 or waveform.size == 0:
+        return []
+    chunks = np.array_split(waveform, frame_count)
+    return [
+        float(np.sqrt(np.mean(np.square(chunk)))) if chunk.size else 0.0
+        for chunk in chunks
+    ]
+
+
+def _frame_times(frame_count: int, duration: float) -> list[float]:
+    """Evenly spaced timestamps across the clip, one per pitch frame, so each f0
+    sample carries the moment it was taken."""
+    if frame_count <= 0:
+        return []
+    if frame_count == 1:
+        return [0.0]
+    step = duration / (frame_count - 1)
+    return [index * step for index in range(frame_count)]
