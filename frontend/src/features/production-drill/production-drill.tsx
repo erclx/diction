@@ -19,6 +19,7 @@ interface Rep {
   other: string
   label: string
   targetPhoneme: string
+  competitorPhoneme: string
 }
 
 function buildReps(contrasts: MinimalPairContrast[]): Rep[] {
@@ -28,6 +29,7 @@ function buildReps(contrasts: MinimalPairContrast[]): Rep[] {
       other: pair.word_b,
       label: contrast.label,
       targetPhoneme: contrast.phoneme_a,
+      competitorPhoneme: contrast.phoneme_b,
     })),
   )
 }
@@ -50,7 +52,12 @@ export function ProductionDrill() {
     if (!recorder.recording || !rep) {
       return
     }
-    scoring.mutate({ word: rep.target, audio: recorder.recording.blob })
+    scoring.mutate({
+      word: rep.target,
+      targetPhoneme: rep.targetPhoneme,
+      competitorPhoneme: rep.competitorPhoneme,
+      audio: recorder.recording.blob,
+    })
   }
 
   function handleRecordAgain() {
@@ -211,7 +218,7 @@ export function ProductionDrill() {
                   role="status"
                   className="w-full rounded-lg border border-warning/50 bg-warning/10 p-3 text-center text-sm text-warning"
                 >
-                  Not quite, try “{rep.target}” again.
+                  Closer to “{rep.other}”, try “{rep.target}” again.
                 </p>
               )}
               <p className="text-xs text-muted-foreground">

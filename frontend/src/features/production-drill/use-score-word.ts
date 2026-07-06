@@ -14,14 +14,23 @@ export type WordScore = z.infer<typeof WordScoreSchema>
 
 export interface ScoreWordInput {
   word: string
+  targetPhoneme: string
+  competitorPhoneme: string
   audio: Blob
 }
 
 const SCORE_TIMEOUT_MS = 60_000
 
-async function scoreWord({ word, audio }: ScoreWordInput): Promise<WordScore> {
+async function scoreWord({
+  word,
+  targetPhoneme,
+  competitorPhoneme,
+  audio,
+}: ScoreWordInput): Promise<WordScore> {
   const form = new FormData()
   form.append('word', word)
+  form.append('target_phoneme', targetPhoneme)
+  form.append('competitor_phoneme', competitorPhoneme)
   form.append('audio', audio, 'recording.webm')
 
   const response = await fetch(`${BACKEND_URL}/api/drills/minimal-pair/score`, {

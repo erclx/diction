@@ -22,12 +22,18 @@ def get_scorer(request: Request) -> PassageScorer:
 def score_minimal_pair(
     scorer: Annotated[PassageScorer, Depends(get_scorer)],
     word: Annotated[str, Form()],
+    target_phoneme: Annotated[str, Form()],
+    competitor_phoneme: Annotated[str, Form()],
     audio: Annotated[UploadFile, File()],
 ) -> MinimalPairScoreResponse:
-    result = scorer.score(
-        word, audio.file.read(), min_clip_seconds=MIN_WORD_CLIP_SECONDS
+    result = scorer.score_target_contrast(
+        word,
+        audio.file.read(),
+        target_phoneme=target_phoneme,
+        competitor_phoneme=competitor_phoneme,
+        min_clip_seconds=MIN_WORD_CLIP_SECONDS,
     )
     return MinimalPairScoreResponse(
         phoneme_quality=result.phoneme_quality,
-        flagged_phonemes=[flag.phoneme for flag in result.flagged_words],
+        flagged_phonemes=[target_phoneme] if result.target_substituted else [],
     )
