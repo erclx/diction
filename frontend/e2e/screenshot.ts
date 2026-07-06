@@ -34,7 +34,21 @@ const MOCK_PRODUCTION_PAIRS = [
   },
 ]
 
-const MOCK_DRILL_SCORE = { phoneme_quality: 72 }
+const MOCK_DRILL_PASS = {
+  said_expected_word: true,
+  phoneme_quality: 82,
+  flagged_phonemes: [],
+}
+const MOCK_DRILL_RETRY = {
+  said_expected_word: true,
+  phoneme_quality: 41,
+  flagged_phonemes: ['ɔ'],
+}
+const MOCK_DRILL_UNRECOGNIZED = {
+  said_expected_word: false,
+  phoneme_quality: 0,
+  flagged_phonemes: [],
+}
 
 const MOCK_SESSIONS = [
   {
@@ -298,10 +312,22 @@ async function driveToProductionIdle(page: Page): Promise<void> {
   await page.getByRole('button', { name: 'Record', exact: true }).waitFor()
 }
 
-async function driveToProductionScored(page: Page): Promise<void> {
+async function driveToProductionPass(page: Page): Promise<void> {
   await openProduction(page)
-  await scoreDrill(page, MOCK_DRILL_SCORE)
-  await page.getByText(/higher is cleaner/).waitFor()
+  await scoreDrill(page, MOCK_DRILL_PASS)
+  await page.getByText(/landed/).waitFor()
+}
+
+async function driveToProductionRetry(page: Page): Promise<void> {
+  await openProduction(page)
+  await scoreDrill(page, MOCK_DRILL_RETRY)
+  await page.getByText(/try/).waitFor()
+}
+
+async function driveToProductionUnrecognized(page: Page): Promise<void> {
+  await openProduction(page)
+  await scoreDrill(page, MOCK_DRILL_UNRECOGNIZED)
+  await page.getByText(/Didn’t catch/).waitFor()
 }
 
 const NARROW_VIEWPORT = { width: 390, height: 800 }
@@ -310,7 +336,13 @@ const CASES: readonly CaptureCase[] = [
   { section: 'passage-scoring', name: 'idle' },
   { section: 'passage-scoring', name: 'results', act: driveToResults },
   { section: 'production-drill', name: 'idle', act: driveToProductionIdle },
-  { section: 'production-drill', name: 'scored', act: driveToProductionScored },
+  { section: 'production-drill', name: 'pass', act: driveToProductionPass },
+  { section: 'production-drill', name: 'retry', act: driveToProductionRetry },
+  {
+    section: 'production-drill',
+    name: 'unrecognized',
+    act: driveToProductionUnrecognized,
+  },
   { section: 'session-history', name: 'list', act: driveToHistoryList },
   { section: 'session-history', name: 'detail', act: driveToHistoryDetail },
   { section: 'session-history', name: 'empty', act: driveToHistoryEmpty },

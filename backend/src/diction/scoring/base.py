@@ -1,13 +1,24 @@
 from typing import Protocol
 
 from diction.scoring.audio import MIN_CLIP_SECONDS
-from diction.scoring.types import FlaggedWordResult, ScoreResult
+from diction.scoring.types import ContrastResult, FlaggedWordResult, ScoreResult
 
 
 class PassageScorer(Protocol):
     def score(
         self, passage: str, audio: bytes, min_clip_seconds: float = MIN_CLIP_SECONDS
     ) -> ScoreResult: ...
+
+    def score_target_contrast(
+        self,
+        word: str,
+        audio: bytes,
+        target_phoneme: str,
+        competitor_phoneme: str,
+        min_clip_seconds: float = MIN_CLIP_SECONDS,
+    ) -> ContrastResult: ...
+
+    def recognize_word(self, audio: bytes, expected_words: list[str]) -> str: ...
 
 
 class StubScorer:
@@ -26,3 +37,16 @@ class StubScorer:
                 FlaggedWordResult(word='thought', start=1.20, end=1.55, phoneme='θ')
             ],
         )
+
+    def score_target_contrast(
+        self,
+        word: str,
+        audio: bytes,
+        target_phoneme: str,
+        competitor_phoneme: str,
+        min_clip_seconds: float = MIN_CLIP_SECONDS,
+    ) -> ContrastResult:
+        return ContrastResult(phoneme_quality=90.0, target_substituted=False)
+
+    def recognize_word(self, audio: bytes, expected_words: list[str]) -> str:
+        return ''

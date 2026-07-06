@@ -6,21 +6,35 @@ import { ClipTooWeakSchema } from '@/features/passage-scoring/score-result'
 import { ClipTooWeakError } from '@/features/passage-scoring/use-score-passage'
 
 export const WordScoreSchema = z.object({
+  said_expected_word: z.boolean(),
   phoneme_quality: z.number(),
+  flagged_phonemes: z.array(z.string()),
 })
 
 export type WordScore = z.infer<typeof WordScoreSchema>
 
 export interface ScoreWordInput {
   word: string
+  competitorWord: string
+  targetPhoneme: string
+  competitorPhoneme: string
   audio: Blob
 }
 
 const SCORE_TIMEOUT_MS = 60_000
 
-async function scoreWord({ word, audio }: ScoreWordInput): Promise<WordScore> {
+async function scoreWord({
+  word,
+  competitorWord,
+  targetPhoneme,
+  competitorPhoneme,
+  audio,
+}: ScoreWordInput): Promise<WordScore> {
   const form = new FormData()
   form.append('word', word)
+  form.append('competitor_word', competitorWord)
+  form.append('target_phoneme', targetPhoneme)
+  form.append('competitor_phoneme', competitorPhoneme)
   form.append('audio', audio, 'recording.webm')
 
   const response = await fetch(`${BACKEND_URL}/api/drills/minimal-pair/score`, {

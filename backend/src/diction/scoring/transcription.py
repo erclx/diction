@@ -25,8 +25,19 @@ class WhisperTranscriber:
             compute_type=compute_type,
         )
 
-    def word_timings(self, audio: bytes) -> list[tuple[str, float, float]]:
-        segments, _ = self._model.transcribe(io.BytesIO(audio), word_timestamps=True)
+    def word_timings(
+        self, audio: bytes, prompt: str | None = None
+    ) -> list[tuple[str, float, float]]:
+        """Word-level timings. `prompt` biases decoding toward a known vocabulary
+        via `initial_prompt`, which the drill uses to recognize a short isolated
+        word Whisper would otherwise get wrong. Passage and prosody callers leave
+        it unset for an unbiased transcription."""
+        segments, _ = self._model.transcribe(
+            io.BytesIO(audio),
+            word_timestamps=True,
+            initial_prompt=prompt,
+            beam_size=5,
+        )
         return [
             (word.word, word.start, word.end)
             for segment in segments

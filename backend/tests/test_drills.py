@@ -13,47 +13,54 @@ from diction.scoring.audio import (
     MIN_WORD_CLIP_SECONDS,
     ClipTooWeakError,
 )
-from diction.scoring.types import FlaggedWordResult, ScoreResult
+from diction.scoring.types import ContrastResult
 from diction.storage import sessions as sessions_storage
 
 
 class FakeScorer:
-    def __init__(self, result: ScoreResult) -> None:
+    def __init__(self, result: ContrastResult, heard: str = 'walk') -> None:
         self._result = result
+        self._heard = heard
         self.received_min_clip_seconds: float | None = None
+        self.scored = False
 
-    def score(
-        self, passage: str, audio: bytes, min_clip_seconds: float = MIN_CLIP_SECONDS
-    ) -> ScoreResult:
+    def recognize_word(self, audio: bytes, expected_words: list[str]) -> str:
+        return self._heard
+
+    def score_target_contrast(
+        self,
+        word: str,
+        audio: bytes,
+        target_phoneme: str,
+        competitor_phoneme: str,
+        min_clip_seconds: float = MIN_CLIP_SECONDS,
+    ) -> ContrastResult:
+        self.scored = True
         self.received_min_clip_seconds = min_clip_seconds
         return self._result
 
 
 class RaisingScorer:
-    def score(
-        self, passage: str, audio: bytes, min_clip_seconds: float = MIN_CLIP_SECONDS
-    ) -> ScoreResult:
+    def recognize_word(self, audio: bytes, expected_words: list[str]) -> str:
+        return ''
+
+    def score_target_contrast(
+        self,
+        word: str,
+        audio: bytes,
+        target_phoneme: str,
+        competitor_phoneme: str,
+        min_clip_seconds: float = MIN_CLIP_SECONDS,
+    ) -> ContrastResult:
         raise ClipTooWeakError('duration=0.10s below 1.0s minimum')
 
 
-def _clean_result() -> ScoreResult:
-    return ScoreResult(
-        completeness=100.0,
-        accuracy=96.0,
-        fluency=94.0,
-        phoneme_quality=97.0,
-        flagged_words=[],
-    )
+def _clean_result() -> ContrastResult:
+    return ContrastResult(phoneme_quality=97.0, target_substituted=False)
 
 
-def _flagged_result() -> ScoreResult:
-    return ScoreResult(
-        completeness=100.0,
-        accuracy=70.0,
-        fluency=80.0,
-        phoneme_quality=60.0,
-        flagged_words=[FlaggedWordResult(word='walk', start=0.1, end=0.5, phoneme='ɔ')],
-    )
+def _substituted_result() -> ContrastResult:
+    return ContrastResult(phoneme_quality=60.0, target_substituted=True)
 
 
 @pytest.fixture
@@ -79,12 +86,17 @@ def client(engine: Engine) -> Iterator[TestClient]:
 def _post(client: TestClient) -> object:
     return client.post(
         '/api/drills/minimal-pair/score',
-        data={'word': 'walk'},
+        data={
+            'word': 'walk',
+            'competitor_word': 'wok',
+            'target_phoneme': 'ɔ',
+            'competitor_phoneme': 'ɒ',
+        },
         files={'audio': ('clip.webm', b'fake-bytes', 'audio/webm')},
     )
 
 
-def test_clean_word_returns_its_phoneme_quality_and_writes_no_session(
+def test_correct_target_returns_no_flagged_phonemes_and_writes_no_session(
     client: TestClient, engine: Engine
 ) -> None:
     client.app.dependency_overrides[get_scorer] = lambda: FakeScorer(_clean_result())
@@ -92,20 +104,54 @@ def test_clean_word_returns_its_phoneme_quality_and_writes_no_session(
     response = _post(client)
 
     assert response.status_code == 200
+    assert response.json()['said_expected_word'] is True
     assert response.json()['phoneme_quality'] == 97.0
+    assert response.json()['flagged_phonemes'] == []
     with Session(engine) as session:
         assert sessions_storage.list_sessions(session) == []
 
 
-def test_degraded_word_returns_a_lower_phoneme_quality(
+def test_unrecognized_word_skips_scoring_and_writes_no_session(
     client: TestClient, engine: Engine
 ) -> None:
-    client.app.dependency_overrides[get_scorer] = lambda: FakeScorer(_flagged_result())
+    scorer = FakeScorer(_clean_result(), heard='rabbit')
+    client.app.dependency_overrides[get_scorer] = lambda: scorer
+
+    response = _post(client)
+
+    assert response.status_code == 200
+    assert response.json()['said_expected_word'] is False
+    assert response.json()['flagged_phonemes'] == []
+    assert scorer.scored is False
+    with Session(engine) as session:
+        assert sessions_storage.list_sessions(session) == []
+
+
+def test_competitor_word_still_earns_a_verdict(
+    client: TestClient, engine: Engine
+) -> None:
+    scorer = FakeScorer(_substituted_result(), heard='wok')
+    client.app.dependency_overrides[get_scorer] = lambda: scorer
+
+    response = _post(client)
+
+    assert response.status_code == 200
+    assert response.json()['said_expected_word'] is True
+    assert scorer.scored is True
+
+
+def test_substituted_target_returns_its_flagged_phoneme_and_writes_no_session(
+    client: TestClient, engine: Engine
+) -> None:
+    client.app.dependency_overrides[get_scorer] = lambda: FakeScorer(
+        _substituted_result()
+    )
 
     response = _post(client)
 
     assert response.status_code == 200
     assert response.json()['phoneme_quality'] == 60.0
+    assert response.json()['flagged_phonemes'] == ['ɔ']
     with Session(engine) as session:
         assert sessions_storage.list_sessions(session) == []
 

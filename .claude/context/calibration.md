@@ -10,6 +10,7 @@ The offline supervised-learning experiment that sets the pronunciation-flag thre
 ## Layer responsibilities
 
 - `backend/calibration/` owns the harness: `measure.py` runs the GPU sweep, `analyze.py` fits, `validate.py` checks on held-out data, `plots.py` draws the figures.
+- `contrast_eval.py` and `contrast_plots.py` are a separate eval, not part of the threshold fit. They measure whether the production drill's pass-or-retry verdict tells the target sound of a minimal pair from its competitor, writing `contrast_eval.json` and `figures/contrast_verdict.png`. The findings are in `backend/calibration/CONTRAST_EVAL.md`.
 - `backend/calibration/baselines.json` and `distributions.json` own the fitted data. `src/diction/scoring/phoneme_baselines.py` is the shipped table the app imports, generated from `baselines.json`.
 - The harness stays out of `src/` because it is offline tooling with research-only dependencies (`matplotlib`, `seaborn`, `datasets`) the app never imports. The result belongs in `src`, the experiment does not.
 
@@ -33,4 +34,5 @@ The offline supervised-learning experiment that sets the pronunciation-flag thre
 - There are no truly native speakers in the corpus. The clean baseline comes from accuracy-2 phonemes, not native reference recordings, and that limit is worth remembering before trusting an absolute baseline.
 - An earlier spike concluded vowels like `iː` could not separate. That was an artifact of comparing clean speech against borderline reads. Against clearly-wrong reads every phoneme separates, `iː` at an AUC of 0.98.
 - `FLAG_K = 1.6` accepts about 8% false flags per phoneme on native speech. In the single-word drill that is one flag decision, but `gop.py` also feeds passage scoring, where a 30-phoneme read compounds to roughly two spurious flags per passage. Watch this once passages surface the calibrated flag, and lower the rate there if it reads as noise.
+- The absolute flag cannot judge a minimal-pair substitution. Its native band answers "was this an acceptable `θ`", but a drill asks "was this `θ` rather than `f`". Wide-band sounds like `θ` and `ð` have bands loose enough to accept the wrong word, so the production drill uses the competitor check in `score_target_contrast`, not the flag. See `CONTRAST_EVAL.md`.
 - Sources: the [speechocean762 dataset card](https://huggingface.co/datasets/mispeech/speechocean762) and the [corpus paper](https://ar5iv.labs.arxiv.org/html/2104.01378).

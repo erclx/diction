@@ -18,6 +18,8 @@ interface Rep {
   target: string
   other: string
   label: string
+  targetPhoneme: string
+  competitorPhoneme: string
 }
 
 function buildReps(contrasts: MinimalPairContrast[]): Rep[] {
@@ -26,6 +28,8 @@ function buildReps(contrasts: MinimalPairContrast[]): Rep[] {
       target: pair.word_a,
       other: pair.word_b,
       label: contrast.label,
+      targetPhoneme: contrast.phoneme_a,
+      competitorPhoneme: contrast.phoneme_b,
     })),
   )
 }
@@ -48,7 +52,13 @@ export function ProductionDrill() {
     if (!recorder.recording || !rep) {
       return
     }
-    scoring.mutate({ word: rep.target, audio: recorder.recording.blob })
+    scoring.mutate({
+      word: rep.target,
+      competitorWord: rep.other,
+      targetPhoneme: rep.targetPhoneme,
+      competitorPhoneme: rep.competitorPhoneme,
+      audio: recorder.recording.blob,
+    })
   }
 
   function handleRecordAgain() {
@@ -63,6 +73,14 @@ export function ProductionDrill() {
   }
 
   const isClipTooWeak = scoring.error instanceof ClipTooWeakError
+  const saidExpectedWord = scoring.isSuccess && scoring.data.said_expected_word
+  const isUnrecognized = scoring.isSuccess && !scoring.data.said_expected_word
+  const isTargetFlagged =
+    saidExpectedWord &&
+    rep !== null &&
+    scoring.data.flagged_phonemes.includes(rep.targetPhoneme)
+  const isPass = saidExpectedWord && !isTargetFlagged
+  const isRetry = saidExpectedWord && isTargetFlagged
 
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-6 p-6">
@@ -189,27 +207,49 @@ export function ProductionDrill() {
             </p>
           )}
 
-          {scoring.isSuccess && (
+          {isUnrecognized && (
             <div className="flex flex-col items-center gap-3">
-              <div
+              <p
                 role="status"
-                className="flex w-full flex-col items-center gap-1 rounded-lg border border-border bg-muted/40 p-4 text-center"
+                className="w-full rounded-lg border border-warning/50 bg-warning/10 p-3 text-center text-sm text-warning"
               >
-                <span className="text-3xl font-semibold tabular-nums">
-                  {Math.round(scoring.data.phoneme_quality)}
-                </span>
-                <span className="text-sm text-muted-foreground">
-                  Sound quality for “{rep.target}”, higher is cleaner
-                </span>
-                <span className="text-xs text-muted-foreground">
-                  Compare across your own tries, not between words
-                </span>
-              </div>
+                Didn’t catch “{rep.target}”, say it again.
+              </p>
+              <Button variant="outline" onClick={handleRecordAgain}>
+                <RotateCcw />
+                Try again
+              </Button>
+            </div>
+          )}
+
+          {saidExpectedWord && (
+            <div className="flex flex-col items-center gap-3">
+              {isPass ? (
+                <p
+                  role="status"
+                  className="w-full rounded-lg border border-success/50 bg-success/10 p-3 text-center text-sm text-success"
+                >
+                  Nice, “{rep.target}” landed.
+                </p>
+              ) : (
+                <p
+                  role="status"
+                  className="w-full rounded-lg border border-warning/50 bg-warning/10 p-3 text-center text-sm text-warning"
+                >
+                  Closer to “{rep.other}”, try “{rep.target}” again.
+                </p>
+              )}
+              <p className="text-xs text-muted-foreground">
+                Sound quality {Math.round(scoring.data.phoneme_quality)},
+                compare across your own tries
+              </p>
               <div className="flex gap-2">
-                <Button variant="outline" onClick={handleRecordAgain}>
-                  <RotateCcw />
-                  Try again
-                </Button>
+                {isRetry && (
+                  <Button variant="outline" onClick={handleRecordAgain}>
+                    <RotateCcw />
+                    Try again
+                  </Button>
+                )}
                 <Button onClick={handleNext}>
                   Next word
                   <ArrowRight />
