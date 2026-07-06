@@ -18,6 +18,7 @@ interface Rep {
   target: string
   other: string
   label: string
+  targetPhoneme: string
 }
 
 function buildReps(contrasts: MinimalPairContrast[]): Rep[] {
@@ -26,6 +27,7 @@ function buildReps(contrasts: MinimalPairContrast[]): Rep[] {
       target: pair.word_a,
       other: pair.word_b,
       label: contrast.label,
+      targetPhoneme: contrast.phoneme_a,
     })),
   )
 }
@@ -63,6 +65,12 @@ export function ProductionDrill() {
   }
 
   const isClipTooWeak = scoring.error instanceof ClipTooWeakError
+  const isTargetFlagged =
+    scoring.isSuccess &&
+    rep !== null &&
+    scoring.data.flagged_phonemes.includes(rep.targetPhoneme)
+  const isPass = scoring.isSuccess && !isTargetFlagged
+  const isRetry = scoring.isSuccess && isTargetFlagged
 
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-6 p-6">
@@ -191,25 +199,32 @@ export function ProductionDrill() {
 
           {scoring.isSuccess && (
             <div className="flex flex-col items-center gap-3">
-              <div
-                role="status"
-                className="flex w-full flex-col items-center gap-1 rounded-lg border border-border bg-muted/40 p-4 text-center"
-              >
-                <span className="text-3xl font-semibold tabular-nums">
-                  {Math.round(scoring.data.phoneme_quality)}
-                </span>
-                <span className="text-sm text-muted-foreground">
-                  Sound quality for “{rep.target}”, higher is cleaner
-                </span>
-                <span className="text-xs text-muted-foreground">
-                  Compare across your own tries, not between words
-                </span>
-              </div>
+              {isPass ? (
+                <p
+                  role="status"
+                  className="w-full rounded-lg border border-success/50 bg-success/10 p-3 text-center text-sm text-success"
+                >
+                  Nice, “{rep.target}” landed.
+                </p>
+              ) : (
+                <p
+                  role="status"
+                  className="w-full rounded-lg border border-warning/50 bg-warning/10 p-3 text-center text-sm text-warning"
+                >
+                  Not quite, try “{rep.target}” again.
+                </p>
+              )}
+              <p className="text-xs text-muted-foreground">
+                Sound quality {Math.round(scoring.data.phoneme_quality)},
+                compare across your own tries
+              </p>
               <div className="flex gap-2">
-                <Button variant="outline" onClick={handleRecordAgain}>
-                  <RotateCcw />
-                  Try again
-                </Button>
+                {isRetry && (
+                  <Button variant="outline" onClick={handleRecordAgain}>
+                    <RotateCcw />
+                    Try again
+                  </Button>
+                )}
                 <Button onClick={handleNext}>
                   Next word
                   <ArrowRight />

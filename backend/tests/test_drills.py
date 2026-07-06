@@ -84,7 +84,7 @@ def _post(client: TestClient) -> object:
     )
 
 
-def test_clean_word_returns_its_phoneme_quality_and_writes_no_session(
+def test_clean_word_returns_no_flagged_phonemes_and_writes_no_session(
     client: TestClient, engine: Engine
 ) -> None:
     client.app.dependency_overrides[get_scorer] = lambda: FakeScorer(_clean_result())
@@ -93,11 +93,12 @@ def test_clean_word_returns_its_phoneme_quality_and_writes_no_session(
 
     assert response.status_code == 200
     assert response.json()['phoneme_quality'] == 97.0
+    assert response.json()['flagged_phonemes'] == []
     with Session(engine) as session:
         assert sessions_storage.list_sessions(session) == []
 
 
-def test_degraded_word_returns_a_lower_phoneme_quality(
+def test_degraded_word_returns_its_flagged_phoneme_and_writes_no_session(
     client: TestClient, engine: Engine
 ) -> None:
     client.app.dependency_overrides[get_scorer] = lambda: FakeScorer(_flagged_result())
@@ -106,6 +107,7 @@ def test_degraded_word_returns_a_lower_phoneme_quality(
 
     assert response.status_code == 200
     assert response.json()['phoneme_quality'] == 60.0
+    assert response.json()['flagged_phonemes'] == ['ɔ']
     with Session(engine) as session:
         assert sessions_storage.list_sessions(session) == []
 

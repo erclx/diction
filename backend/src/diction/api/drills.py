@@ -11,6 +11,7 @@ router = APIRouter(tags=['drills'])
 
 class MinimalPairScoreResponse(BaseModel):
     phoneme_quality: float
+    flagged_phonemes: list[str]
 
 
 def get_scorer(request: Request) -> PassageScorer:
@@ -26,4 +27,7 @@ def score_minimal_pair(
     result = scorer.score(
         word, audio.file.read(), min_clip_seconds=MIN_WORD_CLIP_SECONDS
     )
-    return MinimalPairScoreResponse(phoneme_quality=result.phoneme_quality)
+    return MinimalPairScoreResponse(
+        phoneme_quality=result.phoneme_quality,
+        flagged_phonemes=[flag.phoneme for flag in result.flagged_words],
+    )

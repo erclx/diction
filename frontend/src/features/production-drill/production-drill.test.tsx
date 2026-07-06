@@ -34,31 +34,50 @@ async function recordAndCheck(): Promise<void> {
 }
 
 describe('ProductionDrill', () => {
-  it('should show the sound quality score returned for the clip', async () => {
+  it('should show a pass verdict when the target phoneme is clean', async () => {
     server.use(
-      http.post(SCORE_URL, () => HttpResponse.json({ phoneme_quality: 82.4 })),
+      http.post(SCORE_URL, () =>
+        HttpResponse.json({ phoneme_quality: 82.4, flagged_phonemes: [] }),
+      ),
     )
     renderWithProviders(<ProductionDrill />)
 
     await recordAndCheck()
 
     await waitFor(() =>
-      expect(screen.getByRole('status')).toHaveTextContent('82'),
+      expect(screen.getByRole('status')).toHaveTextContent(/landed/),
+    )
+    expect(screen.getByText(/Sound quality 82/)).toBeInTheDocument()
+  })
+
+  it('should show a retry verdict when the target phoneme is flagged', async () => {
+    server.use(
+      http.post(SCORE_URL, () =>
+        HttpResponse.json({ phoneme_quality: 41, flagged_phonemes: ['ɔ'] }),
+      ),
+    )
+    renderWithProviders(<ProductionDrill />)
+
+    await recordAndCheck()
+
+    await waitFor(() =>
+      expect(screen.getByRole('status')).toHaveTextContent(/try/),
     )
   })
 
-  it('should show a low score as a number without a pass or retry verdict', async () => {
+  it('should show a pass verdict when only a non-target phoneme is flagged', async () => {
     server.use(
-      http.post(SCORE_URL, () => HttpResponse.json({ phoneme_quality: 41 })),
+      http.post(SCORE_URL, () =>
+        HttpResponse.json({ phoneme_quality: 88, flagged_phonemes: ['ɒ'] }),
+      ),
     )
     renderWithProviders(<ProductionDrill />)
 
     await recordAndCheck()
 
     await waitFor(() =>
-      expect(screen.getByRole('status')).toHaveTextContent('41'),
+      expect(screen.getByRole('status')).toHaveTextContent(/landed/),
     )
-    expect(screen.getByRole('status')).not.toHaveTextContent(/landed|try/i)
   })
 
   it('should surface an actionable message when the clip is too weak', async () => {

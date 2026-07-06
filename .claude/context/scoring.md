@@ -39,7 +39,7 @@ The flag threshold and `normalize_gop` are calibrated, not hand-tuned. The exper
 - **Per-phoneme flag, not one global cutoff.** Native GOP baselines differ sharply by phoneme (clean means span -0.13 for `f` to -2.64 for `θ`), so a single constant cannot separate good from bad across them. `phoneme_baselines.py` holds each phoneme's native mean and standard deviation. `gop.py` flags the most abnormal phoneme in a word when it falls more than `FLAG_K` (1.6) standard deviations below its own mean. That targets about 8% false flags on native speech and catches about 77% of clearly-wrong renderings.
 - **Reliability gate.** Only phonemes whose GOP separates clean from clearly-wrong (AUC at least 0.75) get a baseline and can flag. All 27 fitted phonemes clear it, including the vowels the spike thought were unresolvable. A phoneme absent from the table is uncalibrated and never flags, so passage scoring never false-flags a sound it cannot judge.
 - **`normalize_gop` slope.** Set so a clean read (median GOP -0.13) lands near 99 and a clearly-wrong one (median GOP -6.34) near 37. This drives the shown `accuracy` and `phoneme_quality`.
-- **Out of scope.** `fluency` stays a crude pause-ratio proxy, calibrated only when the prosody features land. The drill re-showing a pass-or-retry verdict off the now-trustworthy flag is a separate follow-up.
+- **Out of scope.** `fluency` stays a crude pause-ratio proxy, calibrated only when the prosody features land. The production drill now re-shows a pass-or-retry verdict off this calibrated flag, keyed to the target phoneme in `api/drills.py`. See `.claude/context/api.md`.
 
 ## Hidden contracts
 

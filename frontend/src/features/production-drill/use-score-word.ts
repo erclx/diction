@@ -7,6 +7,7 @@ import { ClipTooWeakError } from '@/features/passage-scoring/use-score-passage'
 
 export const WordScoreSchema = z.object({
   phoneme_quality: z.number(),
+  flagged_phonemes: z.array(z.string()),
 })
 
 export type WordScore = z.infer<typeof WordScoreSchema>

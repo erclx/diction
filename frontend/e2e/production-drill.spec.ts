@@ -12,7 +12,8 @@ const MOCK_PAIRS = [
   },
 ]
 
-const WORD_SCORE = { phoneme_quality: 72 }
+const PASS_SCORE = { phoneme_quality: 82, flagged_phonemes: [] }
+const RETRY_SCORE = { phoneme_quality: 41, flagged_phonemes: ['ɔ'] }
 
 async function recordClip(page: Page): Promise<void> {
   await page.getByRole('button', { name: 'Record', exact: true }).click()
@@ -30,16 +31,16 @@ test.describe('production drill', () => {
     await page.route(PAIRS_URL, (route) => route.fulfill({ json: MOCK_PAIRS }))
   })
 
-  test('should show the sound quality score and advance to the next word', async ({
+  test('should show a pass verdict and advance to the next word', async ({
     page,
   }) => {
-    await page.route(SCORE_URL, (route) => route.fulfill({ json: WORD_SCORE }))
+    await page.route(SCORE_URL, (route) => route.fulfill({ json: PASS_SCORE }))
     await page.goto('/drills/production')
 
     await recordClip(page)
     await page.getByRole('button', { name: 'Check' }).click()
 
-    await expect(page.getByRole('status')).toContainText('72')
+    await expect(page.getByRole('status')).toContainText('landed')
 
     await page.getByRole('button', { name: 'Next word' }).click()
 
@@ -49,16 +50,16 @@ test.describe('production drill', () => {
     await expect(page.getByRole('status')).toBeHidden()
   })
 
-  test('should let the user re-record the same word with try again', async ({
+  test('should show a retry verdict and let the user try the word again', async ({
     page,
   }) => {
-    await page.route(SCORE_URL, (route) => route.fulfill({ json: WORD_SCORE }))
+    await page.route(SCORE_URL, (route) => route.fulfill({ json: RETRY_SCORE }))
     await page.goto('/drills/production')
 
     await recordClip(page)
     await page.getByRole('button', { name: 'Check' }).click()
 
-    await expect(page.getByRole('status')).toContainText('72')
+    await expect(page.getByRole('status')).toContainText('try')
 
     await page.getByRole('button', { name: 'Try again' }).click()
 
