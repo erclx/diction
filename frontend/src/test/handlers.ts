@@ -42,6 +42,23 @@ export const handlers = [
   http.post('http://localhost:8000/api/prosody/score', () =>
     HttpResponse.json({ rhythm_match: 88, intonation_match: 84 }),
   ),
+  http.post('http://localhost:8000/api/prosody/analyze', () =>
+    HttpResponse.json({
+      rhythm_match: 88,
+      intonation_match: 84,
+      reference_contour: [0, 1.5, 3, 1, -1, -2.5, -1, 0.5],
+      learner_contour: [0, 1, 2, 0.5, -0.5, -1.5, -0.5, 0],
+      reference_timings: [
+        [0, 0.3],
+        [0.3, 0.7],
+        [0.7, 1.4],
+      ],
+      stress_marks: [
+        { word: 'the', syllables: ['ðə'], stress_index: 0 },
+        { word: 'banana', syllables: ['bə', 'nɑː', 'nə'], stress_index: 1 },
+      ],
+    }),
+  ),
   http.get('http://localhost:8000/api/reference', () =>
     HttpResponse.arrayBuffer(new Uint8Array([82, 73, 70, 70]).buffer, {
       headers: { 'Content-Type': 'audio/wav' },

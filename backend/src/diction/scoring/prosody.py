@@ -27,10 +27,31 @@ RHYTHM_TOLERANCE = 0.25
 CONTOUR_RESAMPLE_POINTS = 64
 
 
+PRIMARY_STRESS = 'ˈ'
+SECONDARY_STRESS = 'ˌ'
+
+
 @dataclass(frozen=True, slots=True)
 class ProsodyResult:
     rhythm_match: float
     intonation_match: float
+
+
+@dataclass(frozen=True, slots=True)
+class StressMark:
+    word: str
+    syllables: list[str]
+    stress_index: int
+
+
+@dataclass(frozen=True, slots=True)
+class ProsodyAnalysis:
+    rhythm_match: float
+    intonation_match: float
+    reference_contour: list[float]
+    learner_contour: list[float]
+    reference_timings: list[tuple[float, float]]
+    stress_marks: list[StressMark]
 
 
 def compare_prosody(
@@ -43,6 +64,67 @@ def compare_prosody(
         rhythm_match=rhythm_match(reference_timings, learner_timings),
         intonation_match=intonation_match(reference_pitch, learner_pitch),
     )
+
+
+def analyze_prosody(
+    reference_pitch: list[float],
+    learner_pitch: list[float],
+    reference_timings: list[tuple[float, float]],
+    learner_timings: list[tuple[float, float]],
+    stress_marks: list[StressMark],
+) -> ProsodyAnalysis:
+    """The richer projection the stress-and-intonation surface draws. It carries
+    the same two match scalars the scalar route returns, plus the resampled
+    reference and learner contours, the reference word timings, and the expected
+    stress marks, so the client can draw the pitch shape and mark the stressed
+    syllables rather than reduce them to a number."""
+    result = compare_prosody(
+        reference_pitch, learner_pitch, reference_timings, learner_timings
+    )
+    return ProsodyAnalysis(
+        rhythm_match=result.rhythm_match,
+        intonation_match=result.intonation_match,
+        reference_contour=_semitone_contour(reference_pitch),
+        learner_contour=_semitone_contour(learner_pitch),
+        reference_timings=reference_timings,
+        stress_marks=stress_marks,
+    )
+
+
+def build_stress_marks(
+    words: list[str], syllables_per_word: list[list[str]]
+) -> list[StressMark]:
+    """Place a stress mark on each reference word from its espeak syllables. The
+    primary-stress diacritic wins, the secondary falls back to it, and a word
+    with neither is marked on its first syllable. The diacritics are stripped
+    from the displayed syllables, since the highlight already carries the stress.
+    Model-free so it is unit-tested on synthetic syllable input."""
+    return [
+        _stress_mark(word, syllables)
+        for word, syllables in zip(words, syllables_per_word, strict=True)
+    ]
+
+
+def _stress_mark(word: str, syllables: list[str]) -> StressMark:
+    index = _stressed_syllable_index(syllables)
+    cleaned = [_strip_stress(syllable) for syllable in syllables]
+    return StressMark(word=word, syllables=cleaned, stress_index=index)
+
+
+def _stressed_syllable_index(syllables: list[str]) -> int:
+    for marker in (PRIMARY_STRESS, SECONDARY_STRESS):
+        for index, syllable in enumerate(syllables):
+            if marker in syllable:
+                return index
+    return 0
+
+
+def _strip_stress(syllable: str) -> str:
+    return syllable.replace(PRIMARY_STRESS, '').replace(SECONDARY_STRESS, '').strip()
+
+
+def _semitone_contour(pitch: list[float]) -> list[float]:
+    return _resample(_voiced_semitones(pitch), CONTOUR_RESAMPLE_POINTS)
 
 
 def intonation_match(reference_pitch: list[float], learner_pitch: list[float]) -> float:

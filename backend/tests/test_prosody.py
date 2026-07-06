@@ -6,7 +6,12 @@ from fastapi.testclient import TestClient
 from diction.api.prosody import get_prosody_scorer, get_synth
 from diction.app import create_app
 from diction.scoring.prosody import (
+    CONTOUR_RESAMPLE_POINTS,
+    ProsodyAnalysis,
     ProsodyResult,
+    StressMark,
+    analyze_prosody,
+    build_stress_marks,
     compare_prosody,
     intonation_match,
     rhythm_match,
@@ -88,14 +93,60 @@ def test_compare_prosody_returns_both_axes() -> None:
     assert result.intonation_match > 99.0
 
 
+def test_build_stress_marks_marks_the_primary_stressed_syllable() -> None:
+    marks = build_stress_marks(['banana'], [['bə', 'ˈnɑː', 'nə']])
+
+    assert marks == [
+        StressMark(word='banana', syllables=['bə', 'nɑː', 'nə'], stress_index=1)
+    ]
+
+
+def test_build_stress_marks_falls_back_to_the_first_syllable_without_a_mark() -> None:
+    marks = build_stress_marks(['the'], [['ðə']])
+
+    assert marks[0].stress_index == 0
+
+
+def test_build_stress_marks_uses_secondary_stress_when_no_primary_is_present() -> None:
+    marks = build_stress_marks(['deform'], [['diː', 'ˌfɔːm']])
+
+    assert marks[0].stress_index == 1
+
+
+def test_analyze_prosody_exposes_resampled_contours_and_the_scalars() -> None:
+    contour = _rising(20)
+    timings = [(0.0, 0.4), (0.4, 1.0)]
+    marks = [StressMark(word='hi', syllables=['haɪ'], stress_index=0)]
+
+    analysis = analyze_prosody(contour, contour, timings, timings, marks)
+
+    assert len(analysis.reference_contour) == CONTOUR_RESAMPLE_POINTS
+    assert len(analysis.learner_contour) == CONTOUR_RESAMPLE_POINTS
+    assert analysis.reference_timings == timings
+    assert analysis.stress_marks == marks
+    assert analysis.rhythm_match > 99.0
+    assert analysis.intonation_match > 99.0
+
+
 class FakeProsodyScorer:
-    def __init__(self, result: ProsodyResult) -> None:
+    def __init__(
+        self, result: ProsodyResult, analysis: ProsodyAnalysis | None = None
+    ) -> None:
         self._result = result
+        self._analysis = analysis
         self.received: tuple[bytes, bytes] | None = None
+        self.analyzed: tuple[str, bytes, bytes] | None = None
 
     def score(self, reference_audio: bytes, learner_audio: bytes) -> ProsodyResult:
         self.received = (reference_audio, learner_audio)
         return self._result
+
+    def analyze(
+        self, reference_text: str, reference_audio: bytes, learner_audio: bytes
+    ) -> ProsodyAnalysis:
+        assert self._analysis is not None
+        self.analyzed = (reference_text, reference_audio, learner_audio)
+        return self._analysis
 
 
 @pytest.fixture
@@ -152,5 +203,73 @@ def test_score_rejects_reference_text_over_the_length_limit(client: TestClient) 
     client.app.dependency_overrides[get_prosody_scorer] = lambda: scorer
 
     response = _post(client, reference_text='word ' * 200)
+
+    assert response.status_code == 422
+
+
+def _sample_analysis() -> ProsodyAnalysis:
+    return ProsodyAnalysis(
+        rhythm_match=72.0,
+        intonation_match=63.0,
+        reference_contour=[0.0, 1.0, 2.0],
+        learner_contour=[0.0, 0.5, 1.0],
+        reference_timings=[(0.0, 0.4), (0.4, 1.0)],
+        stress_marks=[
+            StressMark(word='banana', syllables=['bə', 'nɑː', 'nə'], stress_index=1)
+        ],
+    )
+
+
+def _post_analyze(client: TestClient, reference_text: str = 'the thick fog') -> object:
+    return client.post(
+        '/api/prosody/analyze',
+        data={'reference_text': reference_text},
+        files={'audio': ('clip.webm', b'fake-bytes', 'audio/webm')},
+    )
+
+
+def test_analyze_projects_the_full_contour_and_stress_payload(
+    client: TestClient,
+) -> None:
+    scorer = FakeProsodyScorer(
+        ProsodyResult(rhythm_match=72.0, intonation_match=63.0), _sample_analysis()
+    )
+    client.app.dependency_overrides[get_prosody_scorer] = lambda: scorer
+
+    response = _post_analyze(client)
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body['rhythm_match'] == 72.0
+    assert body['reference_contour'] == [0.0, 1.0, 2.0]
+    assert body['learner_contour'] == [0.0, 0.5, 1.0]
+    assert body['reference_timings'] == [[0.0, 0.4], [0.4, 1.0]]
+    assert body['stress_marks'] == [
+        {'word': 'banana', 'syllables': ['bə', 'nɑː', 'nə'], 'stress_index': 1}
+    ]
+
+
+def test_analyze_synthesizes_and_passes_the_reference_text(client: TestClient) -> None:
+    scorer = FakeProsodyScorer(
+        ProsodyResult(rhythm_match=72.0, intonation_match=63.0), _sample_analysis()
+    )
+    client.app.dependency_overrides[get_prosody_scorer] = lambda: scorer
+
+    _post_analyze(client)
+
+    assert scorer.analyzed is not None
+    reference_text, reference_audio, learner_audio = scorer.analyzed
+    assert reference_text == 'the thick fog'
+    assert reference_audio == StubSynthesizer().synthesize('the thick fog')
+    assert learner_audio == b'fake-bytes'
+
+
+def test_analyze_rejects_blank_reference_text(client: TestClient) -> None:
+    scorer = FakeProsodyScorer(
+        ProsodyResult(rhythm_match=50.0, intonation_match=50.0), _sample_analysis()
+    )
+    client.app.dependency_overrides[get_prosody_scorer] = lambda: scorer
+
+    response = _post_analyze(client, reference_text='   ')
 
     assert response.status_code == 422
