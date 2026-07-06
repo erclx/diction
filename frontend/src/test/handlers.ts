@@ -39,6 +39,9 @@ export const handlers = [
       flagged_phonemes: [],
     }),
   ),
+  http.post('http://localhost:8000/api/prosody/score', () =>
+    HttpResponse.json({ rhythm_match: 88, intonation_match: 84 }),
+  ),
   http.get('http://localhost:8000/api/reference', () =>
     HttpResponse.arrayBuffer(new Uint8Array([82, 73, 70, 70]).buffer, {
       headers: { 'Content-Type': 'audio/wav' },

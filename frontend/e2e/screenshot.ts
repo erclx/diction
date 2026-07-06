@@ -307,6 +307,27 @@ async function openProduction(page: Page): Promise<void> {
   await page.getByRole('link', { name: 'Production' }).click()
 }
 
+async function driveToShadowingScored(page: Page): Promise<void> {
+  await page.route('**/api/reference*', (route) =>
+    route.fulfill({
+      contentType: 'audio/wav',
+      body: Buffer.from([82, 73, 70, 70]),
+    }),
+  )
+  await page.route('**/api/prosody/score', (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ rhythm_match: 88, intonation_match: 84 }),
+    }),
+  )
+  await page.getByRole('link', { name: 'Shadowing' }).click()
+  await page.getByRole('button', { name: 'Record', exact: true }).click()
+  await page.getByRole('button', { name: 'Stop' }).click()
+  await page.getByRole('button', { name: 'Score' }).click()
+  await page.getByText('Rhythm match').waitFor()
+}
+
 async function driveToProductionIdle(page: Page): Promise<void> {
   await openProduction(page)
   await page.getByRole('button', { name: 'Record', exact: true }).waitFor()
@@ -335,6 +356,7 @@ const NARROW_VIEWPORT = { width: 390, height: 800 }
 const CASES: readonly CaptureCase[] = [
   { section: 'passage-scoring', name: 'idle' },
   { section: 'passage-scoring', name: 'results', act: driveToResults },
+  { section: 'shadowing', name: 'scored', act: driveToShadowingScored },
   { section: 'production-drill', name: 'idle', act: driveToProductionIdle },
   { section: 'production-drill', name: 'pass', act: driveToProductionPass },
   { section: 'production-drill', name: 'retry', act: driveToProductionRetry },
