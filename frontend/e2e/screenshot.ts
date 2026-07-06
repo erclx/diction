@@ -328,6 +328,46 @@ async function driveToShadowingScored(page: Page): Promise<void> {
   await page.getByText('Rhythm match').waitFor()
 }
 
+async function driveToStressScored(page: Page): Promise<void> {
+  await page.route('**/api/reference*', (route) =>
+    route.fulfill({
+      contentType: 'audio/wav',
+      body: Buffer.from([82, 73, 70, 70]),
+    }),
+  )
+  await page.route('**/api/prosody/analyze', (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        rhythm_match: 88,
+        intonation_match: 84,
+        reference_contour: [0, 1.5, 3, 2.2, 0.5, -1, -2.5, -1.5, 0.2, 1.4],
+        learner_contour: [0, 1, 2.4, 1.6, 0.2, -0.8, -1.8, -1, 0.4, 1],
+        reference_timings: [
+          [0, 0.3],
+          [0.3, 0.7],
+          [0.7, 1.4],
+        ],
+        stress_marks: [
+          { word: 'the', syllables: ['ðə'], stress_index: 0 },
+          {
+            word: 'photographer',
+            syllables: ['fə', 'tɒ', 'ɡrə', 'fə'],
+            stress_index: 1,
+          },
+          { word: 'took', syllables: ['tʊk'], stress_index: 0 },
+        ],
+      }),
+    }),
+  )
+  await page.getByRole('link', { name: 'Stress' }).click()
+  await page.getByRole('button', { name: 'Record', exact: true }).click()
+  await page.getByRole('button', { name: 'Stop' }).click()
+  await page.getByRole('button', { name: 'Analyze' }).click()
+  await page.getByText('Rhythm match').waitFor()
+}
+
 async function driveToProductionIdle(page: Page): Promise<void> {
   await openProduction(page)
   await page.getByRole('button', { name: 'Record', exact: true }).waitFor()
@@ -357,6 +397,7 @@ const CASES: readonly CaptureCase[] = [
   { section: 'passage-scoring', name: 'idle' },
   { section: 'passage-scoring', name: 'results', act: driveToResults },
   { section: 'shadowing', name: 'scored', act: driveToShadowingScored },
+  { section: 'stress-intonation', name: 'scored', act: driveToStressScored },
   { section: 'production-drill', name: 'idle', act: driveToProductionIdle },
   { section: 'production-drill', name: 'pass', act: driveToProductionPass },
   { section: 'production-drill', name: 'retry', act: driveToProductionRetry },

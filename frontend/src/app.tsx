@@ -1,5 +1,6 @@
 import {
   AudioLines,
+  AudioWaveform,
   Ear,
   History,
   Mic,
@@ -31,6 +32,7 @@ import { ProductionDrill } from '@/features/production-drill/production-drill'
 import { ProgressDashboard } from '@/features/progress-dashboard/progress-dashboard'
 import { SessionHistory } from '@/features/session-history/session-history'
 import { Shadowing } from '@/features/shadowing/shadowing'
+import { StressIntonation } from '@/features/stress-intonation/stress-intonation'
 import { TargetedDrills } from '@/features/targeted-drills/targeted-drills'
 import { ThemeToggle } from '@/features/theme/theme-toggle'
 import { cn } from '@/lib/utils'
@@ -88,6 +90,7 @@ const NAV_SECTIONS: readonly NavSection[] = [
       { to: '/drills', label: 'Targeted', icon: Target, end: true },
       { to: '/drills/ear-training', label: 'Ear training', icon: Ear },
       { to: '/drills/production', label: 'Production', icon: Speech },
+      { to: '/drills/stress', label: 'Stress', icon: AudioWaveform },
     ],
   },
   {
@@ -184,6 +187,7 @@ export function App() {
           <Route path="/drills" element={<TargetedDrills />} />
           <Route path="/drills/ear-training" element={<EarTraining />} />
           <Route path="/drills/production" element={<ProductionDrill />} />
+          <Route path="/drills/stress" element={<StressIntonation />} />
           <Route path="/history" element={<SessionHistory />} />
           <Route path="/history/:sessionId" element={<SessionHistory />} />
           <Route path="/progress" element={<ProgressDashboard />} />
