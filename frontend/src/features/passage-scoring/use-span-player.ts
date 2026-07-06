@@ -5,6 +5,19 @@ export interface SpanPlayer {
   canPlay: boolean
 }
 
+export const SPAN_PAD_SECONDS = 0.1
+
+export function padSpan(
+  start: number,
+  end: number,
+  clipDuration: number,
+  pad = SPAN_PAD_SECONDS,
+): { offset: number; duration: number } {
+  const offset = Math.max(0, start - pad)
+  const finish = Math.min(clipDuration, end + pad)
+  return { offset, duration: Math.max(0, finish - offset) }
+}
+
 export function useSpanPlayer(url: string | undefined): SpanPlayer {
   const contextRef = useRef<AudioContext | null>(null)
   const bufferRef = useRef<AudioBuffer | null>(null)
@@ -64,7 +77,8 @@ export function useSpanPlayer(url: string | undefined): SpanPlayer {
     source.connect(context.destination)
     sourceRef.current = source
 
-    const begin = () => source.start(0, start, Math.max(0, end - start))
+    const { offset, duration } = padSpan(start, end, buffer.duration)
+    const begin = () => source.start(0, offset, duration)
     if (context.state === 'suspended') {
       void context.resume().then(begin)
     } else {
