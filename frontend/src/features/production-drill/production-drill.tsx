@@ -54,6 +54,7 @@ export function ProductionDrill() {
     }
     scoring.mutate({
       word: rep.target,
+      competitorWord: rep.other,
       targetPhoneme: rep.targetPhoneme,
       competitorPhoneme: rep.competitorPhoneme,
       audio: recorder.recording.blob,
@@ -72,12 +73,14 @@ export function ProductionDrill() {
   }
 
   const isClipTooWeak = scoring.error instanceof ClipTooWeakError
+  const saidExpectedWord = scoring.isSuccess && scoring.data.said_expected_word
+  const isUnrecognized = scoring.isSuccess && !scoring.data.said_expected_word
   const isTargetFlagged =
-    scoring.isSuccess &&
+    saidExpectedWord &&
     rep !== null &&
     scoring.data.flagged_phonemes.includes(rep.targetPhoneme)
-  const isPass = scoring.isSuccess && !isTargetFlagged
-  const isRetry = scoring.isSuccess && isTargetFlagged
+  const isPass = saidExpectedWord && !isTargetFlagged
+  const isRetry = saidExpectedWord && isTargetFlagged
 
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-6 p-6">
@@ -204,7 +207,22 @@ export function ProductionDrill() {
             </p>
           )}
 
-          {scoring.isSuccess && (
+          {isUnrecognized && (
+            <div className="flex flex-col items-center gap-3">
+              <p
+                role="status"
+                className="w-full rounded-lg border border-warning/50 bg-warning/10 p-3 text-center text-sm text-warning"
+              >
+                Didn’t catch “{rep.target}”, say it again.
+              </p>
+              <Button variant="outline" onClick={handleRecordAgain}>
+                <RotateCcw />
+                Try again
+              </Button>
+            </div>
+          )}
+
+          {saidExpectedWord && (
             <div className="flex flex-col items-center gap-3">
               {isPass ? (
                 <p

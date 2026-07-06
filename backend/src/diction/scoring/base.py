@@ -18,6 +18,8 @@ class PassageScorer(Protocol):
         min_clip_seconds: float = MIN_CLIP_SECONDS,
     ) -> ContrastResult: ...
 
+    def recognize_word(self, audio: bytes, expected_words: list[str]) -> str: ...
+
 
 class StubScorer:
     """Canned scores behind the real contract. Used in CI, where there is no GPU
@@ -45,3 +47,6 @@ class StubScorer:
         min_clip_seconds: float = MIN_CLIP_SECONDS,
     ) -> ContrastResult:
         return ContrastResult(phoneme_quality=90.0, target_substituted=False)
+
+    def recognize_word(self, audio: bytes, expected_words: list[str]) -> str:
+        return ''

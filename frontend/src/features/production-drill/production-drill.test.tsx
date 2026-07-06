@@ -37,7 +37,11 @@ describe('ProductionDrill', () => {
   it('should show a pass verdict when the target phoneme is clean', async () => {
     server.use(
       http.post(SCORE_URL, () =>
-        HttpResponse.json({ phoneme_quality: 82.4, flagged_phonemes: [] }),
+        HttpResponse.json({
+          said_expected_word: true,
+          phoneme_quality: 82.4,
+          flagged_phonemes: [],
+        }),
       ),
     )
     renderWithProviders(<ProductionDrill />)
@@ -53,7 +57,11 @@ describe('ProductionDrill', () => {
   it('should show a retry verdict when the target phoneme is flagged', async () => {
     server.use(
       http.post(SCORE_URL, () =>
-        HttpResponse.json({ phoneme_quality: 41, flagged_phonemes: ['ɔ'] }),
+        HttpResponse.json({
+          said_expected_word: true,
+          phoneme_quality: 41,
+          flagged_phonemes: ['ɔ'],
+        }),
       ),
     )
     renderWithProviders(<ProductionDrill />)
@@ -68,7 +76,11 @@ describe('ProductionDrill', () => {
   it('should show a pass verdict when only a non-target phoneme is flagged', async () => {
     server.use(
       http.post(SCORE_URL, () =>
-        HttpResponse.json({ phoneme_quality: 88, flagged_phonemes: ['ɒ'] }),
+        HttpResponse.json({
+          said_expected_word: true,
+          phoneme_quality: 88,
+          flagged_phonemes: ['ɒ'],
+        }),
       ),
     )
     renderWithProviders(<ProductionDrill />)
@@ -77,6 +89,25 @@ describe('ProductionDrill', () => {
 
     await waitFor(() =>
       expect(screen.getByRole('status')).toHaveTextContent(/landed/),
+    )
+  })
+
+  it('should prompt to say it again when the word was not recognized', async () => {
+    server.use(
+      http.post(SCORE_URL, () =>
+        HttpResponse.json({
+          said_expected_word: false,
+          phoneme_quality: 0,
+          flagged_phonemes: [],
+        }),
+      ),
+    )
+    renderWithProviders(<ProductionDrill />)
+
+    await recordAndCheck()
+
+    await waitFor(() =>
+      expect(screen.getByRole('status')).toHaveTextContent(/Didn’t catch/),
     )
   })
 

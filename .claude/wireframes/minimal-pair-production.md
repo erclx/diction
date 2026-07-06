@@ -60,6 +60,16 @@ The verdict compares the two sounds of the pair. A pass means the target sound s
 │      [ ↺ Try again ]   [ Next word → ]        │ ← re-record the same word or advance
 ```
 
+## Not recognized
+
+```plaintext
+│                 [ ▶ 0:00 ──────── 🔊 ]        │
+│  ┌──────────────────────────────────────┐    │
+│  │   Didn't catch "walk", say it again.  │    │ ← word-identity gate, neither word of the pair heard
+│  └──────────────────────────────────────┘    │
+│              [ ↺ Try again ]                  │ ← re-record, no verdict and no progress number
+```
+
 ## Copy
 
 - Title: `Minimal pair production`
@@ -70,6 +80,7 @@ The verdict compares the two sounds of the pair. A pass means the target sound s
 - Controls: `Record`, `Stop`, `Record again`, `Check`, `Try again`, `Next word`
 - Pass verdict: `Nice, "<target>" landed.`, dynamic target word
 - Retry verdict: `Closer to "<other>", try "<target>" again.`, dynamic target and competing word
+- Not recognized: `Didn't catch "<target>", say it again.`, dynamic target word
 - Progress number: `Sound quality <phoneme_quality>, compare across your own tries`, dynamic, fine print
 - Clip too weak: `Recording was too short or quiet, record again and speak clearly.`
 - Generic failure: `Scoring failed, check the backend is running and try again.`
@@ -79,7 +90,8 @@ The verdict compares the two sounds of the pair. A pass means the target sound s
 
 - One rep shows a pair and asks for the highlighted target word. The record control cycles idle to recording to recorded, the same capture path as passage scoring.
 - Submitting scores the single target word through `POST /api/drills/minimal-pair/score`. The route runs the scorer but writes no session, so a drill rep never lands in history or the weak-sound rollup.
-- Submitting sends the target word and both contrast phonemes. The verdict is retry when the competing sound scored higher than the target at the target's own moment, pass otherwise. A pass offers only advance to the next rep, a retry offers re-record or advance. The rounded `phoneme_quality` number shows below the verdict as a secondary progress line, compared across the user's own attempts rather than against a fixed threshold.
+- Submitting sends the target word, the competing word, and both contrast phonemes. Before scoring, a Whisper gate checks the clip is one of the two words. When it hears a clear third word, the drill shows the not-recognized prompt and no verdict, since forcing the target sounds onto an unrelated word would otherwise give a confident but meaningless result.
+- The verdict is retry when the competing sound scored higher than the target at the target's own moment, pass otherwise. A pass offers only advance to the next rep, a retry offers re-record or advance. The rounded `phoneme_quality` number shows below the verdict as a secondary progress line, compared across the user's own attempts rather than against a fixed threshold.
 - Each rep drills the `word_a` side of a pair, which carries the harder target phoneme. The `word_b` side sets the contrast on screen but is not itself scored in v1.
 - A too-weak clip shows a re-record prompt distinct from a generic failure, matching the 422 boundary, so a short clip never reads as a false pass.
 - Reference playback speaks the target word, synthesized locally. Synthesis and caching live in `.claude/context/tts.md`.

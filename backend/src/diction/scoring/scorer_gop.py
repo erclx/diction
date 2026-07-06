@@ -65,6 +65,21 @@ class GopScorer:
             duration=duration,
         )
 
+    def recognize_word(self, audio: bytes, expected_words: list[str]) -> str:
+        """The first intelligible word Whisper hears, normalized, or an empty
+        string when it hears nothing. Used to gate a drill rep on word identity
+        before scoring, so a clip that is neither word of the pair never earns a
+        sound verdict. Decoding is biased toward the two expected words, since
+        Whisper gets a short isolated word wrong without that context, but the
+        bias does not force a match, so an unrelated word still comes back as
+        itself."""
+        prompt = f'The word is {expected_words[0]} or {expected_words[1]}.'
+        for word, _, _ in self._transcriber.word_timings(audio, prompt=prompt):
+            normalized = normalize_word(word)
+            if normalized:
+                return normalized
+        return ''
+
     def _transcribe(self, audio: bytes) -> list[tuple[str, float, float]]:
         return [
             (normalize_word(word), start, end)

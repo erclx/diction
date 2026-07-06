@@ -18,9 +18,14 @@ from diction.storage import sessions as sessions_storage
 
 
 class FakeScorer:
-    def __init__(self, result: ContrastResult) -> None:
+    def __init__(self, result: ContrastResult, heard: str = 'walk') -> None:
         self._result = result
+        self._heard = heard
         self.received_min_clip_seconds: float | None = None
+        self.scored = False
+
+    def recognize_word(self, audio: bytes, expected_words: list[str]) -> str:
+        return self._heard
 
     def score_target_contrast(
         self,
@@ -30,11 +35,15 @@ class FakeScorer:
         competitor_phoneme: str,
         min_clip_seconds: float = MIN_CLIP_SECONDS,
     ) -> ContrastResult:
+        self.scored = True
         self.received_min_clip_seconds = min_clip_seconds
         return self._result
 
 
 class RaisingScorer:
+    def recognize_word(self, audio: bytes, expected_words: list[str]) -> str:
+        return ''
+
     def score_target_contrast(
         self,
         word: str,
@@ -77,7 +86,12 @@ def client(engine: Engine) -> Iterator[TestClient]:
 def _post(client: TestClient) -> object:
     return client.post(
         '/api/drills/minimal-pair/score',
-        data={'word': 'walk', 'target_phoneme': 'ɔ', 'competitor_phoneme': 'ɒ'},
+        data={
+            'word': 'walk',
+            'competitor_word': 'wok',
+            'target_phoneme': 'ɔ',
+            'competitor_phoneme': 'ɒ',
+        },
         files={'audio': ('clip.webm', b'fake-bytes', 'audio/webm')},
     )
 
@@ -90,10 +104,40 @@ def test_correct_target_returns_no_flagged_phonemes_and_writes_no_session(
     response = _post(client)
 
     assert response.status_code == 200
+    assert response.json()['said_expected_word'] is True
     assert response.json()['phoneme_quality'] == 97.0
     assert response.json()['flagged_phonemes'] == []
     with Session(engine) as session:
         assert sessions_storage.list_sessions(session) == []
+
+
+def test_unrecognized_word_skips_scoring_and_writes_no_session(
+    client: TestClient, engine: Engine
+) -> None:
+    scorer = FakeScorer(_clean_result(), heard='rabbit')
+    client.app.dependency_overrides[get_scorer] = lambda: scorer
+
+    response = _post(client)
+
+    assert response.status_code == 200
+    assert response.json()['said_expected_word'] is False
+    assert response.json()['flagged_phonemes'] == []
+    assert scorer.scored is False
+    with Session(engine) as session:
+        assert sessions_storage.list_sessions(session) == []
+
+
+def test_competitor_word_still_earns_a_verdict(
+    client: TestClient, engine: Engine
+) -> None:
+    scorer = FakeScorer(_substituted_result(), heard='wok')
+    client.app.dependency_overrides[get_scorer] = lambda: scorer
+
+    response = _post(client)
+
+    assert response.status_code == 200
+    assert response.json()['said_expected_word'] is True
+    assert scorer.scored is True
 
 
 def test_substituted_target_returns_its_flagged_phoneme_and_writes_no_session(

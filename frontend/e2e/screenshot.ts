@@ -34,8 +34,21 @@ const MOCK_PRODUCTION_PAIRS = [
   },
 ]
 
-const MOCK_DRILL_PASS = { phoneme_quality: 82, flagged_phonemes: [] }
-const MOCK_DRILL_RETRY = { phoneme_quality: 41, flagged_phonemes: ['ɔ'] }
+const MOCK_DRILL_PASS = {
+  said_expected_word: true,
+  phoneme_quality: 82,
+  flagged_phonemes: [],
+}
+const MOCK_DRILL_RETRY = {
+  said_expected_word: true,
+  phoneme_quality: 41,
+  flagged_phonemes: ['ɔ'],
+}
+const MOCK_DRILL_UNRECOGNIZED = {
+  said_expected_word: false,
+  phoneme_quality: 0,
+  flagged_phonemes: [],
+}
 
 const MOCK_SESSIONS = [
   {
@@ -311,6 +324,12 @@ async function driveToProductionRetry(page: Page): Promise<void> {
   await page.getByText(/try/).waitFor()
 }
 
+async function driveToProductionUnrecognized(page: Page): Promise<void> {
+  await openProduction(page)
+  await scoreDrill(page, MOCK_DRILL_UNRECOGNIZED)
+  await page.getByText(/Didn’t catch/).waitFor()
+}
+
 const NARROW_VIEWPORT = { width: 390, height: 800 }
 
 const CASES: readonly CaptureCase[] = [
@@ -319,6 +338,11 @@ const CASES: readonly CaptureCase[] = [
   { section: 'production-drill', name: 'idle', act: driveToProductionIdle },
   { section: 'production-drill', name: 'pass', act: driveToProductionPass },
   { section: 'production-drill', name: 'retry', act: driveToProductionRetry },
+  {
+    section: 'production-drill',
+    name: 'unrecognized',
+    act: driveToProductionUnrecognized,
+  },
   { section: 'session-history', name: 'list', act: driveToHistoryList },
   { section: 'session-history', name: 'detail', act: driveToHistoryDetail },
   { section: 'session-history', name: 'empty', act: driveToHistoryEmpty },
