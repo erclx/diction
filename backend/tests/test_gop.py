@@ -8,6 +8,13 @@ from diction.scoring.gop import (
     fluency,
     normalize_gop,
 )
+from diction.scoring.phoneme_baselines import FLAG_K, PHONEME_BASELINES
+
+
+def score_one(word: str, phoneme: str, gop: float) -> list[str]:
+    aligned = [make_phoneme(0, word, phoneme, gop)]
+    result = aggregate_scores(aligned, [word], [word], [(0.0, 0.3)], 0.3)
+    return [flag.phoneme for flag in result.flagged_words]
 
 
 def make_phoneme(
@@ -23,6 +30,10 @@ def test_normalize_gop_clamps_to_zero_hundred() -> None:
     assert normalize_gop(-100.0) == 0.0
 
 
+def test_normalize_gop_maps_on_the_calibrated_slope() -> None:
+    assert normalize_gop(-5.0) == 50.0
+
+
 def test_completeness_is_fraction_of_expected_words_spoken() -> None:
     result = completeness(['the', 'thick', 'fog'], ['the', 'fog'])
 
@@ -36,7 +47,7 @@ def test_fluency_penalizes_inter_word_pauses() -> None:
     assert tight > gappy
 
 
-def test_aggregate_flags_words_with_a_phoneme_below_threshold() -> None:
+def test_aggregate_flags_the_word_whose_phoneme_falls_below_its_baseline() -> None:
     aligned = [
         make_phoneme(0, 'the', 'ð', -1.0),
         make_phoneme(1, 'thick', 'θ', -8.0),
@@ -53,6 +64,31 @@ def test_aggregate_flags_words_with_a_phoneme_below_threshold() -> None:
 
     assert [flag.word for flag in result.flagged_words] == ['thick']
     assert result.flagged_words[0].phoneme == 'θ'
+
+
+def test_a_phoneme_at_its_native_baseline_is_not_flagged() -> None:
+    mean, _ = PHONEME_BASELINES['w']
+
+    assert score_one('walk', 'w', mean) == []
+
+
+def test_a_phoneme_far_below_its_native_baseline_is_flagged() -> None:
+    mean, std = PHONEME_BASELINES['w']
+
+    assert score_one('walk', 'w', mean - (FLAG_K + 1.0) * std) == ['w']
+
+
+def test_one_gop_flags_a_high_baseline_phoneme_but_spares_a_low_baseline_one() -> None:
+    shared_gop = -3.0
+
+    assert score_one('walk', 'w', shared_gop) == ['w']
+    assert score_one('thin', 'θ', shared_gop) == []
+
+
+def test_an_uncalibrated_phoneme_is_never_flagged() -> None:
+    assert 'zz' not in PHONEME_BASELINES
+
+    assert score_one('word', 'zz', -50.0) == []
 
 
 def test_aggregate_rejects_an_empty_alignment_instead_of_scoring_perfect() -> None:

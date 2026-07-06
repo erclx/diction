@@ -1,18 +1,18 @@
 """Pure GOP aggregation. No model or numpy imports, so this core is unit-tested
 against synthetic posteriors without any GPU library or download.
 
-The scoring math and thresholds here are placeholders carried from the spike.
-Recalibrate against real clips before the numbers are shown as final.
+Thresholds are calibrated against the speechocean762 corpus. The flag keys off
+each phoneme's own native baseline in `phoneme_baselines.py`, not one global
+cutoff, because native GOP baselines differ by phoneme. See
+`.claude/context/scoring.md`.
 """
 
 from collections.abc import Iterable
 from dataclasses import dataclass
 
 from diction.scoring.audio import ClipTooWeakError
+from diction.scoring.phoneme_baselines import FLAG_K, PHONEME_BASELINES
 from diction.scoring.types import FlaggedWordResult, ScoreResult
-
-# A phoneme scoring below this flags its word as mispronounced.
-GOP_FLAG_THRESHOLD = -5.0
 
 
 @dataclass(frozen=True, slots=True)
@@ -31,9 +31,22 @@ def _mean(values: Iterable[float]) -> float:
 
 
 def normalize_gop(gop: float) -> float:
-    """Map a mean log-posterior (<= 0) onto a 0..100 proxy. Recalibrate once
-    real clips set the clean-vs-degraded spread."""
-    return max(0.0, min(100.0, 100.0 + gop * 8.0))
+    """Map a mean log-posterior (<= 0) onto a 0..100 proxy. Slope calibrated on
+    speechocean762: a clean read (median GOP -0.13) lands near 99, a clearly-
+    wrong one (median GOP -6.34) near 37."""
+    return max(0.0, min(100.0, 100.0 + gop * 10.0))
+
+
+def _normalized_deviation(phoneme: AlignedPhoneme) -> float | None:
+    """How many standard deviations the phoneme sits below its native mean, or
+    None when the phoneme is uncalibrated and cannot be judged."""
+    baseline = PHONEME_BASELINES.get(phoneme.phoneme)
+    if baseline is None:
+        return None
+    mean, std = baseline
+    if std <= 0:
+        return None
+    return (phoneme.gop - mean) / std
 
 
 def completeness(expected_words: list[str], spoken_words: list[str]) -> float:
@@ -60,17 +73,24 @@ def fluency(spoken_spans: list[tuple[float, float]], duration: float) -> float:
 def _flag_worst_phonemes(
     aligned: list[AlignedPhoneme],
 ) -> list[FlaggedWordResult]:
-    worst_by_word: dict[int, AlignedPhoneme] = {}
+    """Flag the most abnormal phoneme per word, ranked by how far below its own
+    native baseline it sits, not by absolute GOP. A word is flagged only when
+    that phoneme falls more than FLAG_K standard deviations below its mean.
+    Uncalibrated phonemes still bound the word span but never trigger a flag."""
+    worst_by_word: dict[int, tuple[AlignedPhoneme, float]] = {}
     word_bounds: dict[int, tuple[float, float]] = {}
     for phoneme in aligned:
-        current = worst_by_word.get(phoneme.word_index)
-        if current is None or phoneme.gop < current.gop:
-            worst_by_word[phoneme.word_index] = phoneme
         start, end = word_bounds.get(phoneme.word_index, (phoneme.start, phoneme.end))
         word_bounds[phoneme.word_index] = (
             min(start, phoneme.start),
             max(end, phoneme.end),
         )
+        deviation = _normalized_deviation(phoneme)
+        if deviation is None:
+            continue
+        current = worst_by_word.get(phoneme.word_index)
+        if current is None or deviation < current[1]:
+            worst_by_word[phoneme.word_index] = (phoneme, deviation)
     return [
         FlaggedWordResult(
             word=phoneme.word,
@@ -78,8 +98,8 @@ def _flag_worst_phonemes(
             end=word_bounds[word_index][1],
             phoneme=phoneme.phoneme,
         )
-        for word_index, phoneme in sorted(worst_by_word.items())
-        if phoneme.gop < GOP_FLAG_THRESHOLD
+        for word_index, (phoneme, deviation) in sorted(worst_by_word.items())
+        if deviation < -FLAG_K
     ]
 
 

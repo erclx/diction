@@ -8,6 +8,7 @@ subtitle: Per-domain narrative loaded on demand
 Per-domain narrative loaded on demand
 
 - [API](api.md): FastAPI router layer, route ownership, request validation, model-dependency wiring, and error-response shapes
+- [Calibration](calibration.md): Offline experiment that fits the pronunciation-flag thresholds from speechocean762, its harness, method, and findings
 - [CI](ci.md): GitHub Actions workflow triggers and checks
 - [Development](development.md): Local dev workflow, per-subtree scripts, and husky hooks for the diction monorepo
 - [Drills](drills.md): Curated minimal-pair drill content keyed by phoneme contrast, and its read-only lookup API

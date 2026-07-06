@@ -1,6 +1,7 @@
 addopts
 aitk
 appuser
+arpabet
 asyncio
 autoplay
 axios
@@ -42,6 +43,8 @@ lessac
 linecap
 linejoin
 lintstagedrc
+matplotlib
+mispeech
 mkdocs
 mkhl
 monkeypatch
@@ -69,6 +72,7 @@ pids
 piper
 pkill
 pretrained
+pyarrow
 pycache
 pydantic
 pykaldi
@@ -80,6 +84,7 @@ regen
 repr
 ruff
 scannability
+seaborn
 seekable
 serviceworker
 setattr

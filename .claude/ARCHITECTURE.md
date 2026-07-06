@@ -70,11 +70,11 @@ The model libraries (torch, torchaudio, transformers, faster-whisper, phonemizer
 
 ## Risks / open questions
 
-These resolve as spikes inside the version that first needs them, not upfront: v0.1 settles GOP and forced alignment, v0.2 the local LLM choice and Piper versus XTTS, and v0.5 prosody comparison. speechocean762 calibration attaches to whichever version first presents a score as trustworthy.
+These resolve as spikes inside the version that first needs them, not upfront: v0.1 settles GOP and forced alignment, v0.2 the local LLM choice and Piper versus XTTS, and v0.5 prosody comparison. speechocean762 calibration landed at the v0.5-gate, the first point a phoneme score is presented as trustworthy, resolved below.
 
-- Forced alignment and GOP scoring accuracy is unproven for this specific model and pipeline combination. It may need tuning or a fallback approach if alignment fails on mispronunciations that deviate significantly from the reference.
+- Resolved in v0.5-gate: forced alignment and GOP scoring accuracy is validated on speechocean762. The target-phoneme GOP separates clean reads from clearly-wrong ones across all 27 fitted phonemes (AUC 0.83 to 0.98), so the per-phoneme flag is trustworthy. Alignment that fails on a garbled read still surfaces as `ClipTooWeakError` rather than a false score.
 - Prosody and rhythm scoring for stress timing and pitch contour comparison has no drop-in library. The comparison logic needs to be custom-built and validated against known native and non-native samples.
-- The composite accentedness score has no calibration yet. It needs native and non-native reference recordings to set meaningful thresholds before it is presented as a number.
+- The composite accentedness score is only partly calibrated. Its phoneme path, the GOP flag and `normalize_gop`, is now fitted against speechocean762. The composite still folds in `fluency` and prosody, which stay uncalibrated until the prosody features land, so read the composite as directional until then.
 - Free-topic conversation mode combines two independent model outputs, pronunciation scoring and LLM grammar critique, that have never been tested together. How to present combined feedback without overwhelming the user is unresolved.
 - Resolved in v0.3: the explainer runs `gemma2:9b` capped at `num_ctx=4096`, which loads at ~7.4 GB and stays fully on GPU with the scoring stack resident. gemma4:26b at its default 128K context filled the card and offloaded the LLM to CPU once scoring loaded. Free-topic grammar critique may still want a larger model, revisit when that mode lands.
-- speechocean762 is a possible reference dataset for calibration and testing but has not been evaluated for licensing or practical fit
+- Resolved in v0.5-gate: speechocean762 is adopted as the calibration corpus. Apache-2.0, 5000 clips with human per-phoneme accuracy labels. Its ARPABET labels map to the scorer's espeak IPA, and it fits the per-phoneme GOP baselines and the `normalize_gop` slope, validated on the held-out train split. See `.claude/context/scoring.md`.

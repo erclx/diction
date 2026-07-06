@@ -1,0 +1,218 @@
+{
+  "d": {
+    "mean": -0.688,
+    "std": 1.4418,
+    "auc": 0.8805,
+    "reliable": true,
+    "n_good": 1461,
+    "n_bad": 73
+  },
+  "f": {
+    "mean": -0.2571,
+    "std": 0.8889,
+    "auc": 0.944,
+    "reliable": true,
+    "n_good": 798,
+    "n_bad": 27
+  },
+  "h": {
+    "mean": -0.7813,
+    "std": 1.3546,
+    "auc": 0.9655,
+    "reliable": true,
+    "n_good": 1026,
+    "n_bad": 26
+  },
+  "iː": {
+    "mean": -1.338,
+    "std": 1.5254,
+    "auc": 0.9757,
+    "reliable": true,
+    "n_good": 940,
+    "n_bad": 48
+  },
+  "k": {
+    "mean": -0.1871,
+    "std": 0.7338,
+    "auc": 0.8967,
+    "reliable": true,
+    "n_good": 1258,
+    "n_bad": 36
+  },
+  "l": {
+    "mean": -0.8841,
+    "std": 1.7534,
+    "auc": 0.8863,
+    "reliable": true,
+    "n_good": 1290,
+    "n_bad": 91
+  },
+  "m": {
+    "mean": -0.1426,
+    "std": 0.6096,
+    "auc": 0.8756,
+    "reliable": true,
+    "n_good": 1184,
+    "n_bad": 53
+  },
+  "n": {
+    "mean": -0.5195,
+    "std": 1.1501,
+    "auc": 0.9186,
+    "reliable": true,
+    "n_good": 2457,
+    "n_bad": 99
+  },
+  "p": {
+    "mean": -0.3251,
+    "std": 1.0717,
+    "auc": 0.831,
+    "reliable": true,
+    "n_good": 541,
+    "n_bad": 16
+  },
+  "s": {
+    "mean": -0.3566,
+    "std": 0.9266,
+    "auc": 0.9298,
+    "reliable": true,
+    "n_good": 1739,
+    "n_bad": 62
+  },
+  "t": {
+    "mean": -0.7074,
+    "std": 1.4937,
+    "auc": 0.8628,
+    "reliable": true,
+    "n_good": 3160,
+    "n_bad": 114
+  },
+  "uː": {
+    "mean": -1.6287,
+    "std": 1.6628,
+    "auc": 0.8844,
+    "reliable": true,
+    "n_good": 789,
+    "n_bad": 31
+  },
+  "v": {
+    "mean": -0.4448,
+    "std": 1.3068,
+    "auc": 0.9111,
+    "reliable": true,
+    "n_good": 496,
+    "n_bad": 22
+  },
+  "w": {
+    "mean": -0.4903,
+    "std": 1.2874,
+    "auc": 0.9764,
+    "reliable": true,
+    "n_good": 1466,
+    "n_bad": 31
+  },
+  "z": {
+    "mean": -0.5843,
+    "std": 1.3293,
+    "auc": 0.9482,
+    "reliable": true,
+    "n_good": 466,
+    "n_bad": 67
+  },
+  "æ": {
+    "mean": -1.2475,
+    "std": 1.1639,
+    "auc": 0.9339,
+    "reliable": true,
+    "n_good": 1193,
+    "n_bad": 56
+  },
+  "ð": {
+    "mean": -1.771,
+    "std": 2.4939,
+    "auc": 0.8894,
+    "reliable": true,
+    "n_good": 1103,
+    "n_bad": 80
+  },
+  "ŋ": {
+    "mean": -1.1894,
+    "std": 1.9201,
+    "auc": 0.912,
+    "reliable": true,
+    "n_good": 480,
+    "n_bad": 30
+  },
+  "ɔː": {
+    "mean": -3.7972,
+    "std": 1.0207,
+    "auc": 0.8664,
+    "reliable": true,
+    "n_good": 192,
+    "n_bad": 34
+  },
+  "ə": {
+    "mean": -1.5497,
+    "std": 2.1181,
+    "auc": 0.8917,
+    "reliable": true,
+    "n_good": 718,
+    "n_bad": 51
+  },
+  "ɛ": {
+    "mean": -1.1875,
+    "std": 1.4737,
+    "auc": 0.9337,
+    "reliable": true,
+    "n_good": 785,
+    "n_bad": 92
+  },
+  "ɜː": {
+    "mean": -3.2826,
+    "std": 1.7947,
+    "auc": 0.8619,
+    "reliable": true,
+    "n_good": 265,
+    "n_bad": 38
+  },
+  "ɪ": {
+    "mean": -1.2658,
+    "std": 1.5988,
+    "auc": 0.9391,
+    "reliable": true,
+    "n_good": 2113,
+    "n_bad": 74
+  },
+  "ɹ": {
+    "mean": -0.8737,
+    "std": 1.826,
+    "auc": 0.9323,
+    "reliable": true,
+    "n_good": 678,
+    "n_bad": 49
+  },
+  "ʃ": {
+    "mean": -0.3544,
+    "std": 0.7779,
+    "auc": 0.9564,
+    "reliable": true,
+    "n_good": 273,
+    "n_bad": 30
+  },
+  "ʊ": {
+    "mean": -2.0269,
+    "std": 1.5817,
+    "auc": 0.9718,
+    "reliable": true,
+    "n_good": 311,
+    "n_bad": 29
+  },
+  "θ": {
+    "mean": -2.6433,
+    "std": 2.6125,
+    "auc": 0.9408,
+    "reliable": true,
+    "n_good": 169,
+    "n_bad": 24
+  }
+}
