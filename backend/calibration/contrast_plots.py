@@ -18,7 +18,6 @@ import seaborn as sns
 HERE = Path(__file__).parent
 FIGS = HERE / 'figures'
 
-# DESIGN.md palette, so the figures match the product's identity.
 BAD = '#b23a2e'
 ACCENT = '#0f766e'
 NEUTRAL = '#9a9186'

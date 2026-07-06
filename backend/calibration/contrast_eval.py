@@ -35,8 +35,6 @@ from diction.tts.synth_piper import PiperSynthesizer
 
 HERE = Path(__file__).parent
 
-# Real words that are in no drill pair, to confirm the word-identity gate
-# rejects a clip that is neither sound of a contrast.
 DECOY_WORDS = ('rabbit', 'table', 'orange')
 
 

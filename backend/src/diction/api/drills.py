@@ -31,10 +31,6 @@ def score_minimal_pair(
 ) -> MinimalPairScoreResponse:
     clip = audio.file.read()
 
-    # Gate on word identity: a clip Whisper hears as a clear third word never
-    # earns a sound verdict, since forced alignment would otherwise map the
-    # target phonemes onto whatever was said. An empty transcription falls
-    # through, so a too-short or silent clip still surfaces as the 422 below.
     heard = scorer.recognize_word(clip, [word, competitor_word])
     expected = {normalize_word(word), normalize_word(competitor_word)}
     if heard and heard not in expected:

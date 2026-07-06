@@ -112,7 +112,6 @@ class GopScorer:
         emission = self._emission(waveform)
 
         spans, _ = self._forced_align(word, emission)
-        # Nothing aligned means nothing measured, so a pass here would be false.
         if not spans:
             raise ClipTooWeakError('no phonemes could be aligned to score')
         tokenizer = self._processor.tokenizer
