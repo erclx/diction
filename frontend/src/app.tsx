@@ -6,6 +6,7 @@ import {
   Speech,
   Target,
   TrendingUp,
+  Waves,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { Navigate, NavLink, Route, Routes, useLocation } from 'react-router-dom'
@@ -29,6 +30,7 @@ import { PassageScoring } from '@/features/passage-scoring/passage-scoring'
 import { ProductionDrill } from '@/features/production-drill/production-drill'
 import { ProgressDashboard } from '@/features/progress-dashboard/progress-dashboard'
 import { SessionHistory } from '@/features/session-history/session-history'
+import { Shadowing } from '@/features/shadowing/shadowing'
 import { TargetedDrills } from '@/features/targeted-drills/targeted-drills'
 import { ThemeToggle } from '@/features/theme/theme-toggle'
 import { cn } from '@/lib/utils'
@@ -74,7 +76,12 @@ interface NavSection {
 }
 
 const NAV_SECTIONS: readonly NavSection[] = [
-  { items: [{ to: '/', label: 'Practice', icon: Mic }] },
+  {
+    items: [
+      { to: '/', label: 'Practice', icon: Mic },
+      { to: '/shadowing', label: 'Shadowing', icon: Waves },
+    ],
+  },
   {
     label: 'Drills',
     items: [
@@ -173,6 +180,7 @@ export function App() {
         </header>
         <Routes>
           <Route path="/" element={<PassageScoring />} />
+          <Route path="/shadowing" element={<Shadowing />} />
           <Route path="/drills" element={<TargetedDrills />} />
           <Route path="/drills/ear-training" element={<EarTraining />} />
           <Route path="/drills/production" element={<ProductionDrill />} />
