@@ -34,14 +34,17 @@ real-speaker accuracy number.
 
 ## Findings
 
-Across 32 pairs (64 clips), the competitor check cuts false passes by 8x while
-barely moving false retries:
+Across 32 pairs (64 clips), the competitor check cuts false passes roughly 8x
+while barely moving false retries:
 
 | Error                             | Absolute flag | Competitor check |
 | --------------------------------- | ------------- | ---------------- |
-| False pass (wrong word accepted)  | 16            | 2                |
-| False retry (right word rejected) | 3             | 5                |
+| False pass (wrong word accepted)  | 15            | 2                |
+| False retry (right word rejected) | 5             | 6                |
 | Unscorable (clip too short)       | 7             | 7                |
+
+Numbers shift a clip or two between runs, since Whisper transcription and forced
+alignment are not fully deterministic. The shape holds.
 
 The absolute flag accepted the wrong word on half of all attempts. The `th`
 family (`θ`, `ð`) and short-i were fully broken and are now caught. `r vs l` and
@@ -51,6 +54,10 @@ word-initial. The 7 unscorable clips are short words hitting the duration floor,
 a separate robustness gap.
 
 ![Verdict errors before and after the competitor check](figures/contrast_verdict.png)
+
+## Word-identity gate
+
+The same harness also checks the Whisper word-identity gate, which stops a clip that is neither word of the pair from earning a verdict. Whisper gets a short isolated word wrong without context (clean synthetic "thin" comes back as "soon"), so the gate biases decoding toward the two expected words with an `initial_prompt`. Under that bias 63 of 64 drill words are recognized as their pair, and no decoy (`rabbit`, `table`, `orange`) is forced onto a pair, so the bias helps without inventing a false match. This is a regression guard on clean synthetic clips, not a real-speaker accuracy number. The gate's real risk, Whisper mis-hearing a short human clip, needs real recordings to measure.
 
 ## Re-run
 

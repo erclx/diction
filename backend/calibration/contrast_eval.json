@@ -1,9 +1,9 @@
 {
   "tally": {
-    "old_fp": 16,
+    "old_fp": 15,
     "new_fp": 2,
-    "old_fr": 3,
-    "new_fr": 5,
+    "old_fr": 5,
+    "new_fr": 6,
     "errors": 7
   },
   "rows": [
@@ -23,7 +23,7 @@
       "spoken": "fin",
       "kind": "wrong",
       "old_retry": false,
-      "new_retry": true
+      "new_retry": false
     },
     {
       "label": "th vs f",
@@ -86,7 +86,7 @@
       "spoken": "thin",
       "kind": "correct",
       "old_retry": false,
-      "new_retry": true
+      "new_retry": false
     },
     {
       "label": "th vs s",
@@ -111,8 +111,7 @@
       "word": "thick",
       "spoken": "sick",
       "kind": "wrong",
-      "old_retry": false,
-      "new_retry": true
+      "error": "clip_too_weak"
     },
     {
       "label": "th vs s",
@@ -156,8 +155,7 @@
       "word": "they",
       "spoken": "they",
       "kind": "correct",
-      "old_retry": false,
-      "new_retry": true
+      "error": "clip_too_weak"
     },
     {
       "label": "th vs d",
@@ -175,7 +173,7 @@
       "spoken": "then",
       "kind": "correct",
       "old_retry": false,
-      "new_retry": true
+      "new_retry": false
     },
     {
       "label": "th vs d",
@@ -291,7 +289,7 @@
       "word": "pray",
       "spoken": "play",
       "kind": "wrong",
-      "old_retry": true,
+      "old_retry": false,
       "new_retry": true
     },
     {
@@ -300,7 +298,8 @@
       "word": "ship",
       "spoken": "ship",
       "kind": "correct",
-      "error": "clip_too_weak"
+      "old_retry": false,
+      "new_retry": true
     },
     {
       "label": "short i vs long ee",
@@ -308,8 +307,7 @@
       "word": "ship",
       "spoken": "sheep",
       "kind": "wrong",
-      "old_retry": false,
-      "new_retry": true
+      "error": "clip_too_weak"
     },
     {
       "label": "short i vs long ee",
@@ -378,7 +376,7 @@
       "word": "bad",
       "spoken": "bed",
       "kind": "wrong",
-      "old_retry": false,
+      "old_retry": true,
       "new_retry": true
     },
     {
@@ -387,7 +385,8 @@
       "word": "bat",
       "spoken": "bat",
       "kind": "correct",
-      "error": "clip_too_weak"
+      "old_retry": true,
+      "new_retry": true
     },
     {
       "label": "short a vs short e",
@@ -404,8 +403,8 @@
       "word": "man",
       "spoken": "man",
       "kind": "correct",
-      "old_retry": false,
-      "new_retry": false
+      "old_retry": true,
+      "new_retry": true
     },
     {
       "label": "short a vs short e",
@@ -423,7 +422,7 @@
       "spoken": "pan",
       "kind": "correct",
       "old_retry": false,
-      "new_retry": false
+      "new_retry": true
     },
     {
       "label": "short a vs short e",
@@ -486,7 +485,7 @@
       "spoken": "wet",
       "kind": "wrong",
       "old_retry": true,
-      "new_retry": false
+      "new_retry": true
     },
     {
       "label": "v vs w",
@@ -521,7 +520,8 @@
       "word": "sip",
       "spoken": "ship",
       "kind": "wrong",
-      "error": "clip_too_weak"
+      "old_retry": false,
+      "new_retry": true
     },
     {
       "label": "s vs sh",
@@ -576,5 +576,15 @@
       "old_retry": true,
       "new_retry": true
     }
-  ]
+  ],
+  "recognition": {
+    "drill_word_reps": 64,
+    "recognized": 63,
+    "decoys": {
+      "rabbit": "rabbit",
+      "table": "table",
+      "orange": "orange"
+    },
+    "leaked": []
+  }
 }

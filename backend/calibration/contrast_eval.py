@@ -29,10 +29,15 @@ from diction.config import Settings
 from diction.drills.minimal_pairs_data import MINIMAL_PAIR_CONTRASTS
 from diction.scoring.audio import MIN_WORD_CLIP_SECONDS, ClipTooWeakError
 from diction.scoring.scorer_gop import GopScorer
+from diction.scoring.text import normalize_word
 from diction.scoring.transcription import WhisperTranscriber
 from diction.tts.synth_piper import PiperSynthesizer
 
 HERE = Path(__file__).parent
+
+# Real words that are in no drill pair, to confirm the word-identity gate
+# rejects a clip that is neither sound of a contrast.
+DECOY_WORDS = ('rabbit', 'table', 'orange')
 
 
 def _old_verdict(scorer: GopScorer, word: str, audio: bytes, target: str) -> bool:
@@ -125,11 +130,55 @@ def main() -> None:
     )
     print(f'  unscorable clips (too weak/short)      : {tally["errors"]}')
 
+    recognition = _recognition_check(scorer, clip)
+
     out = HERE / 'contrast_eval.json'
     out.write_text(
-        json.dumps({'tally': tally, 'rows': rows}, ensure_ascii=False, indent=2)
+        json.dumps(
+            {'tally': tally, 'rows': rows, 'recognition': recognition},
+            ensure_ascii=False,
+            indent=2,
+        )
     )
     print(f'\nwrote {out}')
+
+
+def _recognition_check(scorer, clip) -> dict:  # type: ignore[no-untyped-def]
+    """Regression guard for the word-identity gate: each drill word, heard with
+    its own pair as the bias, should be recognized as one of the pair, and a
+    decoy word should still be rejected under that bias. A clean synthetic clip
+    is easy for Whisper, so this proves the gate does not block the drill's own
+    vocabulary and the bias does not force a false match, not real-speaker
+    accuracy."""
+    total = 0
+    recognized = 0
+    for contrast in MINIMAL_PAIR_CONTRASTS:
+        for pair in contrast.pairs:
+            expected = [pair.word_a, pair.word_b]
+            pair_words = {normalize_word(pair.word_a), normalize_word(pair.word_b)}
+            for spoken in expected:
+                total += 1
+                heard = scorer.recognize_word(clip(spoken), expected)
+                if heard in pair_words:
+                    recognized += 1
+                else:
+                    print(f"  '{spoken}' (pair {pair_words}) heard as '{heard}'")
+
+    first = MINIMAL_PAIR_CONTRASTS[0].pairs[0]
+    decoy_pair = [first.word_a, first.word_b]
+    decoy_words = {normalize_word(w) for w in decoy_pair}
+    decoys = {d: scorer.recognize_word(clip(d), decoy_pair) for d in DECOY_WORDS}
+    leaked = [d for d, heard in decoys.items() if heard in decoy_words]
+
+    print('\n=== word-identity gate ===')
+    print(f'  drill words recognized as their pair: {recognized}/{total}')
+    print(f'  decoys forced onto a pair           : {len(leaked)} {leaked}')
+    return {
+        'drill_word_reps': total,
+        'recognized': recognized,
+        'decoys': decoys,
+        'leaked': leaked,
+    }
 
 
 if __name__ == '__main__':
