@@ -1,5 +1,6 @@
 addopts
 aitk
+analyser
 appuser
 arpabet
 asyncio
