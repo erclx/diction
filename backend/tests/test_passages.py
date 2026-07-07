@@ -129,6 +129,32 @@ def test_score_stores_the_uploaded_clip_and_records_its_path(
     assert (recordings_dir / stored_path).read_bytes() == b'fake-bytes'
 
 
+def test_score_still_persists_and_returns_when_the_recording_write_fails(
+    client: TestClient, engine: Engine, monkeypatch
+) -> None:
+    result = ScoreResult(
+        completeness=90.0,
+        accuracy=80.0,
+        fluency=70.0,
+        phoneme_quality=60.0,
+        flagged_words=[],
+    )
+    client.app.dependency_overrides[get_scorer] = lambda: FakeScorer(result)
+
+    def raise_disk_full(*args: object, **kwargs: object) -> str:
+        raise OSError('No space left on device')
+
+    monkeypatch.setattr('diction.api.passages.store_recording', raise_disk_full)
+
+    response = _post(client)
+
+    assert response.status_code == 200
+    with Session(engine) as session:
+        saved = sessions_storage.list_sessions(session)
+        assert len(saved) == 1
+        assert saved[0].recording_path is None
+
+
 def test_score_persists_template_explanations_when_the_explainer_fails(
     client: TestClient, engine: Engine
 ) -> None:

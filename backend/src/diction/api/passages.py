@@ -78,11 +78,18 @@ def _attach_recording(
     session: Session, settings: Settings, record: PracticeSession, clip: bytes
 ) -> None:
     assert record.id is not None
-    record.recording_path = store_recording(
-        settings.resolved_recordings_dir, record.id, clip
-    )
-    session.add(record)
-    session.commit()
+    try:
+        record.recording_path = store_recording(
+            settings.resolved_recordings_dir, record.id, clip
+        )
+        session.add(record)
+        session.commit()
+    except OSError:
+        logger.warning(
+            'failed to store recording; session persisted without a clip',
+            exc_info=True,
+        )
+        session.rollback()
 
 
 def _explain_or_default(
