@@ -12,6 +12,7 @@ from diction.api import (
     passages,
     prosody,
     reference,
+    resurfacing,
     sessions,
     weak_sounds,
 )
@@ -112,6 +113,7 @@ def create_app() -> FastAPI:
     app.include_router(passages.router, prefix='/api')
     app.include_router(prosody.router, prefix='/api')
     app.include_router(reference.router, prefix='/api')
+    app.include_router(resurfacing.router, prefix='/api')
     app.include_router(sessions.router, prefix='/api')
     app.include_router(weak_sounds.router, prefix='/api')
 

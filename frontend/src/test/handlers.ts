@@ -90,6 +90,9 @@ export const handlers = [
       },
     ]),
   ),
+  http.get('http://localhost:8000/api/resurfacing', () =>
+    HttpResponse.json([]),
+  ),
   http.get('http://localhost:8000/api/sessions/:id', () =>
     HttpResponse.json({
       id: 12,

@@ -15,6 +15,7 @@ The persistence layer every practice mode writes through. One SQLite file per ru
 - `storage/drills.py` owns `save_drill_rep` and `list_drill_reps`, the same thin-route pattern for drill outcomes.
 - `storage/recordings.py` owns `store_recording` and `recording_file`, the write-and-locate helpers for on-disk clips keyed by session id.
 - `storage/weak_sounds.py` owns `aggregate_weak_sounds`, a read-only cross-session rollup of `FlaggedWord` grouped by `phoneme` for the weak-sound priority list.
+- `storage/resurfacing.py` owns `aggregate_resurfacing`, a read-only recompute of each phoneme's spaced-review schedule from its dated `FlaggedWord` misses and production and ear-training `DrillRep` outcomes, run through the pure `scoring/resurfacing.py` Leitner scheduler and returned due-first.
 
 ## Decisions
 
@@ -32,6 +33,7 @@ The persistence layer every practice mode writes through. One SQLite file per ru
 - `make_engine` registers a `PRAGMA foreign_keys=ON` connect listener. The module engine and the tests both build through it, so the `flagged_words` foreign key is actually enforced.
 - `reset_dev_database` deletes only when `run_mode == 'dev'` and the resolved path is not the user database file, so a misread env can never wipe real data.
 - `DrillRep.passed` and `DrillRep.score` are both nullable. Production and ear-training reps carry a `passed` verdict with null score, prosody reps carry a directional `score` with null verdict, and neither invents the missing value.
+- Resurfacing recomputes from history on read, holding no scheduler state and adding no table or migration, the same bet `aggregate_weak_sounds` makes. It reads only the two phoneme-keyed event sources: a `FlaggedWord` occurrence dated by its session is a miss, a production or ear-training `DrillRep` is a pass or miss by its `passed` verdict, and shadowing and stress reps are prompt-level so they are excluded. Stored datetimes are normalized to aware UTC before comparison, since SQLite hands back naive values and the scheduler compares against `datetime.now(UTC)`. The interval ladder is a placeholder on the same directional footing as the GOP and prosody thresholds, so the due ordering is the trustworthy signal and the exact next-due dates are not.
 - Recording write is save, refresh, write file, set path, commit again. The session id exists only after the first commit, so a failure between the two commits leaves a row without a file. The retrieval route treats a missing file as a soft 404 through `recording_file` returning `None`.
 - Storage functions take the session as their first argument. Tests pass a temp-file session directly.
 - `list_sessions` and `list_drill_reps` order newest-first with `id` as a tiebreaker on equal `created_at`.
