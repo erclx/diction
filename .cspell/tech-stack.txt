@@ -11,6 +11,7 @@ changelogithub
 commitlint
 conftest
 coqui
+corrcoef
 coveragerc
 cuda
 dataclass
@@ -40,9 +41,11 @@ kaldi
 kwargs
 labelledby
 lessac
+linalg
 linecap
 linejoin
 lintstagedrc
+lstsq
 matplotlib
 mispeech
 mkdocs
@@ -80,6 +83,7 @@ pyproject
 pytest
 pythonpath
 PYTHONUNBUFFERED
+rcond
 regen
 repr
 ruff

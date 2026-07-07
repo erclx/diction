@@ -1,6 +1,7 @@
 accentedness
 ASR
 diction
+evals
 Fluenta
 getpronounce
 GOP
@@ -11,6 +12,7 @@ intonation
 IPA
 mispronounced
 nativeness
+overfit
 phoneme
 phonemes
 phonemization
