@@ -37,8 +37,30 @@ function weakSound(
   }
 }
 
-function serve(weakSounds: unknown[], contrasts: unknown[] = CONTRASTS) {
+function dueSound(
+  phoneme: string,
+  isDue: boolean,
+  exampleWords: string[] = [],
+) {
+  return {
+    phoneme,
+    box: 0,
+    interval_days: 1,
+    last_practiced: '2026-07-01T09:14:00Z',
+    next_due: '2026-07-02T09:14:00Z',
+    is_due: isDue,
+    example_words: exampleWords,
+  }
+}
+
+function serve(
+  weakSounds: unknown[],
+  { dueSounds = [], contrasts = CONTRASTS }: ServeOptions = {},
+) {
   server.use(
+    http.get('http://localhost:8000/api/resurfacing', () =>
+      HttpResponse.json(dueSounds),
+    ),
     http.get('http://localhost:8000/api/weak-sounds', () =>
       HttpResponse.json(weakSounds),
     ),
@@ -46,6 +68,11 @@ function serve(weakSounds: unknown[], contrasts: unknown[] = CONTRASTS) {
       HttpResponse.json(contrasts),
     ),
   )
+}
+
+interface ServeOptions {
+  dueSounds?: unknown[]
+  contrasts?: unknown[]
 }
 
 describe('TargetedDrills', () => {
@@ -69,6 +96,28 @@ describe('TargetedDrills', () => {
       'href',
       `/drills/production?phoneme=${encodeURIComponent('θ')}`,
     )
+  })
+
+  it('should lead with the due-for-review sounds over the weak-sound ranking', async () => {
+    serve([weakSound('θ', 8, ['thought'])], {
+      dueSounds: [dueSound('ɹ', true, ['red'])],
+    })
+    renderWithProviders(<TargetedDrills />)
+
+    expect(await screen.findByText('r vs l')).toBeInTheDocument()
+    expect(screen.getByText('Due')).toBeInTheDocument()
+    expect(screen.queryByText('th vs f')).not.toBeInTheDocument()
+  })
+
+  it('should fall back to the weak-sound ranking when nothing is due', async () => {
+    serve([weakSound('θ', 8, ['thought'])], {
+      dueSounds: [dueSound('ɹ', false, ['red'])],
+    })
+    renderWithProviders(<TargetedDrills />)
+
+    expect(await screen.findByText('th vs f')).toBeInTheDocument()
+    expect(screen.getByText('8x')).toBeInTheDocument()
+    expect(screen.queryByText('r vs l')).not.toBeInTheDocument()
   })
 
   it('should show an onboarding prompt when no weak sounds exist', async () => {

@@ -24,7 +24,7 @@ function SuggestedDrillCard({ drill }: SuggestedDrillCardProps) {
         <CardTitle className="flex items-center justify-between gap-4">
           <span>{contrast ? contrast.label : drill.phoneme}</span>
           <span className="shrink-0 text-sm font-normal tabular-nums text-muted-foreground">
-            {drill.occurrenceCount}x
+            {drill.badge}
           </span>
         </CardTitle>
       </CardHeader>
@@ -80,8 +80,7 @@ export function TargetedDrills() {
       <header className="flex flex-col gap-1 text-left">
         <h2 className="font-serif text-2xl font-semibold">Targeted drills</h2>
         <p className="text-muted-foreground">
-          Practice the sounds you miss most, ranked by how often they trip you
-          up.
+          Review the sounds that are due, then the ones you miss most.
         </p>
       </header>
 
