@@ -63,6 +63,22 @@ describe('StressIntonation', () => {
     expect(stressedSyllable).toHaveClass('bg-primary')
   })
 
+  it('should mark a word boundary on the contour for each gap between reference words', async () => {
+    server.use(http.post(ANALYZE_URL, () => HttpResponse.json(ANALYSIS)))
+    renderWithProviders(<StressIntonation />)
+
+    await recordAndAnalyze()
+
+    await waitFor(() =>
+      expect(
+        screen.getByRole('img', { name: /pitch contour/ }),
+      ).toBeInTheDocument(),
+    )
+    expect(screen.getAllByTestId('word-boundary')).toHaveLength(
+      ANALYSIS.reference_timings.length - 1,
+    )
+  })
+
   it('should show the rhythm and intonation match scores after analyzing', async () => {
     server.use(http.post(ANALYZE_URL, () => HttpResponse.json(ANALYSIS)))
     renderWithProviders(<StressIntonation />)

@@ -50,6 +50,9 @@ test.describe('stress and intonation', () => {
     await recordAndAnalyze(page)
 
     await expect(page.getByRole('img', { name: /pitch contour/ })).toBeVisible()
+    await expect(page.getByTestId('word-boundary')).toHaveCount(
+      MOCK_ANALYSIS.reference_timings.length - 1,
+    )
     await expect(page.getByText('nɑː')).toBeVisible()
     await expect(page.getByText('Rhythm match')).toBeVisible()
     await expect(page.getByText('Intonation match')).toBeVisible()

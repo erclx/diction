@@ -43,12 +43,22 @@ function contourPoints(
     .join(' ')
 }
 
+function wordBoundaries(wordCount: number): number[] {
+  const usableWidth = CHART_WIDTH - CHART_PADDING * 2
+  const boundaries: number[] = []
+  for (let index = 1; index < wordCount; index += 1) {
+    boundaries.push(CHART_PADDING + (index / wordCount) * usableWidth)
+  }
+  return boundaries
+}
+
 interface ContourChartProps {
   reference: readonly number[]
   learner: readonly number[]
+  wordCount: number
 }
 
-function ContourChart({ reference, learner }: ContourChartProps) {
+function ContourChart({ reference, learner, wordCount }: ContourChartProps) {
   const values = [...reference, ...learner]
   const min = values.length > 0 ? Math.min(...values) : 0
   const max = values.length > 0 ? Math.max(...values) : 0
@@ -58,8 +68,20 @@ function ContourChart({ reference, learner }: ContourChartProps) {
       viewBox={`0 0 ${CHART_WIDTH} ${CHART_HEIGHT}`}
       className="h-28 w-full"
       role="img"
-      aria-label="Reference and your pitch contour"
+      aria-label="Reference and your pitch contour, split by word"
     >
+      {wordBoundaries(wordCount).map((x) => (
+        <line
+          key={x}
+          data-testid="word-boundary"
+          x1={x}
+          x2={x}
+          y1={CHART_PADDING}
+          y2={CHART_HEIGHT - CHART_PADDING}
+          className="stroke-border"
+          strokeWidth={1}
+        />
+      ))}
       <polyline
         points={contourPoints(reference, min, max)}
         fill="none"
@@ -145,6 +167,7 @@ function AnalysisResult({ analysis }: AnalysisResultProps) {
           <ContourChart
             reference={analysis.reference_contour}
             learner={analysis.learner_contour}
+            wordCount={analysis.reference_timings.length}
           />
           <div className="flex items-center gap-4 text-xs text-muted-foreground">
             <span className="flex items-center gap-1.5">
