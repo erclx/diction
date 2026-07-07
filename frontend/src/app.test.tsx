@@ -38,7 +38,7 @@ describe('App', () => {
     const nav = screen.getByRole('navigation', { name: 'Views' })
 
     expect(
-      within(nav).getByRole('link', { name: 'Practice' }),
+      within(nav).getByRole('link', { name: 'Passage' }),
     ).toBeInTheDocument()
     expect(
       within(nav).getByRole('link', { name: 'History' }),
@@ -46,6 +46,14 @@ describe('App', () => {
     expect(
       within(nav).getByRole('link', { name: 'Progress' }),
     ).toBeInTheDocument()
+  })
+
+  it('should group the primary practice modes under a Practice label', () => {
+    renderWithProviders(<App />)
+
+    const nav = screen.getByRole('navigation', { name: 'Views' })
+
+    expect(within(nav).getByText('Practice')).toBeInTheDocument()
   })
 
   it('should mark the nav item for the current route as active', () => {
@@ -58,7 +66,7 @@ describe('App', () => {
       'page',
     )
     expect(
-      within(nav).getByRole('link', { name: 'Practice' }),
+      within(nav).getByRole('link', { name: 'Passage' }),
     ).not.toHaveAttribute('aria-current')
   })
 })

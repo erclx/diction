@@ -26,6 +26,7 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from '@/components/ui/sidebar'
+import { AudioChannelProvider } from '@/features/audio-channel/audio-channel'
 import { EarTraining } from '@/features/ear-training/ear-training'
 import { PassageScoring } from '@/features/passage-scoring/passage-scoring'
 import { ProductionDrill } from '@/features/production-drill/production-drill'
@@ -79,8 +80,9 @@ interface NavSection {
 
 const NAV_SECTIONS: readonly NavSection[] = [
   {
+    label: 'Practice',
     items: [
-      { to: '/', label: 'Practice', icon: Mic },
+      { to: '/', label: 'Passage', icon: Mic },
       { to: '/shadowing', label: 'Shadowing', icon: Waves },
     ],
   },
@@ -113,7 +115,7 @@ function useSectionTitle(): string {
   const active = NAV_ITEMS.filter((item) =>
     matchesRoute(item.to, pathname),
   ).sort((first, second) => second.to.length - first.to.length)[0]
-  return active?.label ?? 'Practice'
+  return active?.label ?? 'Passage'
 }
 
 function ViewNav() {
@@ -158,42 +160,44 @@ export function App() {
   const health = useBackendHealth()
 
   return (
-    <SidebarProvider>
-      <Sidebar collapsible="icon">
-        <SidebarHeader>
-          <div className="flex items-center gap-2 px-2 py-1.5">
-            <AudioLines className="size-5 shrink-0 text-primary" />
-            <h1 className="font-serif text-lg font-semibold group-data-[collapsible=icon]:hidden">
-              Diction
-            </h1>
-          </div>
-        </SidebarHeader>
-        <SidebarContent>
-          <ViewNav />
-        </SidebarContent>
-      </Sidebar>
-      <SidebarInset>
-        <header className="flex h-14 shrink-0 items-center gap-3 border-b px-4">
-          <SidebarTrigger className="-ml-1" />
-          <SectionTitle />
-          <div className="ml-auto flex items-center gap-3">
-            <BackendStatus health={health} />
-            <ThemeToggle />
-          </div>
-        </header>
-        <Routes>
-          <Route path="/" element={<PassageScoring />} />
-          <Route path="/shadowing" element={<Shadowing />} />
-          <Route path="/drills" element={<TargetedDrills />} />
-          <Route path="/drills/ear-training" element={<EarTraining />} />
-          <Route path="/drills/production" element={<ProductionDrill />} />
-          <Route path="/drills/stress" element={<StressIntonation />} />
-          <Route path="/history" element={<SessionHistory />} />
-          <Route path="/history/:sessionId" element={<SessionHistory />} />
-          <Route path="/progress" element={<ProgressDashboard />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </SidebarInset>
-    </SidebarProvider>
+    <AudioChannelProvider>
+      <SidebarProvider>
+        <Sidebar collapsible="icon">
+          <SidebarHeader>
+            <div className="flex items-center gap-2 px-2 py-1.5">
+              <AudioLines className="size-5 shrink-0 text-primary" />
+              <h1 className="font-serif text-lg font-semibold group-data-[collapsible=icon]:hidden">
+                Diction
+              </h1>
+            </div>
+          </SidebarHeader>
+          <SidebarContent>
+            <ViewNav />
+          </SidebarContent>
+        </Sidebar>
+        <SidebarInset>
+          <header className="sticky top-0 z-10 flex h-14 shrink-0 items-center gap-3 border-b bg-background/95 px-4 backdrop-blur">
+            <SidebarTrigger className="-ml-1" />
+            <SectionTitle />
+            <div className="ml-auto flex items-center gap-3">
+              <BackendStatus health={health} />
+              <ThemeToggle />
+            </div>
+          </header>
+          <Routes>
+            <Route path="/" element={<PassageScoring />} />
+            <Route path="/shadowing" element={<Shadowing />} />
+            <Route path="/drills" element={<TargetedDrills />} />
+            <Route path="/drills/ear-training" element={<EarTraining />} />
+            <Route path="/drills/production" element={<ProductionDrill />} />
+            <Route path="/drills/stress" element={<StressIntonation />} />
+            <Route path="/history" element={<SessionHistory />} />
+            <Route path="/history/:sessionId" element={<SessionHistory />} />
+            <Route path="/progress" element={<ProgressDashboard />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </SidebarInset>
+      </SidebarProvider>
+    </AudioChannelProvider>
   )
 }
