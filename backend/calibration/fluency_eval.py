@@ -22,6 +22,7 @@ Run: PYTHONPATH=src uv run python calibration/fluency_eval.py [n_rows]
 import json
 import sys
 from pathlib import Path
+from typing import TextIO
 
 import numpy as np
 import pyarrow.parquet as pq
@@ -48,7 +49,11 @@ def load_rows(split: str, n_rows: int) -> list[dict]:
 
 
 def collect_samples(
-    transcriber: WhisperTranscriber, rows: list[dict], desc: str
+    transcriber: WhisperTranscriber,
+    rows: list[dict],
+    desc: str,
+    split: str,
+    dump: TextIO,
 ) -> tuple[np.ndarray, np.ndarray]:
     features: list[list[float]] = []
     labels: list[float] = []
@@ -60,8 +65,12 @@ def collect_samples(
             extracted = extract_fluency_features(spans, duration)
             if extracted is None:
                 continue
+            label = float(row['fluency']) / LABEL_SCALE * 100.0
+            record = {name: getattr(extracted, name) for name in FEATURE_NAMES}
+            record.update(split=split, label=label)
+            dump.write(json.dumps(record) + '\n')
             features.append([getattr(extracted, name) for name in FEATURE_NAMES])
-            labels.append(float(row['fluency']) / LABEL_SCALE * 100.0)
+            labels.append(label)
         except Exception as error:  # noqa: BLE001 - harness, log and continue
             tqdm.write(f'skipped: {type(error).__name__}: {error}')
     return np.array(features), np.array(labels)
@@ -98,9 +107,11 @@ def correlation(
 def main() -> None:
     n_rows = int(sys.argv[1]) if len(sys.argv) > 1 else 2500
     transcriber = WhisperTranscriber(Settings())
+    dump_path = Path(__file__).parent / 'fluency_pairs.jsonl'
+    dump = dump_path.open('w')
 
     fit_features, fit_labels = collect_samples(
-        transcriber, load_rows('test', n_rows), desc='test split (fit)'
+        transcriber, load_rows('test', n_rows), 'test split (fit)', 'fit', dump
     )
     print(f'\nfit samples: {len(fit_labels)}')
 
@@ -113,13 +124,18 @@ def main() -> None:
     print(f'in-sample correlation: {train_corr:.3f}')
 
     holdout_features, holdout_labels = collect_samples(
-        transcriber, load_rows('train', n_rows), desc='train split (held-out)'
+        transcriber,
+        load_rows('train', n_rows),
+        'train split (held-out)',
+        'holdout',
+        dump,
     )
     holdout_corr = correlation(
         holdout_features, holdout_labels, centers, scales, weights, intercept
     )
     print(f'held-out samples: {len(holdout_labels)}')
     print(f'held-out correlation: {holdout_corr:.3f}')
+    dump.close()
 
     model = {
         'intercept': round(intercept, 4),
@@ -141,6 +157,7 @@ def main() -> None:
     out = Path(__file__).parent / 'fluency_model.json'
     out.write_text(json.dumps(model, indent=2))
     print(f'\nwrote {out}')
+    print(f'wrote {dump_path} ({len(fit_labels) + len(holdout_labels)} per-clip rows)')
     print('paste the centers, scales, weights, and intercept into')
     print('src/diction/scoring/fluency.py once the held-out correlation validates.')
 

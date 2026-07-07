@@ -16,7 +16,7 @@ the old pause-ratio proxy to 100 for every read:
 
 The model is a linear map from standardized features to a 0..100 score, fit
 against speechocean762's utterance fluency labels by `calibration/fluency_eval.py`
-and validated held-out (correlation 0.40, matching in-sample, so no overfit). Two
+and validated held-out (correlation 0.39, matching in-sample, so no overfit). Two
 of the four features carry the fit directly: `articulation_rate`, the dominant and
 most trustworthy term, and `duration_variation`. The two pause features do not.
 speechocean762 is read-aloud prompted speech, so almost no clip hesitates, and the
@@ -24,7 +24,7 @@ fit hands the collinear pause pair two large opposing weights that cancel. Their
 centers, scales, and negative weights are therefore reasoned rather than fitted,
 anchored at zero (a fluent read has no long pauses) with real-speech scales, so a
 genuinely halting read is still penalized where the corpus could not teach it. The
-score correlates 0.40 with human fluency, a real but imperfect proxy, so read it
+score correlates 0.39 with human fluency, a real but imperfect proxy, so read it
 as directional. See `calibration/FLUENCY_EVAL.md`.
 """
 
@@ -53,10 +53,10 @@ class FeatureWeight:
 
 FLUENCY_INTERCEPT = 79.77
 FLUENCY_WEIGHTS: dict[str, FeatureWeight] = {
-    'articulation_rate': FeatureWeight(center=2.389, scale=0.848, weight=5.446),
+    'articulation_rate': FeatureWeight(center=2.390, scale=0.845, weight=5.456),
     'long_pause_ratio': FeatureWeight(center=0.0, scale=0.15, weight=-12.0),
     'pause_rate': FeatureWeight(center=0.0, scale=0.3, weight=-8.0),
-    'duration_variation': FeatureWeight(center=0.458, scale=0.157, weight=-0.602),
+    'duration_variation': FeatureWeight(center=0.457, scale=0.159, weight=-0.684),
 }
 
 

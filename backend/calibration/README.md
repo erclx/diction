@@ -68,7 +68,8 @@ this corpus.
 - `contrast_eval.py`: separate minimal-pair verdict eval, writes `contrast_eval.json`.
 - `contrast_plots.py`: draws the verdict-error figure into `figures/`.
 - `CONTRAST_EVAL.md`: findings for the minimal-pair verdict eval.
-- `fluency_eval.py`: fits the reference-free fluency model, writes `fluency_model.json`.
+- `fluency_eval.py`: fits the reference-free fluency model, writes `fluency_model.json` and `fluency_pairs.jsonl`.
+- `fluency_plots.py`: draws the fluency-fit figure into `figures/` from the dump.
 - `FLUENCY_EVAL.md`: method and findings for the fluency fit.
 - `CASE_STUDY.md`: the write-up, in editorial voice, embedding the figures.
 - `distributions.json`: per-phoneme good-vs-bad GOP summary.

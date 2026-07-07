@@ -24,6 +24,7 @@
     ".cspell/**",
     ".git/**",
     "backend/calibration/contrast_plots.py",
+    "backend/calibration/fluency_plots.py",
     "backend/calibration/plots.py"
   ]
 }

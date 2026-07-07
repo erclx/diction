@@ -40,10 +40,10 @@ parameter (four features, an intercept) so it does not overfit the label noise.
 ## Findings
 
 Fit on 988 clips and validated on 986 held-out clips (1000 per split, minus clips
-too short to measure). The model correlates with human fluency at 0.40 held-out,
+too short to measure). The model correlates with human fluency at 0.39 held-out,
 matching the 0.39 in-sample, so it generalizes rather than overfits. A 300-clip
 smoke first read 0.24 held-out against 0.49 in-sample, which was undersampling
-noise: at 1000 clips the two converge. 0.40 is a real but modest relationship, so
+noise: at 1000 clips the two converge. 0.39 is a real but modest relationship, so
 the score reads as directional, a genuine-but-imperfect proxy, not a settled grade.
 
 Two of the four features carry the fit. `articulation_rate` is the dominant,
@@ -54,8 +54,8 @@ into `FLUENCY_WEIGHTS` as fitted.
 The two pause features cannot be calibrated on this corpus. speechocean762 is
 read-aloud prompted speech, so almost no clip hesitates: the fitted pause centers
 are 0.002 and 0.004, essentially zero. With near-zero variance the two collinear
-pause features get large opposing weights that cancel, -3.33 for `long_pause_ratio`
-against +3.36 for `pause_rate`, and `pause_rate` even lands the wrong sign. Adopting
+pause features get large opposing weights that cancel, -3.13 for `long_pause_ratio`
+against +3.18 for `pause_rate`, and `pause_rate` even lands the wrong sign. Adopting
 those raw weights would break real-speech discrimination, and the tiny fitted scales
 would explode a real pause into a many-sigma outlier. So the pause terms stay
 reasoned: centered at zero, since a fluent read has no long pauses, with real-speech
@@ -67,6 +67,12 @@ the whole score directional.
 The fitted parameters live in `fluency_model.json`. The `articulation_rate` and
 `duration_variation` rows are the source of the shipped weights. The pause rows are
 recorded there but not shipped, for the reason above.
+
+![Predicted vs human fluency on the held-out split, and the long-pause-ratio distribution](figures/fluency_fit.png)
+
+The left panel is the held-out predicted-versus-actual scatter behind the 0.40
+correlation. The right panel is the long-pause-ratio distribution, pinned near
+zero across the corpus, the visual reason the pause features cannot be fit here.
 
 ## Re-run
 
@@ -85,5 +91,11 @@ sweep is not run blind.
 
 It transcribes the test split for the fit and the train split for held-out
 validation, then writes `fluency_model.json` with the fitted parameters and the
-two correlations. Smoke-test on a few hundred rows before the full sweep, since
-the per-clip Whisper runtime is only knowable by running it.
+two correlations, plus `fluency_pairs.jsonl` with the per-clip features and label
+so the figure redraws without re-transcribing. Smoke-test on a few hundred rows
+before the full sweep, since the per-clip Whisper runtime is only knowable by
+running it. Redraw the figure from the dump:
+
+```bash
+uv run --with matplotlib --with seaborn python calibration/fluency_plots.py
+```
