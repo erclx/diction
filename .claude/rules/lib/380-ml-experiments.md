@@ -15,6 +15,7 @@ paths:
 
 - Smoke-test a small sample end to end before the full run. Confirm the output shape and per-item runtime, then scale.
 - Skip pipeline stages the task does not need.
+- Show live progress on a long sweep with a flushing progress bar (`tqdm`), not plain `print`s. Piped stdout is block-buffered, so unflushed prints stay invisible until the run exits, leaving a multi-minute sweep running blind.
 - Dump raw per-item results to disk from the sweep, so fitting and re-analysis run offline without repeating the expensive pass.
 
 ## Fitting and validation

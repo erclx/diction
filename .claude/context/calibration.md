@@ -11,6 +11,7 @@ The offline supervised-learning experiment that sets the pronunciation-flag thre
 
 - `backend/calibration/` owns the harness: `measure.py` runs the GPU sweep, `analyze.py` fits, `validate.py` checks on held-out data, `plots.py` draws the figures.
 - `contrast_eval.py` and `contrast_plots.py` are a separate eval, not part of the threshold fit. They measure whether the production drill's pass-or-retry verdict tells the target sound of a minimal pair from its competitor, writing `contrast_eval.json` and `figures/contrast_verdict.png`. The findings are in `backend/calibration/CONTRAST_EVAL.md`.
+- `fluency_eval.py` is a third eval, also outside the phoneme-threshold fit. It fits the reference-free passage fluency from Whisper-timing features to speechocean762's utterance fluency labels, writing `fluency_model.json`. Unlike the phoneme sweep it needs Whisper, since fluency is a delivery measure with no reference text to align against. The findings are in `backend/calibration/FLUENCY_EVAL.md`.
 - `backend/calibration/baselines.json` and `distributions.json` own the fitted data. `src/diction/scoring/phoneme_baselines.py` is the shipped table the app imports, generated from `baselines.json`.
 - The harness stays out of `src/` because it is offline tooling with research-only dependencies (`matplotlib`, `seaborn`, `datasets`) the app never imports. The result belongs in `src`, the experiment does not.
 

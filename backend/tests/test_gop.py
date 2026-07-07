@@ -5,7 +5,6 @@ from diction.scoring.gop import (
     AlignedPhoneme,
     aggregate_scores,
     completeness,
-    fluency,
     normalize_gop,
 )
 from diction.scoring.phoneme_baselines import FLAG_K, PHONEME_BASELINES
@@ -38,13 +37,6 @@ def test_completeness_is_fraction_of_expected_words_spoken() -> None:
     result = completeness(['the', 'thick', 'fog'], ['the', 'fog'])
 
     assert result == 100.0 * 2 / 3
-
-
-def test_fluency_penalizes_inter_word_pauses() -> None:
-    tight = fluency([(0.0, 0.5), (0.5, 1.0)], duration=1.0)
-    gappy = fluency([(0.0, 0.5), (2.5, 3.0)], duration=3.0)
-
-    assert tight > gappy
 
 
 def test_aggregate_flags_the_word_whose_phoneme_falls_below_its_baseline() -> None:
