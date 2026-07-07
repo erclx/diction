@@ -7,12 +7,14 @@ a held-out split.
 ## Why it exists
 
 The passage score's `fluency` first shipped as a placeholder: `100 * (1 - pause
-ratio)` over the forced-aligned word spans. Those spans are near-contiguous, so
-the pause ratio was near-zero and the score read 100 for almost every clip,
-whether the delivery was smooth or halting. Its own docstring said to replace it
-"when the prosody features land", which v0.5 delivered. This harness fits a real
-measure the same way the phoneme flag was fit: against speechocean762, on a
-held-out split, so the score is trustworthy rather than hand-tuned.
+ratio)` over the Whisper word spans. Inter-word gaps sum to near-zero for any
+continuous read, so the pause ratio was near-zero and the score read 100 for
+almost every clip, whether the delivery was smooth or halting. A single
+gaps-over-duration ratio saturates whatever the span source. Its own docstring
+said to replace it "when the prosody features land", which v0.5 delivered. This
+harness fits a real measure the same way the phoneme flag was fit: against
+speechocean762, on a held-out split, so the score is trustworthy rather than
+hand-tuned.
 
 ## Method
 
@@ -66,7 +68,11 @@ the whole score directional.
 
 The fitted parameters live in `fluency_model.json`. The `articulation_rate` and
 `duration_variation` rows are the source of the shipped weights. The pause rows are
-recorded there but not shipped, for the reason above.
+recorded there but not shipped, for the reason above. The shipped model keeps the
+jointly-fit intercept (79.77) unchanged under the pause-weight swap. This is exact
+where it matters: the reasoned pause centers sit at zero and the corpus pause means
+are ~0.002, so the pause terms contribute ~0 at a typical clip either way, and the
+mean-clip prediction stays ~79.5.
 
 ![Predicted vs human fluency on the held-out split, and the long-pause-ratio distribution](figures/fluency_fit.png)
 

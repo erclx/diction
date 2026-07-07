@@ -3,10 +3,11 @@ core is unit-tested against synthetic word timings without any download.
 
 Fluency is built from the learner's own delivery, not a comparison to a native
 rendering: passage scoring aligns against expected text, not a reference clip, so
-there is no reference timing to compare against at score time. Four features come
-from the shared Whisper word timings the GOP scorer already produces, which carry
-real inter-word gaps, unlike the near-contiguous forced-aligned spans that pushed
-the old pause-ratio proxy to 100 for every read:
+there is no reference timing to compare against at score time. The old proxy
+reduced the same Whisper word timings to one gaps-over-duration ratio, which
+saturates near 100 for any continuous read, since inter-word gaps sum to near-zero
+whatever the span source. Four features from those same timings carry the signal a
+single ratio misses:
 
 - articulation rate: words per second of articulated speech
 - long-pause ratio: fraction of the clip spent in hesitation pauses

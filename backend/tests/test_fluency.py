@@ -52,7 +52,7 @@ def test_a_halting_read_scores_below_a_fluent_one() -> None:
     )
 
 
-def test_long_pause_ratio_counts_only_gaps_past_the_threshold() -> None:
+def test_pause_rate_counts_only_gaps_past_the_threshold() -> None:
     spans = [(0.0, 0.5), (0.6, 1.1), (1.9, 2.4)]
 
     features = extract_fluency_features(spans, duration=2.4)
