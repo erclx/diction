@@ -1,0 +1,31 @@
+{
+  "intercept": 79.7672,
+  "weights": {
+    "articulation_rate": {
+      "center": 2.3892,
+      "scale": 0.8475,
+      "weight": 5.4456
+    },
+    "long_pause_ratio": {
+      "center": 0.0019,
+      "scale": 0.0163,
+      "weight": -3.3307
+    },
+    "pause_rate": {
+      "center": 0.0043,
+      "scale": 0.0394,
+      "weight": 3.3551
+    },
+    "duration_variation": {
+      "center": 0.4578,
+      "scale": 0.1572,
+      "weight": -0.6018
+    }
+  },
+  "validation": {
+    "in_sample_correlation": 0.3877,
+    "held_out_correlation": 0.4001,
+    "fit_samples": 988,
+    "held_out_samples": 986
+  }
+}

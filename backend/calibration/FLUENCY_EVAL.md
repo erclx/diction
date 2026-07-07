@@ -39,17 +39,34 @@ parameter (four features, an intercept) so it does not overfit the label noise.
 
 ## Findings
 
-Pending the GPU run. `fluency_eval.py` transcribes with Whisper, which is
-GPU-bound and runs on the 5090, not in CI. The shipped model in
-`src/diction/scoring/fluency.py` carries placeholder centers, scales, and weights
-on the same footing as the prosody tolerances: the sign of each weight is set by
-what fluency means (faster and more even reads higher, more pauses lower), and the
-intercept is set so a typical even read lands in the 80s rather than pinning at 100. Until the held-out correlation validates, the score is directional, not a
-settled grade, and the passage surface presents it as such.
+Fit on 988 clips and validated on 986 held-out clips (1000 per split, minus clips
+too short to measure). The model correlates with human fluency at 0.40 held-out,
+matching the 0.39 in-sample, so it generalizes rather than overfits. A 300-clip
+smoke first read 0.24 held-out against 0.49 in-sample, which was undersampling
+noise: at 1000 clips the two converge. 0.40 is a real but modest relationship, so
+the score reads as directional, a genuine-but-imperfect proxy, not a settled grade.
 
-When the fit runs, paste the fitted centers, scales, weights, and intercept from
-`fluency_model.json` into `FLUENCY_WEIGHTS` and `FLUENCY_INTERCEPT`, and replace
-this section with the in-sample and held-out correlation.
+Two of the four features carry the fit. `articulation_rate` is the dominant,
+trustworthy term (weight 5.4 on a 0.85-wps scale around a 2.4-wps center), and
+`duration_variation` follows with a small correct-signed weight. These are pasted
+into `FLUENCY_WEIGHTS` as fitted.
+
+The two pause features cannot be calibrated on this corpus. speechocean762 is
+read-aloud prompted speech, so almost no clip hesitates: the fitted pause centers
+are 0.002 and 0.004, essentially zero. With near-zero variance the two collinear
+pause features get large opposing weights that cancel, -3.33 for `long_pause_ratio`
+against +3.36 for `pause_rate`, and `pause_rate` even lands the wrong sign. Adopting
+those raw weights would break real-speech discrimination, and the tiny fitted scales
+would explode a real pause into a many-sigma outlier. So the pause terms stay
+reasoned: centered at zero, since a fluent read has no long pauses, with real-speech
+scales and modest negative weights, so a genuinely halting read is penalized where
+the corpus is silent. This is the same discipline the GOP flag and prosody
+tolerances follow: calibrate what the data can teach, reason the rest, and label
+the whole score directional.
+
+The fitted parameters live in `fluency_model.json`. The `articulation_rate` and
+`duration_variation` rows are the source of the shipped weights. The pause rows are
+recorded there but not shipped, for the reason above.
 
 ## Re-run
 

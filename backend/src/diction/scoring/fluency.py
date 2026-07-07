@@ -14,12 +14,18 @@ the old pause-ratio proxy to 100 for every read:
 - duration variation: coefficient of variation of word durations, the halting-
   versus-even rhythm signal, the same per-word-duration measure `prosody.py` uses
 
-The model is a linear map from standardized features to a 0..100 score. Its
-centers, scales, weights, and intercept are placeholders carried until the
-speechocean762 fluency fit lands, the same calibration discipline the GOP
-threshold and the prosody tolerances follow. `calibration/fluency_eval.py` refits
-them against the corpus fluency labels and validates held-out. Until then the
-score is directional, not a settled grade.
+The model is a linear map from standardized features to a 0..100 score, fit
+against speechocean762's utterance fluency labels by `calibration/fluency_eval.py`
+and validated held-out (correlation 0.40, matching in-sample, so no overfit). Two
+of the four features carry the fit directly: `articulation_rate`, the dominant and
+most trustworthy term, and `duration_variation`. The two pause features do not.
+speechocean762 is read-aloud prompted speech, so almost no clip hesitates, and the
+fit hands the collinear pause pair two large opposing weights that cancel. Their
+centers, scales, and negative weights are therefore reasoned rather than fitted,
+anchored at zero (a fluent read has no long pauses) with real-speech scales, so a
+genuinely halting read is still penalized where the corpus could not teach it. The
+score correlates 0.40 with human fluency, a real but imperfect proxy, so read it
+as directional. See `calibration/FLUENCY_EVAL.md`.
 """
 
 from dataclasses import dataclass
@@ -45,12 +51,12 @@ class FeatureWeight:
     weight: float
 
 
-FLUENCY_INTERCEPT = 82.0
+FLUENCY_INTERCEPT = 79.77
 FLUENCY_WEIGHTS: dict[str, FeatureWeight] = {
-    'articulation_rate': FeatureWeight(center=3.0, scale=1.0, weight=8.0),
-    'long_pause_ratio': FeatureWeight(center=0.05, scale=0.1, weight=-22.0),
-    'pause_rate': FeatureWeight(center=0.1, scale=0.2, weight=-14.0),
-    'duration_variation': FeatureWeight(center=0.5, scale=0.3, weight=-10.0),
+    'articulation_rate': FeatureWeight(center=2.389, scale=0.848, weight=5.446),
+    'long_pause_ratio': FeatureWeight(center=0.0, scale=0.15, weight=-12.0),
+    'pause_rate': FeatureWeight(center=0.0, scale=0.3, weight=-8.0),
+    'duration_variation': FeatureWeight(center=0.458, scale=0.157, weight=-0.602),
 }
 
 
