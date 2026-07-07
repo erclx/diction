@@ -28,11 +28,22 @@ export function useSpanPlayer(url: string | undefined): SpanPlayer {
   const contextRef = useRef<AudioContext | null>(null)
   const bufferRef = useRef<AudioBuffer | null>(null)
   const sourceRef = useRef<AudioBufferSourceNode | null>(null)
+  const startedRef = useRef(false)
   const [canPlay, setCanPlay] = useState(false)
   const [activeSpan, setActiveSpan] = useState<Span | null>(null)
 
   const stop = useCallback(() => {
-    sourceRef.current?.stop()
+    const source = sourceRef.current
+    if (!source) {
+      return
+    }
+    if (startedRef.current) {
+      source.stop()
+      return
+    }
+    sourceRef.current = null
+    startedRef.current = false
+    setActiveSpan(null)
   }, [])
 
   useEffect(() => {
@@ -66,8 +77,11 @@ export function useSpanPlayer(url: string | undefined): SpanPlayer {
     return () => {
       cancelled = true
       setCanPlay(false)
-      sourceRef.current?.stop()
+      if (sourceRef.current && startedRef.current) {
+        sourceRef.current.stop()
+      }
       sourceRef.current = null
+      startedRef.current = false
       bufferRef.current = null
       setActiveSpan(null)
       channel.release(stop)
@@ -84,7 +98,7 @@ export function useSpanPlayer(url: string | undefined): SpanPlayer {
         return
       }
 
-      sourceRef.current?.stop()
+      stop()
 
       const source = context.createBufferSource()
       source.buffer = buffer
@@ -92,17 +106,25 @@ export function useSpanPlayer(url: string | undefined): SpanPlayer {
       source.onended = () => {
         if (sourceRef.current === source) {
           sourceRef.current = null
+          startedRef.current = false
           setActiveSpan(null)
           channel.release(stop)
         }
       }
       sourceRef.current = source
+      startedRef.current = false
 
       channel.claim(stop)
       setActiveSpan([start, end])
 
       const { offset, duration } = padSpan(start, end, buffer.duration)
-      const begin = () => source.start(0, offset, duration)
+      const begin = () => {
+        if (sourceRef.current !== source) {
+          return
+        }
+        source.start(0, offset, duration)
+        startedRef.current = true
+      }
       if (context.state === 'suspended') {
         void context.resume().then(begin)
       } else {
