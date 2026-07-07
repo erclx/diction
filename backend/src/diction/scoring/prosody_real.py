@@ -42,11 +42,7 @@ from diction.scoring.prosody import (
 )
 from diction.scoring.transcription import WhisperTranscriber
 
-# Median-filter window over f0 frames, wide enough to drop a single-frame octave
-# jump without flattening a real pitch movement.
 PITCH_SMOOTH_WINDOW = 5
-# A frame quieter than this fraction of the loudest frame is treated as unvoiced,
-# since the tracker still reports a pitch for near-silence.
 VOICING_ENERGY_RATIO = 0.15
 
 

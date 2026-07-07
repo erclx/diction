@@ -25,18 +25,10 @@ import math
 from collections.abc import Callable
 from dataclasses import dataclass
 
-# Distance, in semitones, at which the intonation match reaches zero. Half an
-# octave of average contour deviation is the current placeholder.
 INTONATION_TOLERANCE_SEMITONES = 6.0
-# Distance, in duration-fraction units, at which the rhythm match reaches zero.
 RHYTHM_TOLERANCE = 0.25
-# Points both contours are resampled to before comparison, decoupling the score
-# from clip length and frame rate.
 CONTOUR_RESAMPLE_POINTS = 64
 
-# A pitch track is a per-frame (time_seconds, frequency_hz) series, with a
-# frequency of zero marking an unvoiced frame. Word timings are (start, end)
-# spans in seconds.
 PitchTrack = list[tuple[float, float]]
 WordTimings = list[tuple[float, float]]
 

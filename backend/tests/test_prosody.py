@@ -21,8 +21,6 @@ from diction.scoring.prosody import (
 )
 from diction.tts.base import StubSynthesizer
 
-# Two words evenly spanning the clip, so a frame's normalized position equals its
-# fraction of the clip and equal-melody readings align regardless of tempo.
 TWO_WORDS = [(0.0, 0.5), (0.5, 1.0)]
 
 
