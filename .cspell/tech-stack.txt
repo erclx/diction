@@ -17,6 +17,7 @@ coveragerc
 cuda
 dataclass
 dataclasses
+datetimes
 dbaeumer
 domcontentloaded
 dotenv
