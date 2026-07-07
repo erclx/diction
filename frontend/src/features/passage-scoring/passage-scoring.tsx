@@ -2,7 +2,8 @@ import { Loader2, Mic, RotateCcw, Square } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-
+import { LevelMeter } from '@/components/level-meter'
+import { OwnRecordingAudio } from '@/features/audio-channel/own-recording-audio'
 import { ReferenceButton } from '@/features/reference-audio/reference-button'
 
 import { ClipTooWeakError, useScorePassage } from './use-score-passage'
@@ -71,10 +72,13 @@ export function PassageScoring() {
         )}
 
         {recorder.status === 'recording' && (
-          <Button variant="destructive" onClick={recorder.stop}>
-            <Square />
-            Stop
-          </Button>
+          <div className="flex flex-col items-center gap-3">
+            <LevelMeter level={recorder.level} />
+            <Button variant="destructive" onClick={recorder.stop}>
+              <Square />
+              Stop
+            </Button>
+          </div>
         )}
 
         {recorder.status === 'denied' && (
@@ -91,8 +95,7 @@ export function PassageScoring() {
 
         {recorder.status === 'recorded' && recorder.recording && (
           <div className="flex w-full flex-col items-center gap-3">
-            <audio
-              controls
+            <OwnRecordingAudio
               src={recorder.recording.url}
               className="w-full max-w-sm"
             />

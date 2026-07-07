@@ -105,4 +105,41 @@ describe('StressIntonation', () => {
       expect(screen.getByRole('alert')).toHaveTextContent(/Analysis failed/),
     )
   })
+
+  it('should strip trailing punctuation from a stress-mark word label', async () => {
+    server.use(
+      http.post(ANALYZE_URL, () =>
+        HttpResponse.json({
+          ...ANALYSIS,
+          stress_marks: [
+            { word: 'money.', syllables: ['mʌ', 'ni'], stress_index: 0 },
+          ],
+        }),
+      ),
+    )
+    renderWithProviders(<StressIntonation />)
+
+    await recordAndAnalyze()
+
+    await waitFor(() => expect(screen.getByText('money')).toBeInTheDocument())
+    expect(screen.queryByText('money.')).not.toBeInTheDocument()
+  })
+
+  it('should surface the too-weak reason instead of the generic failure', async () => {
+    server.use(
+      http.post(ANALYZE_URL, () =>
+        HttpResponse.json(
+          { error: 'clip_too_weak', detail: 'Clip too short or quiet' },
+          { status: 422 },
+        ),
+      ),
+    )
+    renderWithProviders(<StressIntonation />)
+
+    await recordAndAnalyze()
+
+    await waitFor(() =>
+      expect(screen.getByRole('alert')).toHaveTextContent(/too short or quiet/),
+    )
+  })
 })

@@ -3,12 +3,20 @@ import { ArrowRight, Loader2, Mic, RotateCcw, Square } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
+import { LevelMeter } from '@/components/level-meter'
+import { MetricCard } from '@/components/metric-card'
+import { OwnRecordingAudio } from '@/features/audio-channel/own-recording-audio'
 import { ReferenceButton } from '@/features/reference-audio/reference-button'
 import { useRecorder } from '@/features/passage-scoring/use-recorder'
+import { ClipTooWeakError } from '@/features/passage-scoring/use-score-passage'
 import { cn } from '@/lib/utils'
 
 import type { ProsodyAnalysis, StressMark } from './use-analyze-prosody'
 import { useAnalyzeProsody } from './use-analyze-prosody'
+
+export function stripTrailingPunctuation(word: string): string {
+  return word.replace(/[^\p{L}\p{N}]+$/u, '')
+}
 
 const STRESS_PROMPTS = [
   'I never said she stole the money.',
@@ -130,28 +138,12 @@ function StressLine({ marks }: StressLineProps) {
               </span>
             ))}
           </div>
-          <span className="text-xs text-muted-foreground">{mark.word}</span>
+          <span className="text-xs text-muted-foreground">
+            {stripTrailingPunctuation(mark.word)}
+          </span>
         </div>
       ))}
     </div>
-  )
-}
-
-interface MatchScoreProps {
-  label: string
-  value: number
-}
-
-function MatchScore({ label, value }: MatchScoreProps) {
-  return (
-    <Card>
-      <CardContent className="flex flex-col items-center gap-1 p-4">
-        <span className="text-2xl font-semibold tabular-nums">
-          {Math.round(value)}
-        </span>
-        <span className="text-sm text-muted-foreground">{label}</span>
-      </CardContent>
-    </Card>
   )
 }
 
@@ -184,10 +176,13 @@ function AnalysisResult({ analysis }: AnalysisResultProps) {
       </Card>
 
       <div className="grid grid-cols-2 gap-3">
-        <MatchScore label="Rhythm match" value={analysis.rhythm_match} />
-        <MatchScore
+        <MetricCard
+          label="Rhythm match"
+          display={String(Math.round(analysis.rhythm_match))}
+        />
+        <MetricCard
           label="Intonation match"
-          value={analysis.intonation_match}
+          display={String(Math.round(analysis.intonation_match))}
         />
       </div>
     </div>
@@ -199,6 +194,8 @@ export function StressIntonation() {
   const analysis = useAnalyzeProsody()
   const [promptIndex, setPromptIndex] = useState(0)
   const prompt = STRESS_PROMPTS[promptIndex % STRESS_PROMPTS.length]
+  const clipTooWeakDetail =
+    analysis.error instanceof ClipTooWeakError ? analysis.error.detail : null
 
   function handleAnalyze() {
     if (!recorder.recording) {
@@ -254,10 +251,13 @@ export function StressIntonation() {
         )}
 
         {recorder.status === 'recording' && (
-          <Button variant="destructive" onClick={recorder.stop}>
-            <Square />
-            Stop
-          </Button>
+          <div className="flex flex-col items-center gap-3">
+            <LevelMeter level={recorder.level} />
+            <Button variant="destructive" onClick={recorder.stop}>
+              <Square />
+              Stop
+            </Button>
+          </div>
         )}
 
         {recorder.status === 'denied' && (
@@ -274,8 +274,7 @@ export function StressIntonation() {
 
         {recorder.status === 'recorded' && recorder.recording && (
           <div className="flex w-full flex-col items-center gap-3">
-            <audio
-              controls
+            <OwnRecordingAudio
               src={recorder.recording.url}
               className="w-full max-w-sm"
             />
@@ -299,7 +298,16 @@ export function StressIntonation() {
         )}
       </div>
 
-      {analysis.isError && (
+      {clipTooWeakDetail && (
+        <p
+          role="alert"
+          className="rounded-lg border border-warning/50 bg-warning/10 p-3 text-center text-sm text-warning"
+        >
+          {clipTooWeakDetail}
+        </p>
+      )}
+
+      {analysis.isError && !clipTooWeakDetail && (
         <p
           role="alert"
           className="rounded-lg border border-destructive/50 bg-destructive/10 p-3 text-center text-sm text-destructive"

@@ -3,33 +3,21 @@ import { ArrowRight, Loader2, Mic, RotateCcw, Square } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
+import { LevelMeter } from '@/components/level-meter'
+import { MetricCard } from '@/components/metric-card'
+import { OwnRecordingAudio } from '@/features/audio-channel/own-recording-audio'
 import { ReferenceButton } from '@/features/reference-audio/reference-button'
 import { useRecorder } from '@/features/passage-scoring/use-recorder'
+import { ClipTooWeakError } from '@/features/passage-scoring/use-score-passage'
 
 import { SHADOWING_PROMPTS } from './shadowing-prompts'
 import { useScoreShadowing } from './use-score-shadowing'
 
-interface MatchScoreProps {
-  label: string
-  value: number
-}
-
-function MatchScore({ label, value }: MatchScoreProps) {
-  return (
-    <Card>
-      <CardContent className="flex flex-col items-center gap-1 p-4">
-        <span className="text-2xl font-semibold tabular-nums">
-          {Math.round(value)}
-        </span>
-        <span className="text-sm text-muted-foreground">{label}</span>
-      </CardContent>
-    </Card>
-  )
-}
-
 export function Shadowing() {
   const recorder = useRecorder()
   const scoring = useScoreShadowing()
+  const clipTooWeakDetail =
+    scoring.error instanceof ClipTooWeakError ? scoring.error.detail : null
   const [promptIndex, setPromptIndex] = useState(0)
   const prompt = SHADOWING_PROMPTS[promptIndex % SHADOWING_PROMPTS.length]
 
@@ -84,10 +72,13 @@ export function Shadowing() {
         )}
 
         {recorder.status === 'recording' && (
-          <Button variant="destructive" onClick={recorder.stop}>
-            <Square />
-            Stop
-          </Button>
+          <div className="flex flex-col items-center gap-3">
+            <LevelMeter level={recorder.level} />
+            <Button variant="destructive" onClick={recorder.stop}>
+              <Square />
+              Stop
+            </Button>
+          </div>
         )}
 
         {recorder.status === 'denied' && (
@@ -104,8 +95,7 @@ export function Shadowing() {
 
         {recorder.status === 'recorded' && recorder.recording && (
           <div className="flex w-full flex-col items-center gap-3">
-            <audio
-              controls
+            <OwnRecordingAudio
               src={recorder.recording.url}
               className="w-full max-w-sm"
             />
@@ -129,7 +119,16 @@ export function Shadowing() {
         )}
       </div>
 
-      {scoring.isError && (
+      {clipTooWeakDetail && (
+        <p
+          role="alert"
+          className="rounded-lg border border-warning/50 bg-warning/10 p-3 text-center text-sm text-warning"
+        >
+          {clipTooWeakDetail}
+        </p>
+      )}
+
+      {scoring.isError && !clipTooWeakDetail && (
         <p
           role="alert"
           className="rounded-lg border border-destructive/50 bg-destructive/10 p-3 text-center text-sm text-destructive"
@@ -141,13 +140,13 @@ export function Shadowing() {
       {scoring.isSuccess && (
         <div className="flex flex-col items-center gap-3">
           <div className="grid w-full grid-cols-2 gap-3">
-            <MatchScore
+            <MetricCard
               label="Rhythm match"
-              value={scoring.data.rhythm_match}
+              display={String(Math.round(scoring.data.rhythm_match))}
             />
-            <MatchScore
+            <MetricCard
               label="Intonation match"
-              value={scoring.data.intonation_match}
+              display={String(Math.round(scoring.data.intonation_match))}
             />
           </div>
           <p className="text-xs text-muted-foreground">
