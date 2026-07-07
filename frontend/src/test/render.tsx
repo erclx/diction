@@ -3,6 +3,8 @@ import { render, type RenderResult } from '@testing-library/react'
 import type { ReactElement } from 'react'
 import { MemoryRouter } from 'react-router-dom'
 
+import { AudioChannelProvider } from '@/features/audio-channel/audio-channel'
+
 interface RenderOptions {
   initialEntries?: string[]
 }
@@ -21,7 +23,7 @@ export function renderWithProviders(
   return render(
     <QueryClientProvider client={queryClient}>
       <MemoryRouter initialEntries={options.initialEntries ?? ['/']}>
-        {ui}
+        <AudioChannelProvider>{ui}</AudioChannelProvider>
       </MemoryRouter>
     </QueryClientProvider>,
   )
