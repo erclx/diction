@@ -35,6 +35,7 @@ class SessionDetailResponse(BaseModel):
     accuracy: float
     fluency: float
     phoneme_quality: float
+    has_recording: bool = False
     flagged_words: list[FlaggedWordResponse]
 
 
@@ -53,7 +54,9 @@ def read_session(
     record = get_session_by_id(session, session_id)
     if record is None:
         raise HTTPException(status_code=404, detail='Session not found')
-    return SessionDetailResponse.model_validate(record)
+    detail = SessionDetailResponse.model_validate(record)
+    detail.has_recording = record.recording_path is not None
+    return detail
 
 
 @router.get('/sessions/{session_id}/recording')

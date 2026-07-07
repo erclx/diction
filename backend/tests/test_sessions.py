@@ -91,8 +91,20 @@ def test_detail_returns_a_session_with_flagged_words(
     body = response.json()
     assert body['id'] == session_id
     assert body['fluency'] == 70.0
+    assert body['has_recording'] is False
     assert body['flagged_words'][0]['word'] == 'thought'
     assert body['flagged_words'][0]['phoneme'] == 'θ'
+
+
+def test_detail_reports_has_recording_when_a_clip_is_stored(
+    client: TestClient, engine: Engine, recordings_dir: Path
+) -> None:
+    session_id = _seed_with_recording(engine, recordings_dir)
+
+    response = client.get(f'/api/sessions/{session_id}')
+
+    assert response.status_code == 200
+    assert response.json()['has_recording'] is True
 
 
 def test_detail_returns_404_for_an_unknown_id(client: TestClient) -> None:

@@ -96,6 +96,7 @@ export const handlers = [
       accuracy: 92.2,
       fluency: 98,
       phoneme_quality: 94,
+      has_recording: true,
       flagged_words: [
         {
           word: 'thought',

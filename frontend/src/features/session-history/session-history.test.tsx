@@ -29,6 +29,9 @@ describe('SessionHistory', () => {
 
     expect(await screen.findByText('Completeness')).toBeInTheDocument()
     expect(screen.getByText('thought', { exact: true })).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: 'Play your recording' }),
+    ).toBeInTheDocument()
   })
 
   it('should redirect an invalid session id to the list', async () => {

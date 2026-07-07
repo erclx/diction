@@ -20,6 +20,7 @@ export const SessionDetailSchema = z.object({
   accuracy: z.number(),
   fluency: z.number(),
   phoneme_quality: z.number(),
+  has_recording: z.boolean(),
   flagged_words: z.array(FlaggedWordSchema),
 })
 
