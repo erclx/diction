@@ -10,10 +10,12 @@ model without rebuilding the setup. It is not imported by the app.
 This file is the runbook. The method, decisions, and findings live in
 `.claude/context/calibration.md`, and the narrative write-up is `CASE_STUDY.md`.
 
-A separate eval lives alongside it: `contrast_eval.py` measures whether the
+Two separate evals live alongside it. `contrast_eval.py` measures whether the
 production drill's pass-or-retry verdict tells the target sound of a minimal pair
-from its competitor, written up in `CONTRAST_EVAL.md`. It is a different question
-from the threshold fit, so it stays out of the case study.
+from its competitor, written up in `CONTRAST_EVAL.md`. `fluency_eval.py` fits the
+reference-free passage fluency score against the corpus fluency labels, written up
+in `FLUENCY_EVAL.md`. Both are different questions from the phoneme-threshold fit,
+so they stay out of the case study.
 
 ## The loop
 
@@ -66,6 +68,8 @@ this corpus.
 - `contrast_eval.py`: separate minimal-pair verdict eval, writes `contrast_eval.json`.
 - `contrast_plots.py`: draws the verdict-error figure into `figures/`.
 - `CONTRAST_EVAL.md`: findings for the minimal-pair verdict eval.
+- `fluency_eval.py`: fits the reference-free fluency model, writes `fluency_model.json`.
+- `FLUENCY_EVAL.md`: method and findings for the fluency fit.
 - `CASE_STUDY.md`: the write-up, in editorial voice, embedding the figures.
 - `distributions.json`: per-phoneme good-vs-bad GOP summary.
 - `baselines.json`: the fitted table, source of `phoneme_baselines.py`.
