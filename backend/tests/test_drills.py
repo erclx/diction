@@ -14,6 +14,7 @@ from diction.scoring.audio import (
     ClipTooWeakError,
 )
 from diction.scoring.types import ContrastResult
+from diction.storage import drills as drills_storage
 from diction.storage import sessions as sessions_storage
 
 
@@ -109,6 +110,49 @@ def test_correct_target_returns_no_flagged_phonemes_and_writes_no_session(
     assert response.json()['flagged_phonemes'] == []
     with Session(engine) as session:
         assert sessions_storage.list_sessions(session) == []
+
+
+def test_scored_production_rep_persists_a_passed_drill_rep(
+    client: TestClient, engine: Engine
+) -> None:
+    client.app.dependency_overrides[get_scorer] = lambda: FakeScorer(_clean_result())
+
+    _post(client)
+
+    with Session(engine) as session:
+        reps = drills_storage.list_drill_reps(session)
+    assert len(reps) == 1
+    assert reps[0].mode == 'production'
+    assert reps[0].target == 'ɔ'
+    assert reps[0].passed is True
+    assert reps[0].score is None
+
+
+def test_substituted_production_rep_persists_a_failed_drill_rep(
+    client: TestClient, engine: Engine
+) -> None:
+    client.app.dependency_overrides[get_scorer] = lambda: FakeScorer(
+        _substituted_result()
+    )
+
+    _post(client)
+
+    with Session(engine) as session:
+        reps = drills_storage.list_drill_reps(session)
+    assert len(reps) == 1
+    assert reps[0].passed is False
+
+
+def test_unrecognized_word_persists_no_drill_rep(
+    client: TestClient, engine: Engine
+) -> None:
+    scorer = FakeScorer(_clean_result(), heard='rabbit')
+    client.app.dependency_overrides[get_scorer] = lambda: scorer
+
+    _post(client)
+
+    with Session(engine) as session:
+        assert drills_storage.list_drill_reps(session) == []
 
 
 def test_unrecognized_word_skips_scoring_and_writes_no_session(
