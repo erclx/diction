@@ -1,0 +1,111 @@
+"""Pure, reference-free fluency scoring. No model, numpy, or GPU imports, so this
+core is unit-tested against synthetic word timings without any download.
+
+Fluency is built from the learner's own delivery, not a comparison to a native
+rendering: passage scoring aligns against expected text, not a reference clip, so
+there is no reference timing to compare against at score time. The old proxy
+reduced the same Whisper word timings to one gaps-over-duration ratio, which
+saturates near 100 for any continuous read, since inter-word gaps sum to near-zero
+whatever the span source. Four features from those same timings carry the signal a
+single ratio misses:
+
+- articulation rate: words per second of articulated speech
+- long-pause ratio: fraction of the clip spent in hesitation pauses
+- pause rate: hesitation pauses per word
+- duration variation: coefficient of variation of word durations, the halting-
+  versus-even rhythm signal, the same per-word-duration measure `prosody.py` uses
+
+The model is a linear map from standardized features to a 0..100 score, fit
+against speechocean762's utterance fluency labels by `calibration/fluency_eval.py`
+and validated held-out (correlation 0.39, matching in-sample, so no overfit). Two
+of the four features carry the fit directly: `articulation_rate`, the dominant and
+most trustworthy term, and `duration_variation`. The two pause features do not.
+speechocean762 is read-aloud prompted speech, so almost no clip hesitates, and the
+fit hands the collinear pause pair two large opposing weights that cancel. Their
+centers, scales, and negative weights are therefore reasoned rather than fitted,
+anchored at zero (a fluent read has no long pauses) with real-speech scales, so a
+genuinely halting read is still penalized where the corpus could not teach it. The
+score correlates 0.39 with human fluency, a real but imperfect proxy, so read it
+as directional. See `calibration/FLUENCY_EVAL.md`.
+"""
+
+from dataclasses import dataclass
+from statistics import mean, pstdev
+
+LONG_PAUSE_SECONDS = 0.3
+
+WordSpans = list[tuple[float, float]]
+
+
+@dataclass(frozen=True, slots=True)
+class FluencyFeatures:
+    articulation_rate: float
+    long_pause_ratio: float
+    pause_rate: float
+    duration_variation: float
+
+
+@dataclass(frozen=True, slots=True)
+class FeatureWeight:
+    center: float
+    scale: float
+    weight: float
+
+
+FLUENCY_INTERCEPT = 79.77
+FLUENCY_WEIGHTS: dict[str, FeatureWeight] = {
+    'articulation_rate': FeatureWeight(center=2.390, scale=0.845, weight=5.456),
+    'long_pause_ratio': FeatureWeight(center=0.0, scale=0.15, weight=-12.0),
+    'pause_rate': FeatureWeight(center=0.0, scale=0.3, weight=-8.0),
+    'duration_variation': FeatureWeight(center=0.457, scale=0.159, weight=-0.684),
+}
+
+
+def extract_fluency_features(
+    word_spans: WordSpans, duration: float
+) -> FluencyFeatures | None:
+    """Derive the reference-free timing features from Whisper word spans, or None
+    when the clip is too short to measure a rhythm. Fewer than two words gives no
+    inter-word gap and no rate, and a non-positive duration or speech time cannot
+    normalize, so the caller scores those as the floor rather than guessing."""
+    if len(word_spans) < 2 or duration <= 0.0:
+        return None
+    durations = [max(0.0, end - start) for start, end in word_spans]
+    speech_time = sum(durations)
+    mean_duration = mean(durations)
+    if speech_time <= 0.0 or mean_duration <= 0.0:
+        return None
+    long_pauses = [
+        gap for gap in _inter_word_gaps(word_spans) if gap >= LONG_PAUSE_SECONDS
+    ]
+    return FluencyFeatures(
+        articulation_rate=len(word_spans) / speech_time,
+        long_pause_ratio=sum(long_pauses) / duration,
+        pause_rate=len(long_pauses) / len(word_spans),
+        duration_variation=pstdev(durations) / mean_duration,
+    )
+
+
+def score_fluency(features: FluencyFeatures) -> float:
+    """Map the standardized features onto a 0..100 fluency through the calibrated
+    linear model. A typical even read lands in the 80s rather than pinning at 100,
+    and each added pause, slowdown, or erratic word length pulls the score down."""
+    score = FLUENCY_INTERCEPT
+    for name, term in FLUENCY_WEIGHTS.items():
+        value = getattr(features, name)
+        score += term.weight * (value - term.center) / term.scale
+    return max(0.0, min(100.0, score))
+
+
+def fluency(word_spans: WordSpans, duration: float) -> float:
+    features = extract_fluency_features(word_spans, duration)
+    if features is None:
+        return 0.0
+    return score_fluency(features)
+
+
+def _inter_word_gaps(word_spans: WordSpans) -> list[float]:
+    return [
+        max(0.0, word_spans[index][0] - word_spans[index - 1][1])
+        for index in range(1, len(word_spans))
+    ]

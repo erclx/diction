@@ -12,6 +12,7 @@ changelogithub
 commitlint
 conftest
 coqui
+corrcoef
 coveragerc
 cuda
 dataclass
@@ -41,10 +42,12 @@ kaldi
 kwargs
 labelledby
 lessac
+linalg
 linecap
 linejoin
 lintstagedrc
 loadedmetadata
+lstsq
 matplotlib
 mispeech
 mkdocs
@@ -82,6 +85,7 @@ pyproject
 pytest
 pythonpath
 PYTHONUNBUFFERED
+rcond
 regen
 repr
 ruff
@@ -108,6 +112,7 @@ timonwong
 tobytes
 torchaudio
 torchcodec
+tqdm
 tsgolint
 unseekable
 uvicorn

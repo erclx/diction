@@ -11,6 +11,7 @@ from collections.abc import Iterable
 from dataclasses import dataclass
 
 from diction.scoring.audio import ClipTooWeakError
+from diction.scoring.fluency import fluency
 from diction.scoring.phoneme_baselines import FLAG_K, PHONEME_BASELINES
 from diction.scoring.types import FlaggedWordResult, ScoreResult
 
@@ -55,19 +56,6 @@ def completeness(expected_words: list[str], spoken_words: list[str]) -> float:
     spoken = set(spoken_words)
     hit = sum(1 for word in expected_words if word in spoken)
     return 100.0 * hit / len(expected_words)
-
-
-def fluency(spoken_spans: list[tuple[float, float]], duration: float) -> float:
-    """Crude proxy: penalize long inter-word pauses. Replace with a real prosody
-    measure when the prosody features land."""
-    if len(spoken_spans) < 2 or duration <= 0:
-        return 0.0
-    gaps = [
-        max(0.0, spoken_spans[i][0] - spoken_spans[i - 1][1])
-        for i in range(1, len(spoken_spans))
-    ]
-    pause_ratio = sum(gaps) / duration
-    return max(0.0, min(100.0, 100.0 * (1.0 - pause_ratio)))
 
 
 def _flag_worst_phonemes(
