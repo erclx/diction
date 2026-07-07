@@ -50,6 +50,7 @@ def _seed(engine: Engine, record: PracticeSession) -> int:
 def _passage_session(accuracy: float) -> PracticeSession:
     return PracticeSession(
         mode='passage',
+        passage='The early bird catches the worm.',
         completeness=90.0,
         accuracy=accuracy,
         fluency=70.0,
@@ -91,6 +92,7 @@ def test_detail_returns_a_session_with_flagged_words(
     body = response.json()
     assert body['id'] == session_id
     assert body['fluency'] == 70.0
+    assert body['passage'] == 'The early bird catches the worm.'
     assert body['has_recording'] is False
     assert body['flagged_words'][0]['word'] == 'thought'
     assert body['flagged_words'][0]['phoneme'] == 'θ'

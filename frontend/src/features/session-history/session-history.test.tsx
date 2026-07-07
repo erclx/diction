@@ -28,6 +28,9 @@ describe('SessionHistory', () => {
     )
 
     expect(await screen.findByText('Completeness')).toBeInTheDocument()
+    expect(
+      screen.getByText('The early bird catches the worm.'),
+    ).toBeInTheDocument()
     expect(screen.getByText('thought', { exact: true })).toBeInTheDocument()
     expect(
       screen.getByRole('button', { name: 'Play your recording' }),

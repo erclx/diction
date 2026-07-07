@@ -66,6 +66,15 @@ export function SessionDetail({ id }: SessionDetailProps) {
             </p>
           </header>
 
+          {query.data.passage && (
+            <div className="flex flex-col gap-3">
+              <h3 className="text-left text-xl font-medium">Passage</h3>
+              <p className="rounded-lg border bg-card p-4 text-left font-serif text-base leading-relaxed">
+                {query.data.passage}
+              </p>
+            </div>
+          )}
+
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             {METRICS.map((metric) => (
               <ScoreMetric

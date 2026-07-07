@@ -51,6 +51,7 @@ def score_passage(
     explanations = _explain_or_default(explainer, result.flagged_words)
     record = PracticeSession(
         mode='passage',
+        passage=passage,
         completeness=result.completeness,
         accuracy=result.accuracy,
         fluency=result.fluency,

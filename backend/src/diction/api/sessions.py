@@ -31,6 +31,7 @@ class SessionDetailResponse(BaseModel):
     id: int
     created_at: datetime
     mode: str
+    passage: str | None
     completeness: float
     accuracy: float
     fluency: float

@@ -102,6 +102,7 @@ def test_score_returns_scores_and_persists_the_session(
     with Session(engine) as session:
         saved = sessions_storage.list_sessions(session)
         assert len(saved) == 1
+        assert saved[0].passage == 'the thick fog'
         assert saved[0].flagged_words[0].word == 'thick'
         assert saved[0].flagged_words[0].phoneme == 'θ'
 
