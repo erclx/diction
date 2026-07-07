@@ -21,6 +21,7 @@ The persistence layer every practice mode writes through. One SQLite file per ru
 - Run mode selects the database. `Settings.run_mode` is `user` or `dev`. `user` binds a persistent file under `backend/data`, `dev` binds a scratch file under `backend/.dev-data` that the lifespan wipes before `create_all`, so dev and CI boot empty. `config.py` derives `resolved_db_path` and `resolved_recordings_dir` from the mode, and the engine reads the resolved path without knowing the mode. `dev.sh` and CI set `DICTION_RUN_MODE=dev`.
 - Drills persist as `DrillRep`, not widened `PracticeSession` columns. `mode` is one of `production`, `ear-training`, `shadowing`, or `stress`, `target` holds the phoneme for the minimal-pair drills and the reference prompt for the prosody drills, `passed` is the verdict where one exists, and `score` is the directional prosody match where one exists. The shape matches the phoneme-keyed weak-sound rollup that v0.6 resurfacing reads.
 - Recording bytes live on disk, never in SQLite. A passage save writes `<recordings_dir>/<session_id>.webm` after the row id exists, then stores the filename on `PracticeSession.recording_path`. `GET /api/sessions/{id}/recording` serves it back as a `FileResponse`.
+- `PracticeSession.passage` stores the read text so the history detail can show what was practiced next to how it scored. It is nullable, since drills and any pre-recording rows have none.
 - Table models stay internal. API routes return separate response models, so the HTTP contract does not track the DB shape.
 - Schema is created with `SQLModel.metadata.create_all()` in the app lifespan. Alembic is deferred until a real migration is needed, so a column change means resetting the local DB.
 - The session table model is `PracticeSession`, not `Session`, to avoid clashing with SQLModel's own `Session`.
@@ -38,5 +39,5 @@ The persistence layer every practice mode writes through. One SQLite file per ru
 ## Gotchas
 
 - SQLite ignores foreign-key constraints unless the pragma is set per connection. That is the whole reason `make_engine` exists rather than a bare `create_engine`.
-- `FlaggedWord` gained `phoneme`, `start`, and `end` for scoring output. `PracticeSession` gained `recording_path` and the `DrillRep` table landed alongside. Adding columns needs a local DB reset, since there are no migrations yet.
+- `FlaggedWord` gained `phoneme`, `start`, and `end` for scoring output. `PracticeSession` gained `recording_path` and `passage`, and the `DrillRep` table landed alongside. Adding columns needs a local DB reset, since there are no migrations yet.
 - The user database moved from `backend/diction.db` to `backend/data/diction.db`. A pre-move database is orphaned and must be re-created by a fresh boot.
