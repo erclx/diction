@@ -120,6 +120,22 @@ describe('TargetedDrills', () => {
     expect(screen.queryByText('r vs l')).not.toBeInTheDocument()
   })
 
+  it('should still show the weak-sound ranking when resurfacing fails', async () => {
+    serve([weakSound('θ', 8, ['thought'])])
+    server.use(
+      http.get('http://localhost:8000/api/resurfacing', () =>
+        HttpResponse.json({ detail: 'boom' }, { status: 500 }),
+      ),
+    )
+    renderWithProviders(<TargetedDrills />)
+
+    expect(await screen.findByText('th vs f')).toBeInTheDocument()
+    expect(screen.getByText('8x')).toBeInTheDocument()
+    expect(
+      screen.queryByRole('alert', { name: /Could not load/ }),
+    ).not.toBeInTheDocument()
+  })
+
   it('should show an onboarding prompt when no weak sounds exist', async () => {
     serve([])
     renderWithProviders(<TargetedDrills />)

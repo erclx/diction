@@ -80,14 +80,13 @@ export function useSuggestedDrills(): SuggestedDrillsResult {
 
   const suggestions = useMemo(() => {
     if (
-      resurfacingQuery.data === undefined ||
       weakSoundsQuery.data === undefined ||
       minimalPairsQuery.data === undefined
     ) {
       return []
     }
     return buildSuggestions(
-      resurfacingQuery.data,
+      resurfacingQuery.data ?? [],
       weakSoundsQuery.data,
       minimalPairsQuery.data,
     )
@@ -95,18 +94,9 @@ export function useSuggestedDrills(): SuggestedDrillsResult {
 
   return {
     suggestions,
-    isPending:
-      resurfacingQuery.isPending ||
-      weakSoundsQuery.isPending ||
-      minimalPairsQuery.isPending,
-    isError:
-      resurfacingQuery.isError ||
-      weakSoundsQuery.isError ||
-      minimalPairsQuery.isError,
-    isSuccess:
-      resurfacingQuery.isSuccess &&
-      weakSoundsQuery.isSuccess &&
-      minimalPairsQuery.isSuccess,
+    isPending: weakSoundsQuery.isPending || minimalPairsQuery.isPending,
+    isError: weakSoundsQuery.isError || minimalPairsQuery.isError,
+    isSuccess: weakSoundsQuery.isSuccess && minimalPairsQuery.isSuccess,
     refetch: () => {
       void resurfacingQuery.refetch()
       void weakSoundsQuery.refetch()
