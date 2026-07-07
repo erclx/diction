@@ -24,4 +24,23 @@ describe('MetricCard', () => {
       ).toBeInTheDocument(),
     )
   })
+
+  it('should show a supplied caveat instead of the directional default', async () => {
+    const user = userEvent.setup()
+    render(
+      <MetricCard
+        label="Completeness"
+        display="91"
+        caveat="The exact share of the passage you read aloud."
+      />,
+    )
+
+    await user.tab()
+
+    await waitFor(() =>
+      expect(
+        screen.getByRole('tooltip', { name: /exact share/ }),
+      ).toBeInTheDocument(),
+    )
+  })
 })

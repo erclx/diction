@@ -9,19 +9,21 @@ import {
 } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
 
-const METRIC_CAVEAT =
+export const DIRECTIONAL_CAVEAT =
   'Scored 0 to 100. A directional read, not a settled grade.'
 
 interface MetricCardProps {
   label: string
   display: string
   valueClassName?: string
+  caveat?: string
 }
 
 export function MetricCard({
   label,
   display,
   valueClassName,
+  caveat = DIRECTIONAL_CAVEAT,
 }: MetricCardProps) {
   return (
     <Card>
@@ -43,7 +45,7 @@ export function MetricCard({
                 <Info className="size-3.5" />
               </TooltipTrigger>
               <TooltipContent className="max-w-52 text-center">
-                {METRIC_CAVEAT}
+                {caveat}
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>

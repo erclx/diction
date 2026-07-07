@@ -8,12 +8,21 @@ interface ScoreResultsProps {
   recordingUrl: string | undefined
 }
 
-const METRICS = [
-  { key: 'completeness', label: 'Completeness' },
+const COMPLETENESS_CAVEAT =
+  'Scored 0 to 100. The exact share of the passage you read aloud.'
+
+interface MetricDescriptor {
+  key: keyof Omit<ScoreResult, 'flagged_words'>
+  label: string
+  caveat?: string
+}
+
+const METRICS: readonly MetricDescriptor[] = [
+  { key: 'completeness', label: 'Completeness', caveat: COMPLETENESS_CAVEAT },
   { key: 'accuracy', label: 'Accuracy' },
   { key: 'fluency', label: 'Fluency' },
   { key: 'phoneme_quality', label: 'Phoneme quality' },
-] as const
+]
 
 export function ScoreResults({ result, recordingUrl }: ScoreResultsProps) {
   const player = useSpanPlayer(recordingUrl)
@@ -26,6 +35,7 @@ export function ScoreResults({ result, recordingUrl }: ScoreResultsProps) {
             key={metric.key}
             label={metric.label}
             value={result[metric.key]}
+            caveat={metric.caveat}
           />
         ))}
       </div>
