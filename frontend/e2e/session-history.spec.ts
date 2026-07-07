@@ -64,12 +64,14 @@ test.describe('session history', () => {
     await openHistory(page)
     await page.mouse.move(0, 0)
 
-    await expect(page.getByRole('link', { name: 'History' })).toHaveAttribute(
+    const nav = page.getByRole('navigation', { name: 'Views' })
+
+    await expect(nav.getByRole('link', { name: 'History' })).toHaveAttribute(
       'aria-current',
       'page',
     )
     await expect(
-      page.getByRole('link', { name: 'Passage' }),
+      nav.getByRole('link', { name: 'Passage' }),
     ).not.toHaveAttribute('aria-current')
   })
 
