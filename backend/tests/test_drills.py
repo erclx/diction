@@ -216,3 +216,36 @@ def test_drill_route_requests_the_word_clip_floor(client: TestClient) -> None:
     _post(client)
 
     assert scorer.received_min_clip_seconds == MIN_WORD_CLIP_SECONDS
+
+
+def test_ear_training_rep_persists_a_correct_answer(
+    client: TestClient, engine: Engine
+) -> None:
+    response = client.post(
+        '/api/drills/ear-training/rep',
+        data={'target_phoneme': 'ɔ', 'correct': 'true'},
+    )
+
+    assert response.status_code == 200
+    assert response.json()['recorded'] is True
+    with Session(engine) as session:
+        reps = drills_storage.list_drill_reps(session)
+    assert len(reps) == 1
+    assert reps[0].mode == 'ear-training'
+    assert reps[0].target == 'ɔ'
+    assert reps[0].passed is True
+    assert reps[0].score is None
+
+
+def test_ear_training_rep_persists_an_incorrect_answer(
+    client: TestClient, engine: Engine
+) -> None:
+    response = client.post(
+        '/api/drills/ear-training/rep',
+        data={'target_phoneme': 'ɒ', 'correct': 'false'},
+    )
+
+    assert response.status_code == 200
+    with Session(engine) as session:
+        reps = drills_storage.list_drill_reps(session)
+    assert reps[0].passed is False

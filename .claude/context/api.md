@@ -15,7 +15,7 @@ The HTTP layer the React SPA talks to. Every router mounts under `/api` in `crea
 - `api/reference.py` owns `GET /api/reference`, returning native TTS wav bytes for a text query.
 - `api/weak_sounds.py` owns `GET /api/weak-sounds`, a cross-session phoneme rollup for the priority list.
 - `api/minimal_pairs.py` owns `GET /api/minimal-pairs`, serving curated drill contrasts with an optional `phoneme` filter.
-- `api/drills.py` owns `POST /api/drills/minimal-pair/score`, judging one drill word against its contrast through the shared scorer and returning its phoneme-quality score plus the flagged phonemes. A scored rep persists as a `production` `DrillRep`.
+- `api/drills.py` owns `POST /api/drills/minimal-pair/score`, judging one drill word against its contrast through the shared scorer and returning its phoneme-quality score plus the flagged phonemes. A scored rep persists as a `production` `DrillRep`. It also owns `POST /api/drills/ear-training/rep`, a thin no-scoring route the frontend calls on each ear-training answer to persist an `ear-training` `DrillRep` from the target phoneme and the correct-or-not verdict.
 - `api/prosody.py` owns `POST /api/prosody/score` (shadowing) and `POST /api/prosody/analyze` (stress), synthesizing the reference then scoring rhythm and intonation. Each persists a `shadowing` or `stress` `DrillRep` carrying the directional prosody match.
 - `api/schemas.py` owns `FlaggedWordResponse`, the one response model shared across routers (`passages` and `sessions` both return it).
 

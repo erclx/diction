@@ -20,6 +20,10 @@ class MinimalPairScoreResponse(BaseModel):
     flagged_phonemes: list[str]
 
 
+class EarTrainingRepResponse(BaseModel):
+    recorded: bool
+
+
 def get_scorer(request: Request) -> PassageScorer:
     return cast(PassageScorer, request.app.state.scorer)
 
@@ -63,3 +67,16 @@ def score_minimal_pair(
         phoneme_quality=result.phoneme_quality,
         flagged_phonemes=[target_phoneme] if result.target_substituted else [],
     )
+
+
+@router.post('/drills/ear-training/rep')
+def record_ear_training_rep(
+    session: Annotated[Session, Depends(get_session)],
+    target_phoneme: Annotated[str, Form()],
+    correct: Annotated[bool, Form()],
+) -> EarTrainingRepResponse:
+    save_drill_rep(
+        session,
+        DrillRep(mode='ear-training', target=target_phoneme, passed=correct),
+    )
+    return EarTrainingRepResponse(recorded=True)

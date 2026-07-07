@@ -39,6 +39,9 @@ export const handlers = [
       flagged_phonemes: [],
     }),
   ),
+  http.post('http://localhost:8000/api/drills/ear-training/rep', () =>
+    HttpResponse.json({ recorded: true }),
+  ),
   http.post('http://localhost:8000/api/prosody/score', () =>
     HttpResponse.json({ rhythm_match: 88, intonation_match: 84 }),
   ),

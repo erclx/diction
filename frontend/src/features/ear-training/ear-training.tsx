@@ -11,6 +11,8 @@ import type { MinimalPairContrast } from '@/features/minimal-pairs/minimal-pair'
 import { filterByPhoneme } from '@/features/minimal-pairs/minimal-pair'
 import { useMinimalPairsQuery } from '@/features/minimal-pairs/use-minimal-pairs'
 
+import { useRecordEarTrainingRep } from './use-record-ear-training-rep'
+
 type Side = 'a' | 'b'
 
 interface Round {
@@ -18,6 +20,7 @@ interface Round {
   wordA: string
   wordB: string
   targetSide: Side
+  targetPhoneme: string
 }
 
 function targetWordOf(round: Round): string {
@@ -36,6 +39,7 @@ function pickRound(
     wordA: pair.word_a,
     wordB: pair.word_b,
     targetSide,
+    targetPhoneme: targetSide === 'a' ? contrast.phoneme_a : contrast.phoneme_b,
   }
 }
 
@@ -165,6 +169,7 @@ interface EarTrainingProps {
 
 export function EarTraining({ random = Math.random }: EarTrainingProps) {
   const query = useMinimalPairsQuery()
+  const recordRep = useRecordEarTrainingRep()
   const [searchParams] = useSearchParams()
   const phoneme = searchParams.get('phoneme')
   const [round, setRound] = useState<Round | null>(null)
@@ -188,6 +193,9 @@ export function EarTraining({ random = Math.random }: EarTrainingProps) {
       correct: previous.correct + (correct ? 1 : 0),
       attempted: previous.attempted + 1,
     }))
+    if (round !== null) {
+      recordRep.mutate({ targetPhoneme: round.targetPhoneme, correct })
+    }
   }
 
   const handleNext = () => {
