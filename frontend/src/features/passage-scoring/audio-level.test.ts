@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { computeRmsLevel } from './audio-level'
+import { computeRmsLevel, meterLevelFromRms } from './audio-level'
 
 describe('computeRmsLevel', () => {
   it('should return zero for an empty sample buffer', () => {
@@ -26,5 +26,21 @@ describe('computeRmsLevel', () => {
     const loud = computeRmsLevel(new Float32Array([0.8, -0.8, 0.8, -0.8]))
 
     expect(loud).toBeGreaterThan(quiet)
+  })
+})
+
+describe('meterLevelFromRms', () => {
+  it('should stay at zero for silence', () => {
+    expect(meterLevelFromRms(0)).toBe(0)
+  })
+
+  it('should lift a typical speech rms well above a single bar', () => {
+    const level = meterLevelFromRms(0.1)
+
+    expect(level).toBeGreaterThan(0.6)
+  })
+
+  it('should saturate at one for a loud signal rather than overshoot', () => {
+    expect(meterLevelFromRms(0.5)).toBe(1)
   })
 })

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
-import { computeRmsLevel } from './audio-level'
+import { computeRmsLevel, meterLevelFromRms } from './audio-level'
 
 export type RecorderStatus = 'idle' | 'recording' | 'recorded' | 'denied'
 
@@ -51,7 +51,7 @@ export function useRecorder(): Recorder {
 
     const sample = () => {
       analyser.getFloatTimeDomainData(samples)
-      setLevel(computeRmsLevel(samples))
+      setLevel(meterLevelFromRms(computeRmsLevel(samples)))
       frameRef.current = requestAnimationFrame(sample)
     }
     frameRef.current = requestAnimationFrame(sample)
