@@ -53,12 +53,18 @@ this section with the in-sample and held-out correlation.
 
 ## Re-run
 
-Needs the scoring extra. From `backend/`:
+Needs the scoring extra plus the harness-only `pyarrow` and `huggingface_hub`
+(the phoneme harness pulls these through `datasets`). From `backend/`:
 
 ```bash
-PYTHONPATH=src uv run python calibration/fluency_eval.py 300   # smoke test first
-PYTHONPATH=src uv run python calibration/fluency_eval.py 2500  # full fit + validation
+PYTHONPATH=src uv run --with pyarrow --with huggingface_hub \
+  python calibration/fluency_eval.py 300   # smoke test first
+PYTHONPATH=src uv run --with pyarrow --with huggingface_hub \
+  python calibration/fluency_eval.py 2500  # full fit + validation
 ```
+
+A `tqdm` progress bar reports transcription throughput and ETA per split, so the
+sweep is not run blind.
 
 It transcribes the test split for the fit and the train split for held-out
 validation, then writes `fluency_model.json` with the fitted parameters and the

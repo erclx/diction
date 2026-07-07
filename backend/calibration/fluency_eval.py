@@ -26,6 +26,7 @@ from pathlib import Path
 import numpy as np
 import pyarrow.parquet as pq
 from huggingface_hub import hf_hub_download
+from tqdm import tqdm
 
 from diction.config import Settings
 from diction.scoring.audio import decode_audio
@@ -47,11 +48,11 @@ def load_rows(split: str, n_rows: int) -> list[dict]:
 
 
 def collect_samples(
-    transcriber: WhisperTranscriber, rows: list[dict]
+    transcriber: WhisperTranscriber, rows: list[dict], desc: str
 ) -> tuple[np.ndarray, np.ndarray]:
     features: list[list[float]] = []
     labels: list[float] = []
-    for index, row in enumerate(rows):
+    for row in tqdm(rows, desc=desc, unit='clip'):
         try:
             audio = row['audio']['bytes']
             spans = [(start, end) for _, start, end in transcriber.word_timings(audio)]
@@ -62,9 +63,7 @@ def collect_samples(
             features.append([getattr(extracted, name) for name in FEATURE_NAMES])
             labels.append(float(row['fluency']) / LABEL_SCALE * 100.0)
         except Exception as error:  # noqa: BLE001 - harness, log and continue
-            print(f'  row {index} skipped: {type(error).__name__}: {error}')
-        if (index + 1) % 200 == 0:
-            print(f'  {index + 1}/{len(rows)} clips transcribed')
+            tqdm.write(f'skipped: {type(error).__name__}: {error}')
     return np.array(features), np.array(labels)
 
 
@@ -100,8 +99,9 @@ def main() -> None:
     n_rows = int(sys.argv[1]) if len(sys.argv) > 1 else 2500
     transcriber = WhisperTranscriber(Settings())
 
-    print('transcribing test split (fit)...')
-    fit_features, fit_labels = collect_samples(transcriber, load_rows('test', n_rows))
+    fit_features, fit_labels = collect_samples(
+        transcriber, load_rows('test', n_rows), desc='test split (fit)'
+    )
     print(f'\nfit samples: {len(fit_labels)}')
 
     standardized, centers, scales = standardize(fit_features)
@@ -112,9 +112,8 @@ def main() -> None:
     )
     print(f'in-sample correlation: {train_corr:.3f}')
 
-    print('\ntranscribing train split (held-out validation)...')
     holdout_features, holdout_labels = collect_samples(
-        transcriber, load_rows('train', n_rows)
+        transcriber, load_rows('train', n_rows), desc='train split (held-out)'
     )
     holdout_corr = correlation(
         holdout_features, holdout_labels, centers, scales, weights, intercept
