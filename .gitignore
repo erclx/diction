@@ -25,7 +25,7 @@ blob-report/
 playwright/.cache/
 screenshots/
 
-# Local data (user-mode DB and recordings, dev-mode scratch)
+# Data
 backend/data/
 backend/.dev-data/
 
