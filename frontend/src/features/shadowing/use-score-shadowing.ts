@@ -2,6 +2,8 @@ import { useMutation } from '@tanstack/react-query'
 import { z } from 'zod'
 
 import { BACKEND_URL } from '@/config'
+import { ClipTooWeakSchema } from '@/features/passage-scoring/score-result'
+import { ClipTooWeakError } from '@/features/passage-scoring/use-score-passage'
 
 export const ShadowingScoreSchema = z.object({
   rhythm_match: z.number(),
@@ -30,6 +32,13 @@ async function scoreShadowing({
     body: form,
     signal: AbortSignal.timeout(SCORE_TIMEOUT_MS),
   })
+
+  if (response.status === 422) {
+    const parsed = ClipTooWeakSchema.safeParse(await response.json())
+    throw new ClipTooWeakError(
+      parsed.success ? parsed.data.detail : 'Clip too short or quiet to score',
+    )
+  }
 
   if (!response.ok) {
     throw new Error(`Scoring failed with status ${response.status}`)
