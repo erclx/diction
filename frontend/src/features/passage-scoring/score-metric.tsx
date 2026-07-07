@@ -1,9 +1,10 @@
+import { MetricCard } from '@/components/metric-card'
 import { cn } from '@/lib/utils'
-import { Card, CardContent } from '@/components/ui/card'
 
 interface ScoreMetricProps {
   label: string
   value: number
+  caveat?: string
 }
 
 function toneClass(value: number): string {
@@ -16,20 +17,13 @@ function toneClass(value: number): string {
   return 'text-destructive'
 }
 
-export function ScoreMetric({ label, value }: ScoreMetricProps) {
+export function ScoreMetric({ label, value, caveat }: ScoreMetricProps) {
   return (
-    <Card>
-      <CardContent className="flex flex-col items-center gap-1 p-4">
-        <span
-          className={cn(
-            'text-2xl font-semibold tabular-nums',
-            toneClass(value),
-          )}
-        >
-          {value.toFixed(1)}
-        </span>
-        <span className="text-sm text-muted-foreground">{label}</span>
-      </CardContent>
-    </Card>
+    <MetricCard
+      label={label}
+      display={value.toFixed(1)}
+      valueClassName={cn(toneClass(value))}
+      caveat={caveat}
+    />
   )
 }

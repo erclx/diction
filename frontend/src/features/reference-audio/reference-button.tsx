@@ -19,7 +19,10 @@ export function ReferenceButton({ text, label }: ReferenceButtonProps) {
       size="icon"
       aria-label={reference.isError ? `${label}, failed, retry` : label}
       title={reference.isError ? 'Reference audio failed, retry' : undefined}
-      className={cn(reference.isError && 'text-destructive')}
+      className={cn(
+        reference.isError && 'text-destructive',
+        reference.isPlaying && 'text-primary',
+      )}
       disabled={reference.isFetching}
       onClick={reference.play}
     >
@@ -27,6 +30,8 @@ export function ReferenceButton({ text, label }: ReferenceButtonProps) {
         <Loader2 className="animate-spin" />
       ) : reference.isError ? (
         <TriangleAlert />
+      ) : reference.isPlaying ? (
+        <AudioLines className="animate-pulse" />
       ) : (
         <AudioLines />
       )}

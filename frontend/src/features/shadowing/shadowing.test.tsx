@@ -78,4 +78,22 @@ describe('Shadowing', () => {
       expect(screen.getByRole('alert')).toHaveTextContent(/Scoring failed/),
     )
   })
+
+  it('should surface the too-weak reason instead of the generic failure', async () => {
+    server.use(
+      http.post(SCORE_URL, () =>
+        HttpResponse.json(
+          { error: 'clip_too_weak', detail: 'Clip too short or quiet' },
+          { status: 422 },
+        ),
+      ),
+    )
+    renderWithProviders(<Shadowing />)
+
+    await recordAndScore()
+
+    await waitFor(() =>
+      expect(screen.getByRole('alert')).toHaveTextContent(/too short or quiet/),
+    )
+  })
 })

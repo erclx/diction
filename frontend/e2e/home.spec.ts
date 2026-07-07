@@ -25,10 +25,10 @@ test('navigates between surfaces from the sidebar', async ({ page }) => {
     'page',
   )
 
-  await nav.getByRole('link', { name: 'Practice' }).click()
+  await nav.getByRole('link', { name: 'Passage' }).click()
 
   await expect(page).toHaveURL(/\/$/)
-  await expect(nav.getByRole('link', { name: 'Practice' })).toHaveAttribute(
+  await expect(nav.getByRole('link', { name: 'Passage' })).toHaveAttribute(
     'aria-current',
     'page',
   )

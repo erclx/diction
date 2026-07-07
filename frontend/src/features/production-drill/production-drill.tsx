@@ -5,6 +5,8 @@ import { useSearchParams } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
+import { LevelMeter } from '@/components/level-meter'
+import { OwnRecordingAudio } from '@/features/audio-channel/own-recording-audio'
 import { ReferenceButton } from '@/features/reference-audio/reference-button'
 import { useRecorder } from '@/features/passage-scoring/use-recorder'
 import { ClipTooWeakError } from '@/features/passage-scoring/use-score-passage'
@@ -142,10 +144,13 @@ export function ProductionDrill() {
             )}
 
             {recorder.status === 'recording' && (
-              <Button variant="destructive" onClick={recorder.stop}>
-                <Square />
-                Stop
-              </Button>
+              <div className="flex flex-col items-center gap-3">
+                <LevelMeter level={recorder.level} />
+                <Button variant="destructive" onClick={recorder.stop}>
+                  <Square />
+                  Stop
+                </Button>
+              </div>
             )}
 
             {recorder.status === 'denied' && (
@@ -162,8 +167,7 @@ export function ProductionDrill() {
 
             {recorder.status === 'recorded' && recorder.recording && (
               <div className="flex w-full flex-col items-center gap-3">
-                <audio
-                  controls
+                <OwnRecordingAudio
                   src={recorder.recording.url}
                   className="w-full max-w-sm"
                 />

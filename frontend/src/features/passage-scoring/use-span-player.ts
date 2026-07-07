@@ -1,8 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
+import { useAudioChannel } from '@/features/audio-channel/audio-channel'
+
+export type Span = readonly [number, number]
+
 export interface SpanPlayer {
   playSpan: (start: number, end: number) => void
   canPlay: boolean
+  activeSpan: Span | null
 }
 
 export const SPAN_PAD_SECONDS = 0.1
@@ -19,10 +24,27 @@ export function padSpan(
 }
 
 export function useSpanPlayer(url: string | undefined): SpanPlayer {
+  const channel = useAudioChannel()
   const contextRef = useRef<AudioContext | null>(null)
   const bufferRef = useRef<AudioBuffer | null>(null)
   const sourceRef = useRef<AudioBufferSourceNode | null>(null)
+  const startedRef = useRef(false)
   const [canPlay, setCanPlay] = useState(false)
+  const [activeSpan, setActiveSpan] = useState<Span | null>(null)
+
+  const stop = useCallback(() => {
+    const source = sourceRef.current
+    if (!source) {
+      return
+    }
+    if (startedRef.current) {
+      source.stop()
+      return
+    }
+    sourceRef.current = null
+    startedRef.current = false
+    setActiveSpan(null)
+  }, [])
 
   useEffect(() => {
     if (!url || typeof AudioContext === 'undefined') {
@@ -55,36 +77,62 @@ export function useSpanPlayer(url: string | undefined): SpanPlayer {
     return () => {
       cancelled = true
       setCanPlay(false)
-      sourceRef.current?.stop()
+      if (sourceRef.current && startedRef.current) {
+        sourceRef.current.stop()
+      }
       sourceRef.current = null
+      startedRef.current = false
       bufferRef.current = null
+      setActiveSpan(null)
+      channel.release(stop)
       void context.close()
       contextRef.current = null
     }
-  }, [url])
+  }, [url, channel, stop])
 
-  const playSpan = useCallback((start: number, end: number) => {
-    const context = contextRef.current
-    const buffer = bufferRef.current
-    if (!context || !buffer) {
-      return
-    }
+  const playSpan = useCallback(
+    (start: number, end: number) => {
+      const context = contextRef.current
+      const buffer = bufferRef.current
+      if (!context || !buffer) {
+        return
+      }
 
-    sourceRef.current?.stop()
+      stop()
 
-    const source = context.createBufferSource()
-    source.buffer = buffer
-    source.connect(context.destination)
-    sourceRef.current = source
+      const source = context.createBufferSource()
+      source.buffer = buffer
+      source.connect(context.destination)
+      source.onended = () => {
+        if (sourceRef.current === source) {
+          sourceRef.current = null
+          startedRef.current = false
+          setActiveSpan(null)
+          channel.release(stop)
+        }
+      }
+      sourceRef.current = source
+      startedRef.current = false
 
-    const { offset, duration } = padSpan(start, end, buffer.duration)
-    const begin = () => source.start(0, offset, duration)
-    if (context.state === 'suspended') {
-      void context.resume().then(begin)
-    } else {
-      begin()
-    }
-  }, [])
+      channel.claim(stop)
+      setActiveSpan([start, end])
 
-  return { playSpan, canPlay }
+      const { offset, duration } = padSpan(start, end, buffer.duration)
+      const begin = () => {
+        if (sourceRef.current !== source) {
+          return
+        }
+        source.start(0, offset, duration)
+        startedRef.current = true
+      }
+      if (context.state === 'suspended') {
+        void context.resume().then(begin)
+      } else {
+        begin()
+      }
+    },
+    [channel, stop],
+  )
+
+  return { playSpan, canPlay, activeSpan }
 }

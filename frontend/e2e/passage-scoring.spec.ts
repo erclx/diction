@@ -30,6 +30,26 @@ test.describe('passage scoring', () => {
     'mic capture relies on chromium fake media',
   )
 
+  test('should show a live input meter only while recording', async ({
+    page,
+  }) => {
+    await page.goto('/')
+
+    await expect(
+      page.getByRole('meter', { name: 'Microphone input level' }),
+    ).toBeHidden()
+
+    await page.getByRole('button', { name: 'Record', exact: true }).click()
+    await expect(
+      page.getByRole('meter', { name: 'Microphone input level' }),
+    ).toBeVisible()
+
+    await page.getByRole('button', { name: 'Stop' }).click()
+    await expect(
+      page.getByRole('meter', { name: 'Microphone input level' }),
+    ).toBeHidden()
+  })
+
   test('should show metrics and a flagged word after scoring', async ({
     page,
   }) => {

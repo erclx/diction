@@ -1,5 +1,6 @@
 addopts
 aitk
+analyser
 appuser
 arpabet
 asyncio
@@ -45,6 +46,7 @@ linalg
 linecap
 linejoin
 lintstagedrc
+loadedmetadata
 lstsq
 matplotlib
 mispeech
@@ -105,6 +107,7 @@ tabindex
 tablename
 testpaths
 threadpool
+timeupdate
 timonwong
 tobytes
 torchaudio
@@ -112,6 +115,7 @@ torchcodec
 tqdm
 tsgolint
 unseekable
+unstub
 uvicorn
 venv
 virtualenv
