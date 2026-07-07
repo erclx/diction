@@ -109,6 +109,7 @@ timonwong
 tobytes
 torchaudio
 torchcodec
+tqdm
 tsgolint
 unseekable
 uvicorn
