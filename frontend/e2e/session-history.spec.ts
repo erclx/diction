@@ -69,7 +69,7 @@ test.describe('session history', () => {
       'page',
     )
     await expect(
-      page.getByRole('link', { name: 'Practice' }),
+      page.getByRole('link', { name: 'Passage' }),
     ).not.toHaveAttribute('aria-current')
   })
 
