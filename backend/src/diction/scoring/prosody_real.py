@@ -7,12 +7,15 @@ tracker already reachable through the resident torchaudio, so no new model
 loads for the f0 contour. Word timings come from the shared `WhisperTranscriber`
 the GOP scorer also uses, so the prosody path adds no second Whisper instance.
 
-The tracker is naive and reports a pitch even for near-silence, so the raw f0 is
-median-smoothed to drop octave jumps and gated by frame energy so unvoiced frames
-drop out. Each frame carries its timestamp, so `prosody.py` compares the two
-contours on a shared linguistic timeline rather than by voiced-frame index, the
-#21 open item. The remaining deferred task is calibrating the tolerances against
-real native and non-native recordings before the numbers are shown as final.
+The tracker is naive, so its search is constrained to a human speech band, since
+the default upper bound lets it lock onto a harmonic and jump an octave, which a
+live check showed as spikes that floored the intonation score. The raw f0 is then
+median-smoothed to drop any remaining single-frame jumps and gated by frame energy
+so unvoiced frames drop out. Each frame carries its timestamp, so `prosody.py`
+compares the two contours on a shared linguistic timeline rather than by
+voiced-frame index, the #21 open item. The remaining deferred task is calibrating
+the tolerances against real native and non-native recordings before the numbers
+are shown as final.
 """
 
 from dataclasses import dataclass
@@ -44,6 +47,8 @@ from diction.scoring.transcription import WhisperTranscriber
 
 PITCH_SMOOTH_WINDOW = 5
 VOICING_ENERGY_RATIO = 0.15
+VOICE_FREQ_LOW_HZ = 65.0
+VOICE_FREQ_HIGH_HZ = 400.0
 
 
 @dataclass(frozen=True, slots=True)
@@ -122,7 +127,10 @@ class ProsodyScorer:
     def _pitch(self, waveform: np.ndarray, duration: float) -> PitchTrack:
         tensor = torch.from_numpy(waveform.copy()).unsqueeze(0)
         frequencies = torchaudio.functional.detect_pitch_frequency(
-            tensor, TARGET_SAMPLE_RATE
+            tensor,
+            TARGET_SAMPLE_RATE,
+            freq_low=VOICE_FREQ_LOW_HZ,
+            freq_high=VOICE_FREQ_HIGH_HZ,
         )
         raw = [float(frequency) for frequency in frequencies.squeeze(0)]
         smoothed = median_smooth(raw, PITCH_SMOOTH_WINDOW)
