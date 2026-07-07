@@ -2,11 +2,14 @@ from datetime import datetime
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException
+from fastapi.responses import FileResponse
 from pydantic import BaseModel, ConfigDict
 from sqlmodel import Session
 
 from diction.api.schemas import FlaggedWordResponse
+from diction.config import Settings, get_settings
 from diction.db.engine import get_session
+from diction.storage.recordings import recording_file
 from diction.storage.sessions import get_session_by_id, list_sessions
 
 router = APIRouter(tags=['sessions'])
@@ -28,10 +31,12 @@ class SessionDetailResponse(BaseModel):
     id: int
     created_at: datetime
     mode: str
+    passage: str | None
     completeness: float
     accuracy: float
     fluency: float
     phoneme_quality: float
+    has_recording: bool = False
     flagged_words: list[FlaggedWordResponse]
 
 
@@ -50,4 +55,21 @@ def read_session(
     record = get_session_by_id(session, session_id)
     if record is None:
         raise HTTPException(status_code=404, detail='Session not found')
-    return SessionDetailResponse.model_validate(record)
+    detail = SessionDetailResponse.model_validate(record)
+    detail.has_recording = record.recording_path is not None
+    return detail
+
+
+@router.get('/sessions/{session_id}/recording')
+def read_session_recording(
+    session: Annotated[Session, Depends(get_session)],
+    settings: Annotated[Settings, Depends(get_settings)],
+    session_id: int,
+) -> FileResponse:
+    record = get_session_by_id(session, session_id)
+    if record is None or record.recording_path is None:
+        raise HTTPException(status_code=404, detail='Recording not found')
+    path = recording_file(settings.resolved_recordings_dir, record.recording_path)
+    if path is None:
+        raise HTTPException(status_code=404, detail='Recording not found')
+    return FileResponse(path, media_type='audio/webm')

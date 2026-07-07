@@ -1,4 +1,5 @@
 from collections.abc import Iterator
+from pathlib import Path
 
 import pytest
 from fastapi.testclient import TestClient
@@ -7,6 +8,7 @@ from sqlmodel import Session, SQLModel
 
 from diction.api.passages import get_explainer, get_scorer
 from diction.app import create_app
+from diction.config import Settings, get_settings
 from diction.db.engine import get_session, make_engine
 from diction.feedback.base import StubExplainer
 from diction.feedback.types import FlaggedWordContext
@@ -47,7 +49,12 @@ def engine(tmp_path) -> Engine:
 
 
 @pytest.fixture
-def client(engine: Engine) -> Iterator[TestClient]:
+def recordings_dir(tmp_path) -> Path:
+    return tmp_path / 'recordings'
+
+
+@pytest.fixture
+def client(engine: Engine, recordings_dir: Path) -> Iterator[TestClient]:
     app = create_app()
 
     def override_session() -> Iterator[Session]:
@@ -55,6 +62,9 @@ def client(engine: Engine) -> Iterator[TestClient]:
             yield session
 
     app.dependency_overrides[get_session] = override_session
+    app.dependency_overrides[get_settings] = lambda: Settings(
+        recordings_dir=recordings_dir
+    )
     app.dependency_overrides[get_explainer] = lambda: StubExplainer()
     yield TestClient(app)
     app.dependency_overrides.clear()
@@ -92,8 +102,57 @@ def test_score_returns_scores_and_persists_the_session(
     with Session(engine) as session:
         saved = sessions_storage.list_sessions(session)
         assert len(saved) == 1
+        assert saved[0].passage == 'the thick fog'
         assert saved[0].flagged_words[0].word == 'thick'
         assert saved[0].flagged_words[0].phoneme == 'θ'
+
+
+def test_score_stores_the_uploaded_clip_and_records_its_path(
+    client: TestClient, engine: Engine, recordings_dir: Path
+) -> None:
+    result = ScoreResult(
+        completeness=90.0,
+        accuracy=80.0,
+        fluency=70.0,
+        phoneme_quality=60.0,
+        flagged_words=[],
+    )
+    client.app.dependency_overrides[get_scorer] = lambda: FakeScorer(result)
+
+    _post(client)
+
+    with Session(engine) as session:
+        saved = sessions_storage.list_sessions(session)
+        session_id = saved[0].id
+        stored_path = saved[0].recording_path
+    assert stored_path == f'{session_id}.webm'
+    assert (recordings_dir / stored_path).read_bytes() == b'fake-bytes'
+
+
+def test_score_still_persists_and_returns_when_the_recording_write_fails(
+    client: TestClient, engine: Engine, monkeypatch
+) -> None:
+    result = ScoreResult(
+        completeness=90.0,
+        accuracy=80.0,
+        fluency=70.0,
+        phoneme_quality=60.0,
+        flagged_words=[],
+    )
+    client.app.dependency_overrides[get_scorer] = lambda: FakeScorer(result)
+
+    def raise_disk_full(*args: object, **kwargs: object) -> str:
+        raise OSError('No space left on device')
+
+    monkeypatch.setattr('diction.api.passages.store_recording', raise_disk_full)
+
+    response = _post(client)
+
+    assert response.status_code == 200
+    with Session(engine) as session:
+        saved = sessions_storage.list_sessions(session)
+        assert len(saved) == 1
+        assert saved[0].recording_path is None
 
 
 def test_score_persists_template_explanations_when_the_explainer_fails(

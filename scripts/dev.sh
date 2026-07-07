@@ -108,6 +108,7 @@ start() {
 
   export DICTION_BACKEND_PORT="$backend_port"
   export VITE_BACKEND_URL="http://localhost:$backend_port"
+  export DICTION_RUN_MODE=dev
 
   if [ "${DICTION_DEV_MODELS:-stub}" = "real" ]; then
     ensure_real_stack

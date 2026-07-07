@@ -25,6 +25,10 @@ blob-report/
 playwright/.cache/
 screenshots/
 
+# Data
+backend/data/
+backend/.dev-data/
+
 # Python
 __pycache__/
 .pytest_cache/

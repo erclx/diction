@@ -9,10 +9,12 @@ class PracticeSession(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
     created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
     mode: str
+    passage: str | None = None
     completeness: float
     accuracy: float
     fluency: float
     phoneme_quality: float
+    recording_path: str | None = None
 
     flagged_words: list['FlaggedWord'] = Relationship(  # noqa: UP037  forward ref, FlaggedWord defined below
         back_populates='session'
@@ -31,3 +33,14 @@ class FlaggedWord(SQLModel, table=True):
     explanation: str
 
     session: PracticeSession | None = Relationship(back_populates='flagged_words')
+
+
+class DrillRep(SQLModel, table=True):
+    __tablename__ = 'drill_reps'
+
+    id: int | None = Field(default=None, primary_key=True)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
+    mode: str
+    target: str
+    passed: bool | None = None
+    score: float | None = None

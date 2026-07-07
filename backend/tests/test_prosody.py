@@ -2,9 +2,12 @@ from collections.abc import Iterator
 
 import pytest
 from fastapi.testclient import TestClient
+from sqlalchemy import Engine
+from sqlmodel import Session, SQLModel
 
 from diction.api.prosody import get_prosody_scorer, get_synth
 from diction.app import create_app
+from diction.db.engine import get_session, make_engine
 from diction.scoring.prosody import (
     CONTOUR_RESAMPLE_POINTS,
     ProsodyAnalysis,
@@ -19,6 +22,7 @@ from diction.scoring.prosody import (
     rhythm_match,
     word_timed_contour,
 )
+from diction.storage import drills as drills_storage
 from diction.tts.base import StubSynthesizer
 
 TWO_WORDS = [(0.0, 0.5), (0.5, 1.0)]
@@ -214,8 +218,21 @@ class FakeProsodyScorer:
 
 
 @pytest.fixture
-def client() -> Iterator[TestClient]:
+def engine(tmp_path) -> Engine:
+    built = make_engine(f'sqlite:///{tmp_path / "test.db"}')
+    SQLModel.metadata.create_all(built)
+    return built
+
+
+@pytest.fixture
+def client(engine: Engine) -> Iterator[TestClient]:
     app = create_app()
+
+    def override_session() -> Iterator[Session]:
+        with Session(engine) as session:
+            yield session
+
+    app.dependency_overrides[get_session] = override_session
     app.dependency_overrides[get_synth] = lambda: StubSynthesizer()
     yield TestClient(app)
     app.dependency_overrides.clear()
@@ -239,6 +256,23 @@ def test_score_returns_both_prosody_axes(client: TestClient) -> None:
     body = response.json()
     assert body['rhythm_match'] == 72.0
     assert body['intonation_match'] == 63.0
+
+
+def test_score_persists_a_shadowing_rep_with_the_mean_prosody_match(
+    client: TestClient, engine: Engine
+) -> None:
+    scorer = FakeProsodyScorer(ProsodyResult(rhythm_match=72.0, intonation_match=63.0))
+    client.app.dependency_overrides[get_prosody_scorer] = lambda: scorer
+
+    _post(client)
+
+    with Session(engine) as session:
+        reps = drills_storage.list_drill_reps(session)
+    assert len(reps) == 1
+    assert reps[0].mode == 'shadowing'
+    assert reps[0].target == 'the thick fog'
+    assert reps[0].passed is None
+    assert reps[0].score == 67.5
 
 
 def test_score_synthesizes_the_reference_before_scoring(client: TestClient) -> None:
@@ -311,6 +345,24 @@ def test_analyze_projects_the_full_contour_and_stress_payload(
     assert body['stress_marks'] == [
         {'word': 'banana', 'syllables': ['bə', 'nɑː', 'nə'], 'stress_index': 1}
     ]
+
+
+def test_analyze_persists_a_stress_rep_with_the_mean_prosody_match(
+    client: TestClient, engine: Engine
+) -> None:
+    scorer = FakeProsodyScorer(
+        ProsodyResult(rhythm_match=72.0, intonation_match=63.0), _sample_analysis()
+    )
+    client.app.dependency_overrides[get_prosody_scorer] = lambda: scorer
+
+    _post_analyze(client)
+
+    with Session(engine) as session:
+        reps = drills_storage.list_drill_reps(session)
+    assert len(reps) == 1
+    assert reps[0].mode == 'stress'
+    assert reps[0].target == 'the thick fog'
+    assert reps[0].score == 67.5
 
 
 def test_analyze_synthesizes_and_passes_the_reference_text(client: TestClient) -> None:

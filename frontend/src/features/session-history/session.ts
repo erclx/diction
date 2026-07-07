@@ -16,10 +16,12 @@ export const SessionDetailSchema = z.object({
   id: z.number(),
   created_at: z.string(),
   mode: z.string(),
+  passage: z.string().nullable(),
   completeness: z.number(),
   accuracy: z.number(),
   fluency: z.number(),
   phoneme_quality: z.number(),
+  has_recording: z.boolean(),
   flagged_words: z.array(FlaggedWordSchema),
 })
 

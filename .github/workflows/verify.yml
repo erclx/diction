@@ -123,6 +123,9 @@ jobs:
       - name: Run E2E
         working-directory: frontend
         env:
+          # Empty, reset-on-boot database and recordings dir: never touch a
+          # user-mode data file from CI.
+          DICTION_RUN_MODE: 'dev'
           # No GPU or model stack in CI: serve canned scores and canned
           # reference audio instead of loading the scoring and TTS models.
           DICTION_USE_STUB_SCORER: 'true'

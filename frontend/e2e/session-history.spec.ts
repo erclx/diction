@@ -17,10 +17,12 @@ const MOCK_DETAIL = {
   id: 12,
   created_at: '2026-07-02T09:14:00Z',
   mode: 'passage',
+  passage: 'The early bird catches the worm.',
   completeness: 90.9,
   accuracy: 92.2,
   fluency: 98,
   phoneme_quality: 94,
+  has_recording: false,
   flagged_words: [
     {
       word: 'thought',

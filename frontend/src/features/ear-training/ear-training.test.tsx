@@ -1,4 +1,4 @@
-import { screen } from '@testing-library/react'
+import { screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { http, HttpResponse } from 'msw'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
@@ -60,6 +60,33 @@ describe('EarTraining', () => {
 
     expect(screen.getByRole('status')).toHaveTextContent('It was thin')
     expect(screen.getByText('0 of 1 correct')).toBeInTheDocument()
+  })
+
+  it('should record a rep with the target phoneme and verdict on answer', async () => {
+    serveContrasts(CONTRASTS)
+    const reps: Record<string, string>[] = []
+    server.use(
+      http.post(
+        'http://localhost:8000/api/drills/ear-training/rep',
+        async ({ request }) => {
+          const form = await request.formData()
+          reps.push({
+            target_phoneme: String(form.get('target_phoneme')),
+            correct: String(form.get('correct')),
+          })
+          return HttpResponse.json({ recorded: true })
+        },
+      ),
+    )
+    const user = userEvent.setup()
+    renderWithProviders(<EarTraining random={() => 0} />)
+
+    await user.click(await screen.findByRole('button', { name: 'Start' }))
+    await user.click(await screen.findByRole('button', { name: 'thin' }))
+
+    await waitFor(() =>
+      expect(reps).toEqual([{ target_phoneme: 'θ', correct: 'true' }]),
+    )
   })
 
   it('should prompt to return to practice when no pairs exist', async () => {

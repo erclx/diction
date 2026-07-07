@@ -2,8 +2,12 @@ from typing import Annotated, cast
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, UploadFile
 from pydantic import BaseModel
+from sqlmodel import Session
 
+from diction.db.engine import get_session
+from diction.db.models import DrillRep
 from diction.scoring.prosody_base import ProsodyScorer
+from diction.storage.drills import save_drill_rep
 from diction.tts.base import Synthesizer
 
 router = APIRouter(tags=['prosody'])
@@ -50,8 +54,13 @@ def _clean_reference_text(reference_text: str) -> str:
     return cleaned
 
 
+def _prosody_match(rhythm_match: float, intonation_match: float) -> float:
+    return (rhythm_match + intonation_match) / 2
+
+
 @router.post('/prosody/score')
 def score_prosody(
+    session: Annotated[Session, Depends(get_session)],
     scorer: Annotated[ProsodyScorer, Depends(get_prosody_scorer)],
     synth: Annotated[Synthesizer, Depends(get_synth)],
     reference_text: Annotated[str, Form()],
@@ -60,6 +69,14 @@ def score_prosody(
     cleaned = _clean_reference_text(reference_text)
     reference_audio = synth.synthesize(cleaned)
     result = scorer.score(reference_audio, audio.file.read())
+    save_drill_rep(
+        session,
+        DrillRep(
+            mode='shadowing',
+            target=cleaned,
+            score=_prosody_match(result.rhythm_match, result.intonation_match),
+        ),
+    )
     return ProsodyScoreResponse(
         rhythm_match=result.rhythm_match,
         intonation_match=result.intonation_match,
@@ -68,6 +85,7 @@ def score_prosody(
 
 @router.post('/prosody/analyze')
 def analyze_prosody(
+    session: Annotated[Session, Depends(get_session)],
     scorer: Annotated[ProsodyScorer, Depends(get_prosody_scorer)],
     synth: Annotated[Synthesizer, Depends(get_synth)],
     reference_text: Annotated[str, Form()],
@@ -76,6 +94,14 @@ def analyze_prosody(
     cleaned = _clean_reference_text(reference_text)
     reference_audio = synth.synthesize(cleaned)
     analysis = scorer.analyze(cleaned, reference_audio, audio.file.read())
+    save_drill_rep(
+        session,
+        DrillRep(
+            mode='stress',
+            target=cleaned,
+            score=_prosody_match(analysis.rhythm_match, analysis.intonation_match),
+        ),
+    )
     return ProsodyAnalyzeResponse(
         rhythm_match=analysis.rhythm_match,
         intonation_match=analysis.intonation_match,
