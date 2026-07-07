@@ -6,12 +6,14 @@ from pydantic import BaseModel
 from sqlmodel import Session
 
 from diction.api.schemas import FlaggedWordResponse
+from diction.config import Settings, get_settings
 from diction.db.engine import get_session
 from diction.db.models import FlaggedWord, PracticeSession
 from diction.feedback.base import Explainer, default_explanation
 from diction.feedback.types import FlaggedWordContext
 from diction.scoring.base import PassageScorer
 from diction.scoring.types import FlaggedWordResult, ScoreResult
+from diction.storage.recordings import store_recording
 from diction.storage.sessions import save_session
 
 logger = logging.getLogger(__name__)
@@ -38,12 +40,14 @@ def get_explainer(request: Request) -> Explainer:
 @router.post('/passages/score')
 def score_passage(
     session: Annotated[Session, Depends(get_session)],
+    settings: Annotated[Settings, Depends(get_settings)],
     scorer: Annotated[PassageScorer, Depends(get_scorer)],
     explainer: Annotated[Explainer, Depends(get_explainer)],
     passage: Annotated[str, Form()],
     audio: Annotated[UploadFile, File()],
 ) -> PassageScoreResponse:
-    result = scorer.score(passage, audio.file.read())
+    clip = audio.file.read()
+    result = scorer.score(passage, clip)
     explanations = _explain_or_default(explainer, result.flagged_words)
     record = PracticeSession(
         mode='passage',
@@ -65,7 +69,19 @@ def score_passage(
         ],
     )
     save_session(session, record)
+    _attach_recording(session, settings, record, clip)
     return _to_response(result, explanations)
+
+
+def _attach_recording(
+    session: Session, settings: Settings, record: PracticeSession, clip: bytes
+) -> None:
+    assert record.id is not None
+    record.recording_path = store_recording(
+        settings.resolved_recordings_dir, record.id, clip
+    )
+    session.add(record)
+    session.commit()
 
 
 def _explain_or_default(

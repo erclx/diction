@@ -2,10 +2,14 @@ from typing import Annotated, cast
 
 from fastapi import APIRouter, Depends, File, Form, Request, UploadFile
 from pydantic import BaseModel
+from sqlmodel import Session
 
+from diction.db.engine import get_session
+from diction.db.models import DrillRep
 from diction.scoring.audio import MIN_WORD_CLIP_SECONDS
 from diction.scoring.base import PassageScorer
 from diction.scoring.text import normalize_word
+from diction.storage.drills import save_drill_rep
 
 router = APIRouter(tags=['drills'])
 
@@ -22,6 +26,7 @@ def get_scorer(request: Request) -> PassageScorer:
 
 @router.post('/drills/minimal-pair/score')
 def score_minimal_pair(
+    session: Annotated[Session, Depends(get_session)],
     scorer: Annotated[PassageScorer, Depends(get_scorer)],
     word: Annotated[str, Form()],
     competitor_word: Annotated[str, Form()],
@@ -44,6 +49,14 @@ def score_minimal_pair(
         target_phoneme=target_phoneme,
         competitor_phoneme=competitor_phoneme,
         min_clip_seconds=MIN_WORD_CLIP_SECONDS,
+    )
+    save_drill_rep(
+        session,
+        DrillRep(
+            mode='production',
+            target=target_phoneme,
+            passed=not result.target_substituted,
+        ),
     )
     return MinimalPairScoreResponse(
         said_expected_word=True,
