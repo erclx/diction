@@ -6,6 +6,7 @@ appuser
 arpabet
 asyncio
 autoplay
+autotuning
 axios
 bradlc
 bunx
@@ -16,6 +17,7 @@ coqui
 corrcoef
 coveragerc
 cuda
+cudnn
 dataclass
 dataclasses
 datetimes
