@@ -13,6 +13,7 @@ import torch
 from faster_whisper import WhisperModel
 
 from diction.config import Settings
+from diction.scoring.transcription_base import Transcript
 
 
 class WhisperTranscriber:
@@ -25,21 +26,29 @@ class WhisperTranscriber:
             compute_type=compute_type,
         )
 
-    def word_timings(
-        self, audio: bytes, prompt: str | None = None
-    ) -> list[tuple[str, float, float]]:
-        """Word-level timings. `prompt` biases decoding toward a known vocabulary
-        via `initial_prompt`, which the drill uses to recognize a short isolated
-        word Whisper would otherwise get wrong. Passage and prosody callers leave
-        it unset for an unbiased transcription."""
+    def transcribe(self, audio: bytes, prompt: str | None = None) -> Transcript:
+        """Full transcript text plus word-level timings from one decode. Free-topic
+        scores the clip against `text` as its reference and feeds the same `text` to
+        the grammar critique, so both read a single decode. `prompt` biases decoding
+        toward a known vocabulary via `initial_prompt`, which the drill uses to
+        recognize a short isolated word Whisper would otherwise get wrong. Passage,
+        prosody, and free-topic callers leave it unset for an unbiased transcription."""
         segments, _ = self._model.transcribe(
             io.BytesIO(audio),
             word_timestamps=True,
             initial_prompt=prompt,
             beam_size=5,
         )
-        return [
+        materialized = list(segments)
+        text = ''.join(segment.text for segment in materialized).strip()
+        words = [
             (word.word, word.start, word.end)
-            for segment in segments
+            for segment in materialized
             for word in (segment.words or [])
         ]
+        return Transcript(text=text, words=words)
+
+    def word_timings(
+        self, audio: bytes, prompt: str | None = None
+    ) -> list[tuple[str, float, float]]:
+        return self.transcribe(audio, prompt).words

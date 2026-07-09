@@ -43,7 +43,7 @@ from diction.scoring.prosody import (
     compare_prosody,
     median_smooth,
 )
-from diction.scoring.transcription import WhisperTranscriber
+from diction.scoring.transcription_base import Transcriber
 
 PITCH_SMOOTH_WINDOW = 5
 VOICING_ENERGY_RATIO = 0.15
@@ -58,7 +58,7 @@ class _ClipAnalysis:
 
 
 class ProsodyScorer:
-    def __init__(self, settings: Settings, transcriber: WhisperTranscriber) -> None:
+    def __init__(self, settings: Settings, transcriber: Transcriber) -> None:
         self._transcriber = transcriber
 
     def score(

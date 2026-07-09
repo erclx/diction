@@ -5,3 +5,8 @@ from dataclasses import dataclass
 class FlaggedWordContext:
     word: str
     phoneme: str
+
+
+@dataclass(frozen=True, slots=True)
+class Critique:
+    points: tuple[str, ...]
