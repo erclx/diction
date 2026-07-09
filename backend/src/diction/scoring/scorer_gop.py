@@ -33,8 +33,23 @@ from diction.scoring.transcription import WhisperTranscriber
 from diction.scoring.types import ContrastResult, ScoreResult
 
 
+def _pin_scoring_determinism() -> None:
+    """Pin the GPU kernel path so the same clip scores identically across
+    processes. TF32 and cuDNN autotuning let the driver pick different matmul
+    and convolution kernels under a warm GPU shared with the resident Ollama and
+    Kokoro models, and the tiny emission differences move the wav2vec2 CTC
+    forced-alignment path across ties, occasionally collapsing a late word's
+    phonemes to an early time. Disabling both makes the emission, and therefore
+    the scores, flags, and playback spans, reproducible. See
+    `.claude/context/scoring.md`."""
+    torch.backends.cuda.matmul.allow_tf32 = False
+    torch.backends.cudnn.allow_tf32 = False
+    torch.backends.cudnn.benchmark = False
+
+
 class GopScorer:
     def __init__(self, settings: Settings, transcriber: WhisperTranscriber) -> None:
+        _pin_scoring_determinism()
         self._device = 'cuda' if torch.cuda.is_available() else 'cpu'
         self._processor = AutoProcessor.from_pretrained(settings.phoneme_model_id)
         self._model = (

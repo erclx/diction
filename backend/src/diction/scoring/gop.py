@@ -58,8 +58,32 @@ def completeness(expected_words: list[str], spoken_words: list[str]) -> float:
     return 100.0 * hit / len(expected_words)
 
 
+def _flag_playback_span(
+    word: str,
+    alignment_bounds: tuple[float, float],
+    spoken_words: list[str],
+    spoken_spans: list[tuple[float, float]],
+) -> tuple[float, float]:
+    """Source a flagged word's playback span from the stable Whisper timing of
+    the matched spoken word, falling back to the forced-alignment bounds when the
+    read diverges from the passage so the match is absent or ambiguous. The GOP
+    score still comes from alignment; only the playback boundaries move to the
+    stable source, so an alignment wobble cannot point playback at the wrong
+    word."""
+    matches = [
+        span
+        for spoken, span in zip(spoken_words, spoken_spans, strict=True)
+        if spoken == word
+    ]
+    if len(matches) == 1:
+        return matches[0]
+    return alignment_bounds
+
+
 def _flag_worst_phonemes(
     aligned: list[AlignedPhoneme],
+    spoken_words: list[str],
+    spoken_spans: list[tuple[float, float]],
 ) -> list[FlaggedWordResult]:
     """Flag the most abnormal phoneme per word, ranked by how far below its own
     native baseline it sits, not by absolute GOP. A word is flagged only when
@@ -79,16 +103,22 @@ def _flag_worst_phonemes(
         current = worst_by_word.get(phoneme.word_index)
         if current is None or deviation < current[1]:
             worst_by_word[phoneme.word_index] = (phoneme, deviation)
-    return [
-        FlaggedWordResult(
-            word=phoneme.word,
-            start=word_bounds[word_index][0],
-            end=word_bounds[word_index][1],
-            phoneme=phoneme.phoneme,
+    flagged: list[FlaggedWordResult] = []
+    for word_index, (phoneme, deviation) in sorted(worst_by_word.items()):
+        if deviation >= -FLAG_K:
+            continue
+        start, end = _flag_playback_span(
+            phoneme.word, word_bounds[word_index], spoken_words, spoken_spans
         )
-        for word_index, (phoneme, deviation) in sorted(worst_by_word.items())
-        if deviation < -FLAG_K
-    ]
+        flagged.append(
+            FlaggedWordResult(
+                word=phoneme.word,
+                start=start,
+                end=end,
+                phoneme=phoneme.phoneme,
+            )
+        )
+    return flagged
 
 
 def aggregate_scores(
@@ -107,7 +137,7 @@ def aggregate_scores(
         accuracy=normalize_gop(_mean(word_gops.values())),
         fluency=fluency(spoken_spans, duration),
         phoneme_quality=normalize_gop(_mean(p.gop for p in aligned)),
-        flagged_words=_flag_worst_phonemes(aligned),
+        flagged_words=_flag_worst_phonemes(aligned, spoken_words, spoken_spans),
     )
 
 

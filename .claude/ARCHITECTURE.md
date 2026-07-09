@@ -32,6 +32,8 @@ The app shell routes between surfaces with `react-router-dom` rather than a `use
 
 GOP, or Goodness of Pronunciation, scores each phoneme as the posterior probability that the target phoneme was actually produced, computed by an acoustic model trained on native speech. Commercial tools like Azure Pronunciation Assessment, and by extension sites like AnyToSpeech, are built on the same underlying approach. Building it locally instead of calling Azure avoids per-hour cost and keeps audio on-device. The tradeoff is owning the alignment and scoring correctness instead of getting it from a managed API.
 
+Scoring is pinned deterministic. The scorer disables TF32 and cuDNN autotuning at construction so the same clip returns the same scores everywhere, because a non-deterministic score is a trust problem for a training tool. TF32 and cuDNN kernel selection otherwise drifted under a warm GPU shared with the resident models, moving the CTC forced-alignment path across ties and mistiming a flagged word's playback. See `.claude/context/scoring.md`.
+
 ### wav2vec2-xlsr-53-espeak-cv-ft for phoneme recognition
 
 Chosen over a Kaldi-based GOP pipeline. Kaldi is the traditional research-standard toolkit for this, but requires building a lexicon, acoustic model, and alignment pipeline from scratch. wav2vec2-xlsr-53-espeak-cv-ft is a pretrained HuggingFace model usable directly for phoneme-level recognition, lowering setup complexity for a single-developer local project, at some cost to the fine-grained control Kaldi offers.
