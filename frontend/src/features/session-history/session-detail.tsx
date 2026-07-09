@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { BACKEND_URL } from '@/config'
 import { OwnRecordingAudio } from '@/features/audio-channel/own-recording-audio'
+import { CritiqueList } from '@/features/free-topic/critique-list'
 import { FlaggedWordList } from '@/features/passage-scoring/flagged-word-list'
 import { ScoreMetric } from '@/features/passage-scoring/score-metric'
 
@@ -99,6 +100,28 @@ export function SessionDetail({ id }: SessionDetailProps) {
             <h3 className="text-left text-xl font-medium">Flagged words</h3>
             <FlaggedWordList words={query.data.flagged_words} />
           </div>
+
+          {query.data.critique && (
+            <div className="flex flex-col gap-3">
+              <h3 className="text-left text-xl font-medium">
+                Grammar and phrasing
+              </h3>
+              <CritiqueList
+                points={query.data.critique
+                  .split('\n')
+                  .filter((point) => point.trim().length > 0)}
+              />
+            </div>
+          )}
+
+          {query.data.transcript && (
+            <div className="flex flex-col gap-3">
+              <h3 className="text-left text-xl font-medium">What you said</h3>
+              <p className="rounded-lg border bg-muted/40 p-4 text-left text-sm text-muted-foreground">
+                {query.data.transcript}
+              </p>
+            </div>
+          )}
         </section>
       )}
     </div>

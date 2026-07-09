@@ -7,6 +7,7 @@ from fastapi.responses import JSONResponse
 
 from diction.api import (
     drills,
+    free_topic,
     health,
     minimal_pairs,
     passages,
@@ -19,10 +20,11 @@ from diction.api import (
 )
 from diction.config import get_settings
 from diction.db.engine import create_db_and_tables
-from diction.feedback.base import StubExplainer
+from diction.feedback.base import StubCritic, StubExplainer
 from diction.scoring.audio import ClipTooWeakError
 from diction.scoring.base import StubScorer
 from diction.scoring.prosody_base import StubProsodyScorer
+from diction.scoring.transcription_base import StubTranscriber, Transcriber
 from diction.tts.base import StubSynthesizer
 from diction.tts.cache import CachedSynthesizer, ReferenceAudioCache
 
@@ -34,8 +36,10 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     create_db_and_tables()
     settings = get_settings()
 
-    transcriber = None
-    if not settings.use_stub_scorer or not settings.use_stub_prosody:
+    transcriber: Transcriber
+    if settings.use_stub_scorer and settings.use_stub_prosody:
+        transcriber = StubTranscriber()
+    else:
         try:
             from diction.scoring.transcription import WhisperTranscriber
         except ModuleNotFoundError as error:
@@ -46,13 +50,13 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
             ) from error
 
         transcriber = WhisperTranscriber(settings)
+    app.state.transcriber = transcriber
 
     if settings.use_stub_scorer:
         app.state.scorer = StubScorer()
     else:
         from diction.scoring.scorer_gop import GopScorer
 
-        assert transcriber is not None
         app.state.scorer = GopScorer(settings, transcriber)
 
     if settings.use_stub_prosody:
@@ -60,7 +64,6 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     else:
         from diction.scoring.prosody_real import ProsodyScorer
 
-        assert transcriber is not None
         app.state.prosody_scorer = ProsodyScorer(settings, transcriber)
 
     if settings.use_stub_explainer:
@@ -75,6 +78,20 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
                 'The feedback model stack is not installed. Run '
                 "'uv sync --extra feedback', or set DICTION_USE_STUB_EXPLAINER=true "
                 'to run against the stub explainer.'
+            ) from error
+
+    if settings.use_stub_critic:
+        app.state.critic = StubCritic()
+    else:
+        from diction.feedback.critique_llm import OllamaCritic
+
+        try:
+            app.state.critic = OllamaCritic.from_settings(settings)
+        except ModuleNotFoundError as error:
+            raise RuntimeError(
+                'The feedback model stack is not installed. Run '
+                "'uv sync --extra feedback', or set DICTION_USE_STUB_CRITIC=true "
+                'to run against the stub critic.'
             ) from error
 
     if settings.use_stub_synth:
@@ -109,6 +126,7 @@ def create_app() -> FastAPI:
     )
 
     app.include_router(drills.router, prefix='/api')
+    app.include_router(free_topic.router, prefix='/api')
     app.include_router(health.router, prefix='/api')
     app.include_router(minimal_pairs.router, prefix='/api')
     app.include_router(passages.router, prefix='/api')

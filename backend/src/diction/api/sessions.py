@@ -32,6 +32,8 @@ class SessionDetailResponse(BaseModel):
     created_at: datetime
     mode: str
     passage: str | None
+    transcript: str | None
+    critique: str | None
     completeness: float
     accuracy: float
     fluency: float

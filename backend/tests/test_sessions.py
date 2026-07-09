@@ -98,6 +98,29 @@ def test_detail_returns_a_session_with_flagged_words(
     assert body['flagged_words'][0]['phoneme'] == 'θ'
 
 
+def test_detail_returns_transcript_and_critique_for_a_free_topic_session(
+    client: TestClient, engine: Engine
+) -> None:
+    record = PracticeSession(
+        mode='free-topic',
+        transcript='we drives to the park',
+        critique='Use past tense: say "we drove".',
+        completeness=100.0,
+        accuracy=91.0,
+        fluency=84.0,
+        phoneme_quality=88.0,
+    )
+    session_id = _seed(engine, record)
+
+    response = client.get(f'/api/sessions/{session_id}')
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body['transcript'] == 'we drives to the park'
+    assert body['critique'] == 'Use past tense: say "we drove".'
+    assert body['passage'] is None
+
+
 def test_detail_reports_has_recording_when_a_clip_is_stored(
     client: TestClient, engine: Engine, recordings_dir: Path
 ) -> None:

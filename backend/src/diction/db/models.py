@@ -10,6 +10,8 @@ class PracticeSession(SQLModel, table=True):
     created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
     mode: str
     passage: str | None = None
+    transcript: str | None = None
+    critique: str | None = None
     completeness: float
     accuracy: float
     fluency: float

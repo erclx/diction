@@ -29,7 +29,7 @@ from diction.scoring.gop import (
     normalize_gop,
 )
 from diction.scoring.text import normalize_word
-from diction.scoring.transcription import WhisperTranscriber
+from diction.scoring.transcription_base import Transcriber
 from diction.scoring.types import ContrastResult, ScoreResult
 
 
@@ -48,7 +48,7 @@ def _pin_scoring_determinism() -> None:
 
 
 class GopScorer:
-    def __init__(self, settings: Settings, transcriber: WhisperTranscriber) -> None:
+    def __init__(self, settings: Settings, transcriber: Transcriber) -> None:
         _pin_scoring_determinism()
         self._device = 'cuda' if torch.cuda.is_available() else 'cpu'
         self._processor = AutoProcessor.from_pretrained(settings.phoneme_model_id)

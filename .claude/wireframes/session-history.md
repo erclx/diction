@@ -1,11 +1,11 @@
 ---
 title: Session history
-description: The history surface where the user browses past sessions and opens one to see its scores and flagged words
+description: The history surface where the user browses past sessions and opens one to see its scores, flagged words, and any transcript and critique
 ---
 
 # Session history
 
-The review surface for saved passage sessions. It reads `GET /api/sessions` for a dated list, newest first, and `GET /api/sessions/{id}` for one session's passage text, four scores, flagged words, and stored recording. Reached from the History nav in the app shell sidebar. A single-column layout at `/history` for the list and `/history/:sessionId` for the detail, so a detail is deep-linkable and the browser back button returns to the list. Drills persist as reps for the weak-sound tracker, not as history entries, so only passage reads appear here.
+The review surface for saved passage and free-topic sessions. It reads `GET /api/sessions` for a dated list, newest first, and `GET /api/sessions/{id}` for one session's four scores, flagged words, stored recording, and the mode-specific fields: the passage text for a passage read, or the recognized transcript and grammar critique for a free-topic session. Reached from the History nav in the app shell sidebar. A single-column layout at `/history` for the list and `/history/:sessionId` for the detail, so a detail is deep-linkable and the browser back button returns to the list. Drills persist as reps for the weak-sound tracker, not as history entries, so only passage reads and free-topic sittings appear here.
 
 ## List
 
@@ -51,6 +51,14 @@ The review surface for saved passage sessions. It reads `GET /api/sessions` for 
 │  │ thought  (θ)                          │    │
 │  │ The "th" came out as "t"...           │    │
 │  └──────────────────────────────────────┘    │
+│  Grammar and phrasing                         │ ← free-topic only, the stored critique
+│  ┌──────────────────────────────────────┐    │
+│  │ Use past tense: "we drove".           │    │
+│  └──────────────────────────────────────┘    │
+│  What you said                                │ ← free-topic only, the recognized transcript
+│  ┌──────────────────────────────────────┐    │
+│  │ we drives to the park...              │    │
+│  └──────────────────────────────────────┘    │
 ```
 
 ## Empty
@@ -71,6 +79,8 @@ The review surface for saved passage sessions. It reads `GET /api/sessions` for 
 - Back control: `Back to history`
 - Passage heading: `Passage`
 - Recording heading: `Your recording`
+- Free-topic critique heading: `Grammar and phrasing`
+- Free-topic transcript heading: `What you said`
 - Metric labels: `Completeness`, `Accuracy`, `Fluency`, `Phoneme quality`
 - Empty onboarding: `No sessions yet. Score a passage to start your history.`
 - Empty action: `Read a passage`
@@ -83,5 +93,6 @@ The review surface for saved passage sessions. It reads `GET /api/sessions` for 
 - Rows show only the date, mode, and headline accuracy, so the list read stays cheap. The full score set, passage text, flagged words, and recording load on the detail read.
 - The headline accuracy and the detail metrics share one band coloring with the passage surface: green at 90 and above, amber at 75 to 89, red below 75.
 - The passage text renders above the scores when the session stored it, so the reader sees what was practiced next to how it scored.
+- A free-topic session renders its grammar critique and recognized transcript below the flagged words, the same two sections shown right after the free-topic analysis, so history holds everything the analysis surfaced.
 - A player renders under the scores when the session has a stored clip, reusing the passage surface's own-recording transport so the reader can replay their read. Sessions saved before recording capture landed show no player.
 - The empty state is the onboarding case, distinct from a filtered-empty case, and routes the user to Practice. The list fails fast with a Retry, and an unknown id shows a not-found message rather than a spinner.

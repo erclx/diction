@@ -23,12 +23,14 @@ class Settings(BaseSettings):
     use_stub_scorer: bool = False
     use_stub_prosody: bool = False
     use_stub_explainer: bool = False
+    use_stub_critic: bool = False
     use_stub_synth: bool = False
 
     phoneme_model_id: str = 'facebook/wav2vec2-xlsr-53-espeak-cv-ft'
     whisper_model_id: str = 'large-v3'
 
     llm_model_id: str = 'gemma2:9b'
+    critic_model_id: str | None = None
     ollama_base_url: str = 'http://localhost:11434'
     llm_timeout_seconds: float = 30.0
 
@@ -48,6 +50,10 @@ class Settings(BaseSettings):
         if self.recordings_dir is not None:
             return self.recordings_dir
         return self.data_dir / RECORDINGS_DIRNAME
+
+    @property
+    def resolved_critic_model_id(self) -> str:
+        return self.critic_model_id or self.llm_model_id
 
     @property
     def user_db_path(self) -> Path:
