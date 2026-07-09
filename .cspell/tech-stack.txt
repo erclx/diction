@@ -25,6 +25,7 @@ dotfolders
 dunder
 esbenp
 espeak
+espeakng
 evenodd
 fastapi
 flake8
@@ -33,6 +34,7 @@ frombuffer
 frombytes
 frontmatter
 gemma
+hexgrad
 htmlcov
 httpx
 huggingface
@@ -40,6 +42,7 @@ iconify
 jsdom
 jsxSingleQuote
 kaldi
+kokoro
 kwargs
 labelledby
 lessac
@@ -50,6 +53,7 @@ lintstagedrc
 loadedmetadata
 lstsq
 matplotlib
+misaki
 mispeech
 mkdocs
 mkhl
