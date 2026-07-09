@@ -16,7 +16,7 @@ One git repo holds two subprojects. Shared tooling lives at the root and each su
 - Install [uv](https://docs.astral.sh/uv): `curl -LsSf https://astral.sh/uv/install.sh | sh`
 - Root tooling: `bun install`
 - Frontend deps: `cd frontend && bun install`
-- Backend deps: `cd backend && uv sync`
+- Backend deps: `cd backend && uv sync`. The backend pins Python 3.13, since `spacy` (pulled by the `tts` extra's `misaki[en]`) has no CPython 3.14 wheel.
 - Model stack, optional and GPU-bound: `cd backend && uv sync --extra scoring`. Also needs the `espeak-ng` and `ffmpeg` system packages. Skip it to run against the stub scorer with `DICTION_USE_STUB_SCORER=true`.
 - Feedback stack, optional: `cd backend && uv sync --extra feedback` for the local-LLM explainer over Ollama. Skip it to run against the stub explainer with `DICTION_USE_STUB_EXPLAINER=true`.
 - Reference-audio TTS, optional: `cd backend && uv sync --extra tts`. The synth is Kokoro-82M, which self-downloads its model from HuggingFace on first synthesis, so no voice file goes on disk. `DICTION_TTS_VOICE` is a Kokoro voice id defaulting to `af_heart`. Skip the extra to run against the stub synthesizer with `DICTION_USE_STUB_SYNTH=true`.
