@@ -104,6 +104,7 @@ shellcheck
 shfmt
 sidepanel
 soundfile
+spacy
 speechocean
 sqlite
 sqlmodel
