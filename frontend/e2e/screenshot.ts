@@ -268,6 +268,37 @@ async function driveToTargetedDrillsEmpty(page: Page): Promise<void> {
   await page.getByText(/No weak sounds yet/).waitFor()
 }
 
+async function routeResurfacing(
+  page: Page,
+  list: readonly unknown[],
+): Promise<void> {
+  await page.route('**/api/resurfacing', (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify(list),
+    }),
+  )
+}
+
+async function driveToRoutine(page: Page): Promise<void> {
+  await routeResurfacing(page, [
+    {
+      phoneme: 'θ',
+      box: 0,
+      interval_days: 1,
+      last_practiced: '2026-07-01T09:14:00Z',
+      next_due: '2026-07-02T09:14:00Z',
+      is_due: true,
+      example_words: ['thought'],
+    },
+  ])
+  await routeWeakSounds(page, MOCK_WEAK_SOUNDS)
+  await routeMinimalPairs(page, MOCK_MINIMAL_PAIRS)
+  await page.getByRole('link', { name: 'Routine' }).click()
+  await page.getByText('Due for review').waitFor()
+}
+
 async function driveToCollapsed(page: Page): Promise<void> {
   await page.getByRole('button', { name: 'Toggle Sidebar' }).click()
 }
@@ -421,6 +452,7 @@ const CASES: readonly CaptureCase[] = [
     name: 'empty',
     act: driveToTargetedDrillsEmpty,
   },
+  { section: 'routine', name: 'steps', act: driveToRoutine },
   { section: 'shell', name: 'sidebar', act: driveToProgress },
   { section: 'shell', name: 'collapsed', act: driveToCollapsed },
   { section: 'shell', name: 'mobile-closed', viewport: NARROW_VIEWPORT },
