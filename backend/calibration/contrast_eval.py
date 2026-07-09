@@ -11,7 +11,7 @@ Two verdicts are compared per clip:
   competing phoneme score higher than the target at the target's own frames).
 
 Each pair is scored twice: the correct word (should pass) and the competing word
-(should retry). Clips are synthesized with the shipped Piper voice, so this is a
+(should retry). Clips are synthesized with the shipped Kokoro voice, so this is a
 clean-speech proxy, not real learner audio. A correct clip that retries is an
 annoyance; a wrong clip that passes teaches the wrong sound, so false passes are
 the error that matters.
@@ -31,7 +31,7 @@ from diction.scoring.audio import MIN_WORD_CLIP_SECONDS, ClipTooWeakError
 from diction.scoring.scorer_gop import GopScorer
 from diction.scoring.text import normalize_word
 from diction.scoring.transcription import WhisperTranscriber
-from diction.tts.synth_piper import PiperSynthesizer
+from diction.tts.synth_kokoro import KokoroSynthesizer
 
 HERE = Path(__file__).parent
 
@@ -61,7 +61,7 @@ def _new_verdict(
 def main() -> None:
     settings = Settings(use_stub_scorer=False, use_stub_synth=False)
     scorer = GopScorer(settings, WhisperTranscriber(settings))
-    synth = PiperSynthesizer(settings)
+    synth = KokoroSynthesizer(settings)
 
     clips: dict[str, bytes] = {}
 

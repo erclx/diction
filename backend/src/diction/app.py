@@ -80,7 +80,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         app.state.synth = StubSynthesizer()
     else:
         try:
-            from diction.tts.synth_piper import PiperSynthesizer
+            from diction.tts.synth_kokoro import KokoroSynthesizer
         except ModuleNotFoundError as error:
             raise RuntimeError(
                 'The TTS stack is not installed. Run '
@@ -89,9 +89,9 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
             ) from error
 
         app.state.synth = CachedSynthesizer(
-            PiperSynthesizer(settings),
+            KokoroSynthesizer(settings),
             ReferenceAudioCache(settings.reference_cache_dir),
-            str(settings.tts_voice),
+            f'kokoro-{settings.tts_voice}',
         )
     yield
 

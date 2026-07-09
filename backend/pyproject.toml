@@ -29,8 +29,12 @@ feedback = [
 ]
 
 # Opt-in local TTS for native reference audio. Install with `uv sync --extra tts`.
+# Kokoro pulls torch, shared with the `scoring` extra in real mode. `misaki[en]`
+# and `espeakng-loader` are pinned so the g2p never lazy-installs at synth time.
 tts = [
-    "piper-tts>=1.2",
+    "kokoro>=0.9",
+    "misaki[en]>=0.9",
+    "espeakng-loader>=0.2",
 ]
 
 [dependency-groups]

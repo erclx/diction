@@ -44,9 +44,9 @@ Whisper provides word-level timing to segment audio for GOP scoring, and full tr
 
 The local LLM turns raw phoneme and fluency error data into plain-language explanations, and critiques grammar and phrasing in free-topic conversation mode. Chosen over a cloud LLM API to keep the whole pipeline offline and free of recurring cost. Response quality depends on which local model runs and the available hardware, which is acceptable given the target hardware in `REQUIREMENTS.md`.
 
-### Piper or Coqui XTTS for reference audio, not cloud TTS
+### Kokoro-82M for reference audio, not Piper, XTTS, or cloud TTS
 
-Reference audio drives the "hear the correct pronunciation" playback and shadowing clips. Piper is lightweight and fast but less natural sounding. XTTS is more natural and supports voice cloning but costs more compute. Both are free and local, avoiding the Azure and ElevenLabs per-character costs that a personal tool with no need for studio-grade voice realism cannot justify.
+Reference audio drives the "hear the correct pronunciation" playback and shadowing clips. It runs locally to avoid the Azure and ElevenLabs per-character costs a personal tool cannot justify. Piper shipped first as the lightweight, fast option, but a `dev:real` A/B listen judged Kokoro-82M (`af_heart`) clearly more natural, and Piper's only edge, its small footprint, was not needed once the `tts` extra already shares torch with the `scoring` stack. Kokoro replaced it outright rather than sitting behind an engine toggle, since a dead second engine violates YAGNI. XTTS remains unused: its voice cloning is beyond what reference playback needs. The `Synthesizer` protocol keeps any future engine swap contained to one module.
 
 ### Accentedness as a composite of existing scores, not a separate model
 
