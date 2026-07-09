@@ -31,17 +31,29 @@ const FIXED_ROTATION: readonly ('passage' | 'shadowing' | 'stress')[] = [
   'stress',
 ]
 
+function drillableContrasts(
+  phonemes: readonly string[],
+  contrasts: readonly MinimalPairContrast[],
+): { phoneme: string; contrast: MinimalPairContrast }[] {
+  return phonemes.flatMap((phoneme) => {
+    const contrast = contrastForPhoneme(contrasts, phoneme)
+    return contrast ? [{ phoneme, contrast }] : []
+  })
+}
+
 function drillSteps(
   phonemes: readonly string[],
   reason: string,
   contrasts: readonly MinimalPairContrast[],
 ): RoutineStep[] {
-  return phonemes.map((phoneme, index) => ({
-    mode: ROUTINE_MODES[DRILL_ROTATION[index % DRILL_ROTATION.length]],
-    phoneme,
-    contrast: contrastForPhoneme(contrasts, phoneme),
-    reason,
-  }))
+  return drillableContrasts(phonemes, contrasts).map(
+    ({ phoneme, contrast }, index) => ({
+      mode: ROUTINE_MODES[DRILL_ROTATION[index % DRILL_ROTATION.length]],
+      phoneme,
+      contrast,
+      reason,
+    }),
+  )
 }
 
 function fixedSteps(): RoutineStep[] {

@@ -94,11 +94,22 @@ describe('buildRoutine', () => {
   })
 
   it('should cap the routine at the sitting length', () => {
-    const manyDue = ['a', 'b', 'c', 'd', 'e', 'f', 'g'].map((phoneme) =>
+    const manyDue = ['θ', 'f', 'ɹ', 'l'].map((phoneme) =>
       dueSound(phoneme, true),
     )
     const routine = buildRoutine(manyDue, [], CONTRASTS)
 
     expect(routine).toHaveLength(ROUTINE_LIMIT)
+  })
+
+  it('should drop a due sound with no curated contrast rather than link a dead-end drill', () => {
+    const routine = buildRoutine([dueSound('ʒ', true)], [], CONTRASTS)
+
+    expect(routine.every((step) => step.phoneme === null)).toBe(true)
+    expect(routine.map((step) => step.mode.id)).toEqual([
+      'passage',
+      'shadowing',
+      'stress',
+    ])
   })
 })
