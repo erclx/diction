@@ -4,6 +4,7 @@ import {
   Ear,
   History,
   ListChecks,
+  MessagesSquare,
   Mic,
   Speech,
   Target,
@@ -29,6 +30,7 @@ import {
 } from '@/components/ui/sidebar'
 import { AudioChannelProvider } from '@/features/audio-channel/audio-channel'
 import { EarTraining } from '@/features/ear-training/ear-training'
+import { FreeTopic } from '@/features/free-topic/free-topic'
 import { PassageScoring } from '@/features/passage-scoring/passage-scoring'
 import { ProductionDrill } from '@/features/production-drill/production-drill'
 import { ProgressDashboard } from '@/features/progress-dashboard/progress-dashboard'
@@ -88,6 +90,7 @@ const NAV_SECTIONS: readonly NavSection[] = [
       { to: '/routine', label: 'Routine', icon: ListChecks },
       { to: '/', label: 'Passage', icon: Mic },
       { to: '/shadowing', label: 'Shadowing', icon: Waves },
+      { to: '/free-topic', label: 'Free topic', icon: MessagesSquare },
     ],
   },
   {
@@ -193,6 +196,7 @@ export function App() {
             <Route path="/" element={<PassageScoring />} />
             <Route path="/routine" element={<RoutineHome />} />
             <Route path="/shadowing" element={<Shadowing />} />
+            <Route path="/free-topic" element={<FreeTopic />} />
             <Route path="/drills" element={<TargetedDrills />} />
             <Route path="/drills/ear-training" element={<EarTraining />} />
             <Route path="/drills/production" element={<ProductionDrill />} />

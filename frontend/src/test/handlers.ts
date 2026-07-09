@@ -22,6 +22,28 @@ export const handlers = [
       ],
     }),
   ),
+  http.post('http://localhost:8000/api/free-topic/score', () =>
+    HttpResponse.json({
+      completeness: 100,
+      accuracy: 91,
+      fluency: 84,
+      phoneme_quality: 88,
+      flagged_words: [
+        {
+          word: 'drives',
+          start: 1.0,
+          end: 1.4,
+          phoneme: 'v',
+          explanation: 'The /v/ sound in drives scored low.',
+        },
+      ],
+      transcript: 'we drives to the park before it start raining',
+      critique: [
+        'Use past tense consistently: say "we drove" and "it started".',
+        'Subject-verb agreement: "it started", not "it start".',
+      ],
+    }),
+  ),
   http.get('http://localhost:8000/api/minimal-pairs', () =>
     HttpResponse.json([
       {
