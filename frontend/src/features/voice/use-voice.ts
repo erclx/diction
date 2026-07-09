@@ -13,10 +13,31 @@ function readStoredVoice(): string | null {
 const listeners = new Set<() => void>()
 let currentVoice: string | null = readStoredVoice()
 
+function syncFromStorage(): void {
+  const stored = readStoredVoice()
+  if (stored !== currentVoice) {
+    currentVoice = stored
+    listeners.forEach((listener) => listener())
+  }
+}
+
+function handleStorageEvent(event: StorageEvent): void {
+  if (event.key === STORAGE_KEY) {
+    syncFromStorage()
+  }
+}
+
 function subscribe(listener: () => void): () => void {
+  if (listeners.size === 0) {
+    syncFromStorage()
+    window.addEventListener('storage', handleStorageEvent)
+  }
   listeners.add(listener)
   return () => {
     listeners.delete(listener)
+    if (listeners.size === 0) {
+      window.removeEventListener('storage', handleStorageEvent)
+    }
   }
 }
 

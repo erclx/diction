@@ -68,4 +68,40 @@ describe('VoicePicker', () => {
 
     await waitFor(() => expect(requestedUrl).toContain('voice=am_michael'))
   })
+
+  it('should heal a stored voice the registry no longer offers back to the default', async () => {
+    const user = userEvent.setup()
+    const first = renderWithProviders(<VoicePicker />)
+    await user.click(
+      await screen.findByRole('combobox', { name: 'Reference voice' }),
+    )
+    await user.click(
+      await screen.findByRole('option', { name: 'Michael (Male)' }),
+    )
+    await waitFor(() =>
+      expect(localStorage.getItem('diction-voice')).toBe('am_michael'),
+    )
+    first.unmount()
+
+    server.use(
+      http.get('http://localhost:8000/api/voices', () =>
+        HttpResponse.json({
+          voices: [
+            {
+              id: 'af_heart',
+              label: 'Heart',
+              accent: 'American',
+              gender: 'Female',
+            },
+          ],
+          default: 'af_heart',
+        }),
+      ),
+    )
+    renderWithProviders(<VoicePicker />)
+
+    await waitFor(() =>
+      expect(localStorage.getItem('diction-voice')).toBe('af_heart'),
+    )
+  })
 })

@@ -1,3 +1,5 @@
+import { useEffect, useMemo } from 'react'
+
 import {
   Select,
   SelectContent,
@@ -17,12 +19,29 @@ export function VoicePicker() {
   const { voice, setVoice } = useVoice()
   const channel = useAudioChannel()
 
-  if (!data) {
+  const voices = useMemo(() => data?.voices ?? [], [data])
+  const known = useMemo(
+    () => new Set(voices.map((entry) => entry.id)),
+    [voices],
+  )
+  const resolved =
+    (voice && known.has(voice) ? voice : null) ??
+    (data && known.has(data.default) ? data.default : null) ??
+    voices[0]?.id ??
+    null
+
+  useEffect(() => {
+    if (voice !== null && resolved !== null && voice !== resolved) {
+      setVoice(resolved)
+    }
+  }, [voice, resolved, setVoice])
+
+  if (!data || voices.length === 0 || resolved === null) {
     return null
   }
 
-  const selected = voice ?? data.default
-  const accents = [...new Set(data.voices.map((entry) => entry.accent))]
+  const selected = resolved
+  const accents = [...new Set(voices.map((entry) => entry.accent))]
 
   function handleChange(next: string) {
     channel.stop()
@@ -38,7 +57,7 @@ export function VoicePicker() {
         {accents.map((accent) => (
           <SelectGroup key={accent}>
             <SelectLabel>{accent}</SelectLabel>
-            {data.voices
+            {voices
               .filter((entry) => entry.accent === accent)
               .map((entry) => (
                 <SelectItem key={entry.id} value={entry.id}>
