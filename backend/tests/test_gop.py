@@ -120,6 +120,24 @@ def test_flag_span_falls_back_to_alignment_when_the_spoken_word_is_ambiguous() -
     assert (result.flagged_words[0].start, result.flagged_words[0].end) == (4.4, 4.5)
 
 
+def test_flag_span_falls_back_to_alignment_when_the_spoken_word_repeats() -> None:
+    aligned = [
+        AlignedPhoneme(
+            word_index=1, word='thin', phoneme='θ', gop=-8.0, start=1.0, end=1.2
+        )
+    ]
+
+    result = aggregate_scores(
+        aligned=aligned,
+        expected_words=['thin', 'thin'],
+        spoken_words=['thin', 'thin'],
+        spoken_spans=[(0.0, 0.4), (1.0, 1.4)],
+        duration=1.5,
+    )
+
+    assert (result.flagged_words[0].start, result.flagged_words[0].end) == (1.0, 1.2)
+
+
 def test_aggregate_phoneme_quality_drops_as_gop_worsens() -> None:
     clean = [make_phoneme(0, 'thick', 'θ', -1.0)]
     degraded = [make_phoneme(0, 'thick', 'θ', -9.0)]
