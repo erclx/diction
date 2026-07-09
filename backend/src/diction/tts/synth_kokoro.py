@@ -25,10 +25,10 @@ class KokoroSynthesizer:
         self._pipeline = KPipeline(lang_code=KOKORO_LANG_CODE)
         self._voice = settings.tts_voice
 
-    def synthesize(self, text: str) -> bytes:
+    def synthesize(self, text: str, voice: str | None = None) -> bytes:
         chunks = [
             np.asarray(result.audio, dtype=np.float32)
-            for result in self._pipeline(text, voice=self._voice)
+            for result in self._pipeline(text, voice=voice or self._voice)
         ]
         samples = np.concatenate(chunks) if chunks else np.zeros(0, dtype=np.float32)
         pcm = (np.clip(samples, -1.0, 1.0) * 32767).astype('<i2')

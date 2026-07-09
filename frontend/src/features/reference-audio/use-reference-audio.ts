@@ -3,15 +3,22 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { BACKEND_URL } from '@/config'
 import { useAudioChannel } from '@/features/audio-channel/audio-channel'
+import { useVoice } from '@/features/voice/use-voice'
 
 const REFERENCE_TIMEOUT_MS = 30_000
 
-export const referenceAudioKey = (text: string) =>
-  ['reference-audio', text] as const
+export const referenceAudioKey = (text: string, voice: string | null) =>
+  ['reference-audio', text, voice] as const
 
-async function fetchReferenceAudio(text: string): Promise<Blob> {
+async function fetchReferenceAudio(
+  text: string,
+  voice: string | null,
+): Promise<Blob> {
   const url = new URL(`${BACKEND_URL}/api/reference`)
   url.searchParams.set('text', text)
+  if (voice) {
+    url.searchParams.set('voice', voice)
+  }
 
   const response = await fetch(url, {
     signal: AbortSignal.timeout(REFERENCE_TIMEOUT_MS),
@@ -33,14 +40,15 @@ export interface ReferenceAudio {
 
 export function useReferenceAudio(text: string): ReferenceAudio {
   const channel = useAudioChannel()
+  const { voice } = useVoice()
   const [shouldLoad, setShouldLoad] = useState(false)
   const [isPlaying, setIsPlaying] = useState(false)
   const wantsPlayRef = useRef(false)
   const audioRef = useRef<HTMLAudioElement | null>(null)
 
   const query = useQuery({
-    queryKey: referenceAudioKey(text),
-    queryFn: () => fetchReferenceAudio(text),
+    queryKey: referenceAudioKey(text, voice),
+    queryFn: () => fetchReferenceAudio(text, voice),
     enabled: shouldLoad && text.trim().length > 0,
     staleTime: Infinity,
     gcTime: Infinity,

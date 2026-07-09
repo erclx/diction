@@ -1,6 +1,7 @@
 addopts
 aitk
 analyser
+aoede
 appuser
 arpabet
 asyncio
@@ -43,6 +44,7 @@ jsdom
 jsxSingleQuote
 kaldi
 kokoro
+kore
 kwargs
 labelledby
 lessac

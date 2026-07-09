@@ -67,6 +67,26 @@ export const handlers = [
       headers: { 'Content-Type': 'audio/wav' },
     }),
   ),
+  http.get('http://localhost:8000/api/voices', () =>
+    HttpResponse.json({
+      voices: [
+        {
+          id: 'af_heart',
+          label: 'Heart',
+          accent: 'American',
+          gender: 'Female',
+        },
+        {
+          id: 'am_michael',
+          label: 'Michael',
+          accent: 'American',
+          gender: 'Male',
+        },
+        { id: 'bf_emma', label: 'Emma', accent: 'British', gender: 'Female' },
+      ],
+      default: 'af_heart',
+    }),
+  ),
   http.get('http://localhost:8000/api/sessions', () =>
     HttpResponse.json([
       {
