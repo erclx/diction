@@ -1,8 +1,10 @@
 import { screen } from '@testing-library/react'
+import { http, HttpResponse } from 'msw'
 import { Route, Routes } from 'react-router-dom'
 import { describe, expect, it } from 'vitest'
 
 import { renderWithProviders } from '@/test/render'
+import { server } from '@/test/server'
 
 import { SessionHistory } from './session-history'
 
@@ -34,6 +36,41 @@ describe('SessionHistory', () => {
     expect(screen.getByText('thought', { exact: true })).toBeInTheDocument()
     expect(
       screen.getByRole('button', { name: 'Play your recording' }),
+    ).toBeInTheDocument()
+  })
+
+  it('should show the transcript and critique for a free-topic session detail', async () => {
+    server.use(
+      http.get('http://localhost:8000/api/sessions/:id', () =>
+        HttpResponse.json({
+          id: 13,
+          created_at: '2026-07-02T09:14:00Z',
+          mode: 'free-topic',
+          passage: null,
+          transcript: 'we drives to the park before it start raining',
+          critique:
+            'Use past tense: say "we drove".\nSubject-verb agreement: "it started".',
+          completeness: 100,
+          accuracy: 91,
+          fluency: 84,
+          phoneme_quality: 88,
+          has_recording: true,
+          flagged_words: [],
+        }),
+      ),
+    )
+    renderWithProviders(
+      <Routes>
+        <Route path="/history/:sessionId" element={<SessionHistory />} />
+      </Routes>,
+      { initialEntries: ['/history/13'] },
+    )
+
+    expect(await screen.findByText('Grammar and phrasing')).toBeInTheDocument()
+    expect(screen.getByText(/we drove/)).toBeInTheDocument()
+    expect(screen.getByText(/it started/)).toBeInTheDocument()
+    expect(
+      screen.getByText('we drives to the park before it start raining'),
     ).toBeInTheDocument()
   })
 

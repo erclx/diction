@@ -1,5 +1,6 @@
 import { ScoreResults } from '@/features/passage-scoring/score-results'
 
+import { CritiqueList } from './critique-list'
 import type { FreeTopicResult } from './free-topic-result'
 
 interface FreeTopicResultsProps {
@@ -28,22 +29,7 @@ export function FreeTopicResults({
         aria-label="Grammar and phrasing"
       >
         <h3 className="text-left text-xl font-medium">Grammar and phrasing</h3>
-        {result.critique.length === 0 ? (
-          <p className="text-sm text-muted-foreground">
-            No grammar or phrasing notes this time, keep practicing.
-          </p>
-        ) : (
-          <ul className="flex flex-col gap-2">
-            {result.critique.map((point) => (
-              <li
-                key={point}
-                className="rounded-lg border p-3 text-left text-sm"
-              >
-                {point}
-              </li>
-            ))}
-          </ul>
-        )}
+        <CritiqueList points={result.critique} />
       </section>
 
       <section className="flex flex-col gap-2" aria-label="What we heard">

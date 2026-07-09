@@ -17,6 +17,8 @@ export const SessionDetailSchema = z.object({
   created_at: z.string(),
   mode: z.string(),
   passage: z.string().nullable(),
+  transcript: z.string().nullable(),
+  critique: z.string().nullable(),
   completeness: z.number(),
   accuracy: z.number(),
   fluency: z.number(),
