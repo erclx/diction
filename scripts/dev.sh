@@ -16,9 +16,6 @@ PIDFILE="$ROOT/.claude/.tmp/dev/pids"
 FRONTEND_BASE_PORT="${DICTION_FRONTEND_PORT:-5173}"
 BACKEND_BASE_PORT="${DICTION_BACKEND_PORT:-8000}"
 
-VOICE_NAME="en_US-lessac-medium"
-VOICE_DIR="${DICTION_VOICE_DIR:-${XDG_DATA_HOME:-$HOME/.local/share}/diction/voices}"
-PIPER_VOICE_BASE="https://huggingface.co/rhasspy/piper-voices/resolve/main/en/en_US/lessac/medium"
 OLLAMA_URL="${OLLAMA_HOST:-http://localhost:11434}"
 
 BACKEND_PID=""
@@ -54,18 +51,7 @@ ensure_real_stack() {
   log "syncing real model extras (scoring, tts, feedback)"
   (cd "$ROOT/backend" && uv sync --extra scoring --extra tts --extra feedback)
 
-  local voice="$VOICE_DIR/$VOICE_NAME.onnx"
-  if [ ! -f "$voice" ] || [ ! -f "$voice.json" ]; then
-    log "downloading Piper voice '$VOICE_NAME' to $VOICE_DIR (one-time, shared across worktrees)"
-    mkdir -p "$VOICE_DIR"
-    curl -fSL "$PIPER_VOICE_BASE/$VOICE_NAME.onnx" -o "$voice" &&
-      curl -fSL "$PIPER_VOICE_BASE/$VOICE_NAME.onnx.json" -o "$voice.json" ||
-      {
-        warn "Piper voice download failed. Fetch $VOICE_NAME .onnx and .onnx.json into $VOICE_DIR, or set DICTION_USE_STUB_SYNTH=true."
-        exit 1
-      }
-  fi
-  export DICTION_TTS_VOICE="$voice"
+  log "Kokoro self-downloads its model on first real boot (cached in the HF cache)"
 
   if [ "${DICTION_USE_STUB_EXPLAINER:-false}" != "true" ] && ! curl -fsS "$OLLAMA_URL/api/tags" >/dev/null 2>&1; then
     warn "Ollama unreachable at $OLLAMA_URL. Start it, or set DICTION_USE_STUB_EXPLAINER=true for surfaces that skip the LLM."

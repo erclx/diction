@@ -20,7 +20,7 @@ flowchart TB
         WHISPER["Whisper<br/>transcribe and align"]
         W2V["wav2vec2<br/>phoneme scoring"]
         LLM["Local LLM<br/>feedback and critique"]
-        TTS["Piper or XTTS<br/>reference audio"]
+        TTS["Kokoro-82M<br/>reference audio"]
     end
     DB[("SQLite<br/>history and weak sounds")]
 

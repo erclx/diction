@@ -32,7 +32,7 @@ class Settings(BaseSettings):
     ollama_base_url: str = 'http://localhost:11434'
     llm_timeout_seconds: float = 30.0
 
-    tts_voice: Path = BACKEND_ROOT / 'voices' / 'en_US-lessac-medium.onnx'
+    tts_voice: str = 'af_heart'
     reference_cache_dir: Path = BACKEND_ROOT / '.cache' / 'reference-audio'
 
     @property
