@@ -54,7 +54,7 @@ The frame around every routed surface. A left sidebar lists the practice and rev
 ## Copy
 
 - Brand: `Diction`
-- Primary nav: `Practice`
+- Primary nav: `Practice`, led by `Routine` above `Passage` and `Shadowing`
 - Review group label: `Review`, over `History` and `Progress`
 - Section title: mirrors the active surface (`Practice`, `History`, `Progress`), dynamic
 - Backend status: `Backend: <state>`, where state is `checking`, `ok`, or `error`, dynamic

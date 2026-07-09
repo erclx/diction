@@ -3,6 +3,7 @@ import {
   AudioWaveform,
   Ear,
   History,
+  ListChecks,
   Mic,
   Speech,
   Target,
@@ -31,6 +32,7 @@ import { EarTraining } from '@/features/ear-training/ear-training'
 import { PassageScoring } from '@/features/passage-scoring/passage-scoring'
 import { ProductionDrill } from '@/features/production-drill/production-drill'
 import { ProgressDashboard } from '@/features/progress-dashboard/progress-dashboard'
+import { RoutineHome } from '@/features/routine/routine-home'
 import { SessionHistory } from '@/features/session-history/session-history'
 import { Shadowing } from '@/features/shadowing/shadowing'
 import { StressIntonation } from '@/features/stress-intonation/stress-intonation'
@@ -83,6 +85,7 @@ const NAV_SECTIONS: readonly NavSection[] = [
   {
     label: 'Practice',
     items: [
+      { to: '/routine', label: 'Routine', icon: ListChecks },
       { to: '/', label: 'Passage', icon: Mic },
       { to: '/shadowing', label: 'Shadowing', icon: Waves },
     ],
@@ -188,6 +191,7 @@ export function App() {
           </header>
           <Routes>
             <Route path="/" element={<PassageScoring />} />
+            <Route path="/routine" element={<RoutineHome />} />
             <Route path="/shadowing" element={<Shadowing />} />
             <Route path="/drills" element={<TargetedDrills />} />
             <Route path="/drills/ear-training" element={<EarTraining />} />

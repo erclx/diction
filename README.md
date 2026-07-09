@@ -7,6 +7,7 @@ Non-native speakers rarely get an ongoing feedback loop for pronunciation. One-o
 - Phoneme-level scoring on read passages: completeness, accuracy, fluency, and pronunciation
 - Word-level error breakdown with plain-language explanations
 - Weak-sound tracker with spaced resurfacing across sessions
+- Suggested practice routine that rotates modes for one sitting, due sounds first
 - Minimal pair, shadowing, and stress-and-intonation drills
 - Native reference playback for comparison and shadowing, with a choice of reference voice
 - Runs fully offline on local hardware, no cloud APIs

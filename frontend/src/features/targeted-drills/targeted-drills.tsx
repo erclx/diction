@@ -3,13 +3,10 @@ import { Link } from 'react-router-dom'
 
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { phonemeSearch } from '@/lib/phoneme-search'
 
 import type { SuggestedDrill } from './use-suggested-drills'
 import { useSuggestedDrills } from './use-suggested-drills'
-
-function drillSearch(phoneme: string): string {
-  return `?phoneme=${encodeURIComponent(phoneme)}`
-}
 
 interface SuggestedDrillCardProps {
   drill: SuggestedDrill
@@ -41,7 +38,7 @@ function SuggestedDrillCard({ drill }: SuggestedDrillCardProps) {
               <Link
                 to={{
                   pathname: '/drills/ear-training',
-                  search: drillSearch(drill.phoneme),
+                  search: phonemeSearch(drill.phoneme),
                 }}
               >
                 <Ear />
@@ -52,7 +49,7 @@ function SuggestedDrillCard({ drill }: SuggestedDrillCardProps) {
               <Link
                 to={{
                   pathname: '/drills/production',
-                  search: drillSearch(drill.phoneme),
+                  search: phonemeSearch(drill.phoneme),
                 }}
               >
                 <Speech />

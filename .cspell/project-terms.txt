@@ -1,6 +1,7 @@
 accentedness
 ASR
 diction
+drillable
 evals
 Fluenta
 getpronounce
