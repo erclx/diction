@@ -9,6 +9,7 @@ Per-surface ASCII layouts loaded on demand
 
 - [App shell](app-shell.md): The persistent sidebar and top bar that wrap every surface, and how they collapse and go mobile
 - [Ear training](ear-training.md): The ear-training drill where the user hears one word from a minimal pair and picks which one was said
+- [Free topic](free-topic.md): The free-topic surface where the user speaks on a prompt for a minute or two and sees pronunciation scores alongside a grammar and phrasing critique
 - [Minimal pair production](minimal-pair-production.md): The production drill surface where the user says one word of a minimal pair and sees a pass or retry verdict for the target sound
 - [Passage scoring](passage-scoring.md): The passage reading surface where the user records a read-aloud and sees pronunciation scores
 - [Progress dashboard](progress-dashboard.md): The progress surface where the user sees their score trend over time and their ranked weak sounds
