@@ -46,7 +46,11 @@ function weakSound(phoneme: string): WeakSound {
 
 describe('buildRoutine', () => {
   it('should lead with a due sound as a minimal-pair drill step', () => {
-    const routine = buildRoutine([dueSound('ɹ', true)], [weakSound('θ')], CONTRASTS)
+    const routine = buildRoutine(
+      [dueSound('ɹ', true)],
+      [weakSound('θ')],
+      CONTRASTS,
+    )
 
     expect(routine[0].reason).toBe('Due for review')
     expect(routine[0].phoneme).toBe('ɹ')
@@ -67,7 +71,11 @@ describe('buildRoutine', () => {
   })
 
   it('should fall back to the weak-sound ranking when nothing is due', () => {
-    const routine = buildRoutine([dueSound('ɹ', false)], [weakSound('θ')], CONTRASTS)
+    const routine = buildRoutine(
+      [dueSound('ɹ', false)],
+      [weakSound('θ')],
+      CONTRASTS,
+    )
 
     const drillStep = routine.find((step) => step.phoneme !== null)
     expect(drillStep?.reason).toBe('Weak sound')

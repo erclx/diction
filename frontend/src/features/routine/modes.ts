@@ -2,11 +2,7 @@ import { AudioWaveform, Ear, Mic, Speech, Waves } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
 export type RoutineModeId =
-  | 'passage'
-  | 'shadowing'
-  | 'ear-training'
-  | 'production'
-  | 'stress'
+  'passage' | 'shadowing' | 'ear-training' | 'production' | 'stress'
 
 export interface RoutineMode {
   id: RoutineModeId
