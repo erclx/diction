@@ -59,6 +59,7 @@ lstsq
 matplotlib
 misaki
 mispeech
+mistral
 mkdocs
 mkhl
 monkeypatch
@@ -94,6 +95,7 @@ pyproject
 pytest
 pythonpath
 PYTHONUNBUFFERED
+qwen
 rcond
 regen
 repr

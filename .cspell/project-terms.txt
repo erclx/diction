@@ -1,6 +1,7 @@
 accentedness
 ASR
 diction
+disfluent
 drillable
 evals
 Fluenta
