@@ -130,8 +130,10 @@ jobs:
           # reference audio instead of loading the scoring and TTS models.
           DICTION_USE_STUB_SCORER: 'true'
           DICTION_USE_STUB_PROSODY: 'true'
-          # No local LLM in CI: serve canned explanations instead of calling Ollama.
+          # No local LLM in CI: serve canned explanations and grammar critique
+          # instead of calling Ollama.
           DICTION_USE_STUB_EXPLAINER: 'true'
+          DICTION_USE_STUB_CRITIC: 'true'
           DICTION_USE_STUB_SYNTH: 'true'
         run: |
           (cd ../backend && uv run uvicorn diction.main:app --app-dir src --port 8000) &
