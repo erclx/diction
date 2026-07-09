@@ -29,3 +29,15 @@ export function filterByPhoneme(
       contrast.phoneme_a === phoneme || contrast.phoneme_b === phoneme,
   )
 }
+
+export function contrastForPhoneme(
+  contrasts: readonly MinimalPairContrast[],
+  phoneme: string,
+): MinimalPairContrast | null {
+  return (
+    contrasts.find(
+      (contrast) =>
+        contrast.phoneme_a === phoneme || contrast.phoneme_b === phoneme,
+    ) ?? null
+  )
+}

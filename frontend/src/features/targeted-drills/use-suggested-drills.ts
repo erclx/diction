@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 
 import type { MinimalPairContrast } from '@/features/minimal-pairs/minimal-pair'
+import { contrastForPhoneme } from '@/features/minimal-pairs/minimal-pair'
 import { useMinimalPairsQuery } from '@/features/minimal-pairs/use-minimal-pairs'
 import { useWeakSoundsQuery } from '@/features/progress-dashboard/use-weak-sounds'
 import type { WeakSound } from '@/features/progress-dashboard/weak-sound'
@@ -15,18 +16,6 @@ export interface SuggestedDrill {
   badge: string
   exampleWords: readonly string[]
   contrast: MinimalPairContrast | null
-}
-
-function contrastForPhoneme(
-  contrasts: readonly MinimalPairContrast[],
-  phoneme: string,
-): MinimalPairContrast | null {
-  return (
-    contrasts.find(
-      (contrast) =>
-        contrast.phoneme_a === phoneme || contrast.phoneme_b === phoneme,
-    ) ?? null
-  )
 }
 
 function dueSuggestions(
