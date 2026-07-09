@@ -35,20 +35,23 @@ class ReferenceAudioCache:
 
 class CachedSynthesizer:
     """Wraps a real `Synthesizer` with a disk cache, so repeated text is served
-    from disk instead of re-synthesized. The stub bypasses this, since it is
-    already deterministic and instant."""
+    from disk instead of re-synthesized. Each request may pick a voice, and the
+    cache keys on the resolved voice so clips for different voices never collide.
+    The stub bypasses this, since it is already deterministic and instant."""
 
     def __init__(
-        self, inner: Synthesizer, cache: ReferenceAudioCache, voice: str
+        self, inner: Synthesizer, cache: ReferenceAudioCache, default_voice: str
     ) -> None:
         self._inner = inner
         self._cache = cache
-        self._voice = voice
+        self._default_voice = default_voice
 
-    def synthesize(self, text: str) -> bytes:
-        cached = self._cache.get(text, self._voice)
+    def synthesize(self, text: str, voice: str | None = None) -> bytes:
+        resolved = voice or self._default_voice
+        cache_voice = f'kokoro-{resolved}'
+        cached = self._cache.get(text, cache_voice)
         if cached is not None:
             return cached
-        audio = self._inner.synthesize(text)
-        self._cache.put(text, self._voice, audio)
+        audio = self._inner.synthesize(text, resolved)
+        self._cache.put(text, cache_voice, audio)
         return audio

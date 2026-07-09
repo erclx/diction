@@ -12,13 +12,15 @@ The synthesis subsystem behind `GET /api/reference`. It renders native reference
 - `tts/base.py` owns the `Synthesizer` protocol and the `StubSynthesizer`, which returns a canned wav with no model download.
 - `tts/synth_kokoro.py` owns the real `KokoroSynthesizer`, importing `kokoro` only inside the module.
 - `tts/cache.py` owns the disk cache `ReferenceAudioCache` and the `CachedSynthesizer` wrapper that serves repeated text from disk.
-- `api/reference.py` owns the HTTP route, boundary validation, and the wav response.
+- `tts/voices.py` owns the curated registry of offered English Kokoro voices, the single source of truth for which voice ids are valid.
+- `api/reference.py` owns the HTTP route, boundary validation, and the wav response. `api/voices.py` owns `GET /api/voices` and the shared `validate_voice` boundary check.
 
 ## Decisions
 
 - The synthesizer is chosen once in the lifespan from `Settings.use_stub_synth` and held on `app.state.synth`, injected through `get_synth`. The optional-dependency and stub rationale mirrors the scorer and lives in `.claude/ARCHITECTURE.md`.
-- Kokoro-82M replaced Piper as the reference voice, listen-confirmed clearly more natural in a `dev:real` A/B, with `af_heart` the default voice. `Settings.tts_voice` is now a string voice id, not an onnx path, so `am_michael` is a one-line env change. The `Synthesizer` protocol keeps the engine swap contained to the synth module.
-- The real Kokoro synth is wrapped in `CachedSynthesizer`, keyed on a `kokoro-` prefixed voice identity so any Piper-keyed cache entries from before the swap never serve. The stub is used directly, since it is already deterministic and instant.
+- Kokoro-82M replaced Piper as the reference voice, listen-confirmed clearly more natural in a `dev:real` A/B, with `af_heart` the default voice. `Settings.tts_voice` is now a string voice id, not an onnx path, and is the fallback default when a request names no voice. The `Synthesizer` protocol keeps the engine swap contained to the synth module.
+- The reference and prosody routes take an optional per-request `voice`, so the user picks which Kokoro voice speaks. The client sends the choice per request and the server holds no per-user voice state, matching the single-user, no-auth design. `synthesize(text, voice=None)` resolves `None` to `Settings.tts_voice`, so an absent voice keeps the default.
+- The real Kokoro synth is wrapped in `CachedSynthesizer`, which keys each clip on a `kokoro-` prefixed identity of the resolved voice, so clips for different voices never collide and pre-swap Piper-keyed entries never serve. The stub is used directly, since it is already deterministic and instant.
 - Synthesis is blocking, so the route runs it through `run_in_threadpool` under an `asyncio.wait_for` timeout rather than an `async def` body, per `.claude/rules/framework/220-fastapi.md`.
 - Runtime conventions are enforced by `.claude/rules/lib/360-model-runtime.md`.
 
@@ -26,7 +28,8 @@ The synthesis subsystem behind `GET /api/reference`. It renders native reference
 
 - The route returns raw `audio/wav`, which the browser plays through a plain `HTMLAudioElement`. It must not route through the own-span Web Audio decode path, which exists only to seek unseekable WebM. Kokoro renders at 24 kHz mono, the stub at 22.05 kHz.
 - The cache key is a SHA-256 hash of `voice` and `text`. The fixed passage and repeated words synthesize once, then serve from disk.
-- Reference text is validated at the boundary: 1 to 600 characters, rejected as 422 when blank after trimming.
+- Reference text is validated at the boundary: 1 to 600 characters, rejected as 422 when blank after trimming. A named voice is validated against the registry through `validate_voice`, rejected as 422 when unknown, before any synthesis runs.
+- The registry in `tts/voices.py` is a hand-maintained constant, since Kokoro exposes no clean list API. It carries English voices only, per the language non-goal in `.claude/REQUIREMENTS.md`. A new Kokoro voice is a one-line addition there.
 - Cache files stay under a local `Settings.reference_cache_dir`, never fetched over the network, per the offline constraint in `.claude/REQUIREMENTS.md`.
 
 ## Gotchas

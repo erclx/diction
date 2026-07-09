@@ -4,6 +4,7 @@ import { z } from 'zod'
 import { BACKEND_URL } from '@/config'
 import { ClipTooWeakSchema } from '@/features/passage-scoring/score-result'
 import { ClipTooWeakError } from '@/features/passage-scoring/use-score-passage'
+import { useVoice } from '@/features/voice/use-voice'
 
 export const StressMarkSchema = z.object({
   word: z.string(),
@@ -30,13 +31,16 @@ export interface AnalyzeProsodyInput {
 
 const ANALYZE_TIMEOUT_MS = 60_000
 
-async function analyzeProsody({
-  referenceText,
-  audio,
-}: AnalyzeProsodyInput): Promise<ProsodyAnalysis> {
+async function analyzeProsody(
+  { referenceText, audio }: AnalyzeProsodyInput,
+  voice: string | null,
+): Promise<ProsodyAnalysis> {
   const form = new FormData()
   form.append('reference_text', referenceText)
   form.append('audio', audio, 'recording.webm')
+  if (voice) {
+    form.append('voice', voice)
+  }
 
   const response = await fetch(`${BACKEND_URL}/api/prosody/analyze`, {
     method: 'POST',
@@ -59,5 +63,8 @@ async function analyzeProsody({
 }
 
 export function useAnalyzeProsody() {
-  return useMutation({ mutationFn: analyzeProsody })
+  const { voice } = useVoice()
+  return useMutation({
+    mutationFn: (input: AnalyzeProsodyInput) => analyzeProsody(input, voice),
+  })
 }

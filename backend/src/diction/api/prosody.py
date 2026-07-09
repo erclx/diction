@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, Uplo
 from pydantic import BaseModel
 from sqlmodel import Session
 
+from diction.api.voices import validate_voice
 from diction.db.engine import get_session
 from diction.db.models import DrillRep
 from diction.scoring.prosody_base import ProsodyScorer
@@ -65,9 +66,11 @@ def score_prosody(
     synth: Annotated[Synthesizer, Depends(get_synth)],
     reference_text: Annotated[str, Form()],
     audio: Annotated[UploadFile, File()],
+    voice: Annotated[str | None, Form()] = None,
 ) -> ProsodyScoreResponse:
     cleaned = _clean_reference_text(reference_text)
-    reference_audio = synth.synthesize(cleaned)
+    validate_voice(voice)
+    reference_audio = synth.synthesize(cleaned, voice)
     result = scorer.score(reference_audio, audio.file.read())
     save_drill_rep(
         session,
@@ -90,9 +93,11 @@ def analyze_prosody(
     synth: Annotated[Synthesizer, Depends(get_synth)],
     reference_text: Annotated[str, Form()],
     audio: Annotated[UploadFile, File()],
+    voice: Annotated[str | None, Form()] = None,
 ) -> ProsodyAnalyzeResponse:
     cleaned = _clean_reference_text(reference_text)
-    reference_audio = synth.synthesize(cleaned)
+    validate_voice(voice)
+    reference_audio = synth.synthesize(cleaned, voice)
     analysis = scorer.analyze(cleaned, reference_audio, audio.file.read())
     save_drill_rep(
         session,

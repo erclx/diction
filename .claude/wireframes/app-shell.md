@@ -11,7 +11,7 @@ The frame around every routed surface. A left sidebar lists the practice and rev
 
 ```plaintext
 ┌───────────────┬──────────────────────────────────────┐
-│ ≋ Diction     │ ☰  Progress          ● Backend    ◐  │ ← top bar
+│ ≋ Diction     │ ☰ Progress   ● Backend ♪ Heart ▾  ◐  │ ← top bar
 │               ├──────────────────────────────────────┤
 │ • Practice    │                                      │
 │               │   routed surface content             │
@@ -27,7 +27,7 @@ The frame around every routed surface. A left sidebar lists the practice and rev
 
 ```plaintext
 ┌────┬───────────────────────────────────────────────────┐
-│ ≋  │ ☰  Practice          ● Backend    ◐               │
+│ ≋  │ ☰  Practice     ● Backend  ♪ Heart ▾   ◐          │
 │    ├───────────────────────────────────────────────────┤
 │ •  │                                                   │
 │ •  │   routed surface content                          │
@@ -40,7 +40,7 @@ The frame around every routed surface. A left sidebar lists the practice and rev
 
 ```plaintext
 ┌────────────────────────────┐     ┌──────────────┬─────────┐
-│ ☰  Practice     ●     ◐    │     │ ≋ Diction    │▓▓▓▓▓▓▓▓▓│
+│ ☰  Practice   ● ♪ Heart▾ ◐ │     │ ≋ Diction    │▓▓▓▓▓▓▓▓▓│
 ├────────────────────────────┤     │              │▓▓▓▓▓▓▓▓▓│
 │                            │     │ • Practice   │▓▓▓▓▓▓▓▓▓│
 │   routed surface content,  │     │              │▓▓▓▓▓▓▓▓▓│
@@ -58,6 +58,7 @@ The frame around every routed surface. A left sidebar lists the practice and rev
 - Review group label: `Review`, over `History` and `Progress`
 - Section title: mirrors the active surface (`Practice`, `History`, `Progress`), dynamic
 - Backend status: `Backend: <state>`, where state is `checking`, `ok`, or `error`, dynamic
+- Voice picker: the selected reference voice, grouped by accent (`American`, `British`) with each option naming the voice and gender, dynamic
 
 ## Behavior
 
@@ -65,5 +66,6 @@ The frame around every routed surface. A left sidebar lists the practice and rev
 - The active surface stays highlighted in the nav and names the top-bar section title.
 - On desktop the sidebar collapses to an icon rail. A toggle in the top bar and a keyboard shortcut both switch it, and the collapsed choice is remembered on the next visit.
 - Below the mobile breakpoint the sidebar hides and the top-bar toggle opens it as a drawer over dimmed content. Choosing a destination closes the drawer.
-- The backend status and theme control sit at the top-bar right on every surface. The status shows a colored dot and drops its text label on narrow widths.
+- The backend status, the voice picker, and the theme control sit at the top-bar right on every surface. The status shows a colored dot and drops its text label on narrow widths.
+- The voice picker sets the reference voice for the whole app, so every native-reference control speaks the chosen voice. Switching it mid-clip stops any reference audio already playing, and the choice is remembered on the next visit.
 - Shell composition and token detail live in `.claude/context/frontend.md`.

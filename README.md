@@ -8,7 +8,7 @@ Non-native speakers rarely get an ongoing feedback loop for pronunciation. One-o
 - Word-level error breakdown with plain-language explanations
 - Weak-sound tracker with spaced resurfacing across sessions
 - Minimal pair, shadowing, and stress-and-intonation drills
-- Native reference playback for comparison and shadowing
+- Native reference playback for comparison and shadowing, with a choice of reference voice
 - Runs fully offline on local hardware, no cloud APIs
 
 ## Stack

@@ -4,6 +4,7 @@ import { z } from 'zod'
 import { BACKEND_URL } from '@/config'
 import { ClipTooWeakSchema } from '@/features/passage-scoring/score-result'
 import { ClipTooWeakError } from '@/features/passage-scoring/use-score-passage'
+import { useVoice } from '@/features/voice/use-voice'
 
 export const ShadowingScoreSchema = z.object({
   rhythm_match: z.number(),
@@ -19,13 +20,16 @@ export interface ScoreShadowingInput {
 
 const SCORE_TIMEOUT_MS = 60_000
 
-async function scoreShadowing({
-  referenceText,
-  audio,
-}: ScoreShadowingInput): Promise<ShadowingScore> {
+async function scoreShadowing(
+  { referenceText, audio }: ScoreShadowingInput,
+  voice: string | null,
+): Promise<ShadowingScore> {
   const form = new FormData()
   form.append('reference_text', referenceText)
   form.append('audio', audio, 'recording.webm')
+  if (voice) {
+    form.append('voice', voice)
+  }
 
   const response = await fetch(`${BACKEND_URL}/api/prosody/score`, {
     method: 'POST',
@@ -48,5 +52,8 @@ async function scoreShadowing({
 }
 
 export function useScoreShadowing() {
-  return useMutation({ mutationFn: scoreShadowing })
+  const { voice } = useVoice()
+  return useMutation({
+    mutationFn: (input: ScoreShadowingInput) => scoreShadowing(input, voice),
+  })
 }

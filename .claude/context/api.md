@@ -12,12 +12,13 @@ The HTTP layer the React SPA talks to. Every router mounts under `/api` in `crea
 - `api/health.py` owns `GET /api/health`, a dependency-free liveness probe returning `{status, service}`.
 - `api/passages.py` owns `POST /api/passages/score`, the core capture path: it scores an uploaded clip, explains the errors, persists a `PracticeSession`, and returns the scores plus flagged words.
 - `api/sessions.py` owns `GET /api/sessions` (newest-first list), `GET /api/sessions/{session_id}` (one session's detail), and `GET /api/sessions/{session_id}/recording` (the stored clip as a `FileResponse`).
-- `api/reference.py` owns `GET /api/reference`, returning native TTS wav bytes for a text query.
+- `api/reference.py` owns `GET /api/reference`, returning native TTS wav bytes for a text query and an optional `voice`.
+- `api/voices.py` owns `GET /api/voices`, listing the offered reference voices with the default, and exposes the shared `validate_voice` boundary check the reference and prosody routes reuse.
 - `api/weak_sounds.py` owns `GET /api/weak-sounds`, a cross-session phoneme rollup for the priority list.
 - `api/resurfacing.py` owns `GET /api/resurfacing`, the due-for-review schedule recomputed from history. It answers "what should I review right now", distinct from `/weak-sounds` answering "what are my worst sounds overall", and returns each phoneme with its box, interval, next-due, due flag, and example words, due-first.
 - `api/minimal_pairs.py` owns `GET /api/minimal-pairs`, serving curated drill contrasts with an optional `phoneme` filter.
 - `api/drills.py` owns `POST /api/drills/minimal-pair/score`, judging one drill word against its contrast through the shared scorer and returning its phoneme-quality score plus the flagged phonemes. A scored rep persists as a `production` `DrillRep`. It also owns `POST /api/drills/ear-training/rep`, a thin no-scoring route the frontend calls on each ear-training answer to persist an `ear-training` `DrillRep` from the target phoneme and the correct-or-not verdict.
-- `api/prosody.py` owns `POST /api/prosody/score` (shadowing) and `POST /api/prosody/analyze` (stress), synthesizing the reference then scoring rhythm and intonation. Each persists a `shadowing` or `stress` `DrillRep` carrying the directional prosody match.
+- `api/prosody.py` owns `POST /api/prosody/score` (shadowing) and `POST /api/prosody/analyze` (stress), synthesizing the reference then scoring rhythm and intonation. Both take the same optional `voice` as the reference route, so the scored reference is the voice the user heard rather than a fixed default. Each persists a `shadowing` or `stress` `DrillRep` carrying the directional prosody match.
 - `api/schemas.py` owns `FlaggedWordResponse`, the one response model shared across routers (`passages` and `sessions` both return it).
 
 ## Decisions

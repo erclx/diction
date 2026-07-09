@@ -12,15 +12,16 @@ STUB_AMPLITUDE = 0.3
 
 
 class Synthesizer(Protocol):
-    def synthesize(self, text: str) -> bytes: ...
+    def synthesize(self, text: str, voice: str | None = None) -> bytes: ...
 
 
 class StubSynthesizer:
     """A short canned tone behind the real contract. Used in CI and e2e, where
     there is no TTS voice download. Deterministic so playback assertions stay
-    stable, and a valid 22.05 kHz mono wav so the browser plays it directly."""
+    stable, and a valid 22.05 kHz mono wav so the browser plays it directly. The
+    voice is ignored, since the stub renders one fixed tone."""
 
-    def synthesize(self, text: str) -> bytes:
+    def synthesize(self, text: str, voice: str | None = None) -> bytes:
         return _canned_wav()
 
 

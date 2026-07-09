@@ -14,6 +14,7 @@ from diction.api import (
     reference,
     resurfacing,
     sessions,
+    voices,
     weak_sounds,
 )
 from diction.config import get_settings
@@ -91,7 +92,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         app.state.synth = CachedSynthesizer(
             KokoroSynthesizer(settings),
             ReferenceAudioCache(settings.reference_cache_dir),
-            f'kokoro-{settings.tts_voice}',
+            settings.tts_voice,
         )
     yield
 
@@ -115,6 +116,7 @@ def create_app() -> FastAPI:
     app.include_router(reference.router, prefix='/api')
     app.include_router(resurfacing.router, prefix='/api')
     app.include_router(sessions.router, prefix='/api')
+    app.include_router(voices.router, prefix='/api')
     app.include_router(weak_sounds.router, prefix='/api')
 
     @app.exception_handler(ClipTooWeakError)

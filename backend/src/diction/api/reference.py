@@ -5,6 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from fastapi.concurrency import run_in_threadpool
 from fastapi.responses import Response
 
+from diction.api.voices import validate_voice
 from diction.tts.base import Synthesizer
 
 router = APIRouter(tags=['reference'])
@@ -21,14 +22,17 @@ def get_synth(request: Request) -> Synthesizer:
 async def read_reference(
     synth: Annotated[Synthesizer, Depends(get_synth)],
     text: Annotated[str, Query(min_length=1, max_length=MAX_REFERENCE_TEXT_LENGTH)],
+    voice: Annotated[str | None, Query()] = None,
 ) -> Response:
     cleaned = text.strip()
     if not cleaned:
         raise HTTPException(status_code=422, detail='Enter text to synthesize')
 
+    validate_voice(voice)
+
     try:
         audio = await asyncio.wait_for(
-            run_in_threadpool(synth.synthesize, cleaned),
+            run_in_threadpool(synth.synthesize, cleaned, voice),
             timeout=SYNTHESIS_TIMEOUT_SECONDS,
         )
     except TimeoutError as error:

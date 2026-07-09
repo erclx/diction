@@ -36,6 +36,7 @@ import { Shadowing } from '@/features/shadowing/shadowing'
 import { StressIntonation } from '@/features/stress-intonation/stress-intonation'
 import { TargetedDrills } from '@/features/targeted-drills/targeted-drills'
 import { ThemeToggle } from '@/features/theme/theme-toggle'
+import { VoicePicker } from '@/features/voice/voice-picker'
 import { cn } from '@/lib/utils'
 
 import type { HealthState } from './use-backend-health'
@@ -181,6 +182,7 @@ export function App() {
             <SectionTitle />
             <div className="ml-auto flex items-center gap-3">
               <BackendStatus health={health} />
+              <VoicePicker />
               <ThemeToggle />
             </div>
           </header>

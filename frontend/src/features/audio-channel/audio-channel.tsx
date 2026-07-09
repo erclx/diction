@@ -6,6 +6,7 @@ type StopPlayback = () => void
 interface AudioChannel {
   claim: (stop: StopPlayback) => void
   release: (stop: StopPlayback) => void
+  stop: () => void
 }
 
 const AudioChannelContext = createContext<AudioChannel | null>(null)
@@ -31,7 +32,14 @@ export function AudioChannelProvider({ children }: AudioChannelProviderProps) {
     }
   }, [])
 
-  const channel = useMemo(() => ({ claim, release }), [claim, release])
+  const stop = useCallback(() => {
+    activeStopRef.current?.()
+  }, [])
+
+  const channel = useMemo(
+    () => ({ claim, release, stop }),
+    [claim, release, stop],
+  )
 
   return (
     <AudioChannelContext.Provider value={channel}>
