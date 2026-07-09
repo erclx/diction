@@ -18,6 +18,8 @@ const MOCK_DETAIL = {
   created_at: '2026-07-02T09:14:00Z',
   mode: 'passage',
   passage: 'The early bird catches the worm.',
+  transcript: null,
+  critique: null,
   completeness: 90.9,
   accuracy: 92.2,
   fluency: 98,
