@@ -91,3 +91,4 @@ The single-column practice surface for the passage reading feature. It shows a p
 - Each metric is colored by band: green at 90 and above, amber at 75 to 89, red below 75.
 - Each flagged word plays its own recorded span. Score band coloring and span playback mechanics live in `.claude/context/frontend.md`.
 - The passage card and each flagged word also play a native reference, synthesized locally and distinct from the user's own recording. The flagged-word row shows both controls side by side, the speaker for the user's clip and the reference for the native one. Reference synthesis and caching live in `.claude/context/tts.md`.
+- The reference control toggles play and stop: it shows a stop glyph while its clip plays, and a click halts the clip rather than restarting it. Starting a recording stops any reference or own-clip playback first, so the mic never records over it.

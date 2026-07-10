@@ -8,18 +8,48 @@ import { server } from '@/test/server'
 
 import { ReferenceButton } from './reference-button'
 
+interface PlayableMedia {
+  isPaused: boolean
+}
+
 describe('ReferenceButton', () => {
   beforeEach(() => {
     URL.createObjectURL = vi.fn(() => 'blob:mock')
     URL.revokeObjectURL = vi.fn()
-    window.HTMLMediaElement.prototype.play = vi
-      .fn()
-      .mockResolvedValue(undefined)
+    Object.defineProperty(window.HTMLMediaElement.prototype, 'paused', {
+      configurable: true,
+      get(this: PlayableMedia) {
+        return this.isPaused ?? true
+      },
+    })
+    window.HTMLMediaElement.prototype.play = vi.fn(function (
+      this: HTMLMediaElement & PlayableMedia,
+    ) {
+      this.isPaused = false
+      this.dispatchEvent(new Event('play'))
+      return Promise.resolve()
+    })
+    window.HTMLMediaElement.prototype.pause = vi.fn(function (
+      this: HTMLMediaElement & PlayableMedia,
+    ) {
+      this.isPaused = true
+      this.dispatchEvent(new Event('pause'))
+    })
   })
 
   afterEach(() => {
     vi.restoreAllMocks()
   })
+
+  function serveReference() {
+    server.use(
+      http.get('http://localhost:8000/api/reference', () =>
+        HttpResponse.arrayBuffer(new Uint8Array([82, 73, 70, 70]).buffer, {
+          headers: { 'Content-Type': 'audio/wav' },
+        }),
+      ),
+    )
+  }
 
   it('should request native reference audio for its text when clicked', async () => {
     let requestedUrl = ''
@@ -64,5 +94,39 @@ describe('ReferenceButton', () => {
         screen.getByRole('button', { name: 'Hear thought, failed, retry' }),
       ).toBeInTheDocument(),
     )
+  })
+
+  it('should render a stop label while playing', async () => {
+    serveReference()
+    const user = userEvent.setup()
+    renderWithProviders(<ReferenceButton text="thought" label="Hear thought" />)
+
+    await user.click(screen.getByRole('button', { name: 'Hear thought' }))
+
+    await waitFor(() =>
+      expect(
+        screen.getByRole('button', { name: 'Stop playback' }),
+      ).toBeInTheDocument(),
+    )
+  })
+
+  it('should stop playback on a second click rather than replay', async () => {
+    serveReference()
+    const user = userEvent.setup()
+    renderWithProviders(<ReferenceButton text="thought" label="Hear thought" />)
+
+    await user.click(screen.getByRole('button', { name: 'Hear thought' }))
+    await waitFor(() =>
+      expect(
+        screen.getByRole('button', { name: 'Stop playback' }),
+      ).toBeInTheDocument(),
+    )
+
+    await user.click(screen.getByRole('button', { name: 'Stop playback' }))
+
+    expect(window.HTMLMediaElement.prototype.play).toHaveBeenCalledTimes(1)
+    expect(
+      screen.getByRole('button', { name: 'Hear thought' }),
+    ).toBeInTheDocument()
   })
 })

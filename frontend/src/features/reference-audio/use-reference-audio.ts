@@ -33,6 +33,7 @@ async function fetchReferenceAudio(
 
 export interface ReferenceAudio {
   play: () => void
+  stop: () => void
   isFetching: boolean
   isError: boolean
   isPlaying: boolean
@@ -88,7 +89,14 @@ export function useReferenceAudio(text: string): ReferenceAudio {
       channel.release(stop)
       setIsPlaying(false)
     })
-    audio.addEventListener('pause', () => setIsPlaying(false))
+    audio.addEventListener('pause', () => {
+      channel.release(stop)
+      setIsPlaying(false)
+    })
+    audio.addEventListener('error', () => {
+      channel.release(stop)
+      setIsPlaying(false)
+    })
     return audio
   }, [channel, stop])
 
@@ -131,6 +139,7 @@ export function useReferenceAudio(text: string): ReferenceAudio {
 
   return {
     play,
+    stop,
     isFetching: query.isFetching,
     isError: query.isError,
     isPlaying,

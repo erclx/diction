@@ -1,4 +1,4 @@
-import { AudioLines, Loader2, TriangleAlert } from 'lucide-react'
+import { AudioLines, Loader2, Square, TriangleAlert } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
@@ -10,28 +10,50 @@ interface ReferenceButtonProps {
   label: string
 }
 
+const STOP_LABEL = 'Stop playback'
+
 export function ReferenceButton({ text, label }: ReferenceButtonProps) {
   const reference = useReferenceAudio(text)
+
+  const handleClick = () => {
+    if (reference.isPlaying) {
+      reference.stop()
+      return
+    }
+    reference.play()
+  }
+
+  const activeLabel = reference.isError
+    ? `${label}, failed, retry`
+    : reference.isPlaying
+      ? STOP_LABEL
+      : label
 
   return (
     <Button
       variant="outline"
       size="icon"
-      aria-label={reference.isError ? `${label}, failed, retry` : label}
-      title={reference.isError ? 'Reference audio failed, retry' : undefined}
+      aria-label={activeLabel}
+      title={
+        reference.isError
+          ? 'Reference audio failed, retry'
+          : reference.isPlaying
+            ? STOP_LABEL
+            : undefined
+      }
       className={cn(
         reference.isError && 'text-destructive',
         reference.isPlaying && 'text-primary',
       )}
       disabled={reference.isFetching}
-      onClick={reference.play}
+      onClick={handleClick}
     >
       {reference.isFetching ? (
         <Loader2 className="animate-spin" />
       ) : reference.isError ? (
         <TriangleAlert />
       ) : reference.isPlaying ? (
-        <AudioLines className="animate-pulse" />
+        <Square />
       ) : (
         <AudioLines />
       )}

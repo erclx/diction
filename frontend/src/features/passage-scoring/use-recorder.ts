@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
+import { useAudioChannel } from '@/features/audio-channel/audio-channel'
+
 import { computeRmsLevel, meterLevelFromRms } from './audio-level'
 
 export type RecorderStatus = 'idle' | 'recording' | 'recorded' | 'denied'
@@ -19,6 +21,7 @@ export interface Recorder {
 }
 
 export function useRecorder(): Recorder {
+  const channel = useAudioChannel()
   const [status, setStatus] = useState<RecorderStatus>('idle')
   const [recording, setRecording] = useState<Recording | null>(null)
   const [level, setLevel] = useState(0)
@@ -58,6 +61,7 @@ export function useRecorder(): Recorder {
   }, [])
 
   const start = useCallback(async () => {
+    channel.stop()
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
       const recorder = new MediaRecorder(stream)
@@ -86,7 +90,7 @@ export function useRecorder(): Recorder {
     } catch {
       setStatus('denied')
     }
-  }, [startMeter, teardownMeter])
+  }, [channel, startMeter, teardownMeter])
 
   const stop = useCallback(() => {
     recorderRef.current?.stop()
