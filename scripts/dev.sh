@@ -121,6 +121,7 @@ start() {
     export DICTION_USE_STUB_PROSODY="${DICTION_USE_STUB_PROSODY:-false}"
     export DICTION_USE_STUB_EXPLAINER="${DICTION_USE_STUB_EXPLAINER:-false}"
     export DICTION_USE_STUB_CRITIC="${DICTION_USE_STUB_CRITIC:-false}"
+    export DICTION_USE_STUB_GENERATOR="${DICTION_USE_STUB_GENERATOR:-false}"
     export DICTION_USE_STUB_SYNTH="${DICTION_USE_STUB_SYNTH:-false}"
     log "model stack: real (installed extras, stubs off unless explicitly set)"
   else
@@ -128,6 +129,7 @@ start() {
     export DICTION_USE_STUB_PROSODY=true
     export DICTION_USE_STUB_EXPLAINER=true
     export DICTION_USE_STUB_CRITIC=true
+    export DICTION_USE_STUB_GENERATOR=true
     export DICTION_USE_STUB_SYNTH=true
     log "model stack: stub (set DICTION_DEV_MODELS=real to use installed models)"
   fi

@@ -1,9 +1,17 @@
 from collections.abc import Mapping
 from dataclasses import dataclass, field
 
-from diction.feedback.base import MAX_CRITIQUE_POINTS, StubCritic, StubExplainer
+from diction.feedback.base import (
+    MAX_CRITIQUE_POINTS,
+    MAX_GENERATED_PASSAGE_LENGTH,
+    StubContentGenerator,
+    StubCritic,
+    StubExplainer,
+    default_passage,
+)
 from diction.feedback.critique_llm import OllamaCritic
 from diction.feedback.explainer_llm import OllamaExplainer
+from diction.feedback.generator_llm import OllamaContentGenerator
 from diction.feedback.types import FlaggedWordContext
 
 
@@ -194,3 +202,65 @@ def test_ollama_critic_falls_back_to_default_on_an_empty_reply() -> None:
     critique = critic.critique('some transcript', topic=None)
 
     assert len(critique.points) == 1
+
+
+def test_stub_content_generator_returns_a_nonempty_passage() -> None:
+    passage = StubContentGenerator().generate(['θ', 'v'])
+
+    assert passage == default_passage()
+    assert passage.strip()
+
+
+def test_ollama_content_generator_prompts_with_the_focus_phonemes() -> None:
+    client = FakeChatClient(content='A calm passage to read aloud.')
+    generator = OllamaContentGenerator(client=client, model_id='test-model')
+
+    generator.generate(['θ', 'ð'])
+
+    user_prompt = client.calls[0]['messages'][1]['content']
+    assert 'θ' in user_prompt and 'ð' in user_prompt
+
+
+def test_ollama_content_generator_disables_the_reasoning_pass() -> None:
+    client = FakeChatClient(content='A calm passage to read aloud.')
+    generator = OllamaContentGenerator(client=client, model_id='test-model')
+
+    generator.generate([])
+
+    assert client.calls[0]['think'] is False
+
+
+def test_ollama_content_generator_caps_the_context_window() -> None:
+    client = FakeChatClient(content='A calm passage to read aloud.')
+    generator = OllamaContentGenerator(client=client, model_id='test-model')
+
+    generator.generate([])
+
+    assert client.calls[0]['options']['num_ctx'] == 4096
+
+
+def test_ollama_content_generator_collapses_whitespace_in_the_reply() -> None:
+    client = FakeChatClient(content='  A calm   passage\n\nto read aloud.  ')
+    generator = OllamaContentGenerator(client=client, model_id='test-model')
+
+    passage = generator.generate([])
+
+    assert passage == 'A calm passage to read aloud.'
+
+
+def test_ollama_content_generator_falls_back_on_an_empty_reply() -> None:
+    client = FakeChatClient(content='   \n  ')
+    generator = OllamaContentGenerator(client=client, model_id='test-model')
+
+    passage = generator.generate([])
+
+    assert passage == default_passage()
+
+
+def test_ollama_content_generator_falls_back_when_the_reply_is_too_long() -> None:
+    client = FakeChatClient(content='word ' * (MAX_GENERATED_PASSAGE_LENGTH + 1))
+    generator = OllamaContentGenerator(client=client, model_id='test-model')
+
+    passage = generator.generate([])
+
+    assert passage == default_passage()
