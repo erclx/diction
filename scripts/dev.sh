@@ -84,7 +84,26 @@ stop() {
   log "stopped this worktree's dev pair"
 }
 
+pair_running() {
+  [ -f "$PIDFILE" ] || return 1
+  local key value
+  while IFS='=' read -r key value; do
+    case "$key" in
+    BACKEND_PID | FRONTEND_PID)
+      if [ -n "$value" ] && kill -0 "$value" 2>/dev/null; then
+        return 0
+      fi
+      ;;
+    esac
+  done <"$PIDFILE"
+  return 1
+}
+
 start() {
+  if pair_running; then
+    warn "a dev pair is already running for this worktree. Use 'scripts/dev.sh restart' to replace it, or 'scripts/dev.sh stop' to end it."
+    exit 1
+  fi
   ensure_deps
   mkdir -p "$(dirname "$PIDFILE")"
 
@@ -98,11 +117,17 @@ start() {
 
   if [ "${DICTION_DEV_MODELS:-stub}" = "real" ]; then
     ensure_real_stack
-    log "model stack: real (installed extras)"
+    export DICTION_USE_STUB_SCORER="${DICTION_USE_STUB_SCORER:-false}"
+    export DICTION_USE_STUB_PROSODY="${DICTION_USE_STUB_PROSODY:-false}"
+    export DICTION_USE_STUB_EXPLAINER="${DICTION_USE_STUB_EXPLAINER:-false}"
+    export DICTION_USE_STUB_CRITIC="${DICTION_USE_STUB_CRITIC:-false}"
+    export DICTION_USE_STUB_SYNTH="${DICTION_USE_STUB_SYNTH:-false}"
+    log "model stack: real (installed extras, stubs off unless explicitly set)"
   else
     export DICTION_USE_STUB_SCORER=true
     export DICTION_USE_STUB_PROSODY=true
     export DICTION_USE_STUB_EXPLAINER=true
+    export DICTION_USE_STUB_CRITIC=true
     export DICTION_USE_STUB_SYNTH=true
     log "model stack: stub (set DICTION_DEV_MODELS=real to use installed models)"
   fi
