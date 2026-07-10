@@ -1,6 +1,12 @@
 import { expect, type Page, test } from '@playwright/test'
 
 const SCORE_URL = '**/api/passages/score'
+const GENERATE_URL = '**/api/content/generate'
+const WEAK_SOUNDS_URL = '**/api/weak-sounds'
+
+const MOCK_GENERATED = {
+  text: 'A freshly generated passage about the theater and the weather.',
+}
 
 const MOCK_SCORE = {
   completeness: 90.9,
@@ -122,6 +128,78 @@ test.describe('passage scoring', () => {
       page.getByRole('button', { name: 'Record', exact: true }),
     ).toBeDisabled()
     await expect(page.getByText('Enter some text to practice')).toBeVisible()
+  })
+
+  test('should seed a generated passage into the editable field', async ({
+    page,
+  }) => {
+    await page.route(GENERATE_URL, (route) =>
+      route.fulfill({ json: MOCK_GENERATED }),
+    )
+    await page.goto('/')
+
+    await page.getByRole('button', { name: 'Generate a passage' }).click()
+
+    await expect(page.getByLabel('Passage to read')).toHaveValue(
+      MOCK_GENERATED.text,
+    )
+  })
+
+  test('should send the tracked weak sounds when the focus toggle is on', async ({
+    page,
+  }) => {
+    let focusPhonemes: unknown = null
+    await page.route(WEAK_SOUNDS_URL, (route) =>
+      route.fulfill({
+        json: [
+          {
+            phoneme: 'θ',
+            occurrence_count: 5,
+            word_count: 3,
+            example_words: ['thought', 'three', 'path'],
+            first_seen: '2026-06-28T07:41:00Z',
+            last_seen: '2026-07-02T09:14:00Z',
+          },
+        ],
+      }),
+    )
+    await page.route(GENERATE_URL, async (route) => {
+      const body = route.request().postDataJSON() as {
+        focus_phonemes: unknown
+      }
+      focusPhonemes = body.focus_phonemes
+      await route.fulfill({ json: MOCK_GENERATED })
+    })
+    await page.goto('/')
+
+    await page.getByLabel('Focus on my weak sounds').check()
+    await page.getByRole('button', { name: 'Generate a passage' }).click()
+    await expect(page.getByLabel('Passage to read')).toHaveValue(
+      MOCK_GENERATED.text,
+    )
+
+    expect(focusPhonemes).toEqual(['θ'])
+  })
+
+  test('should disable the weak-sound toggle when none are tracked', async ({
+    page,
+  }) => {
+    await page.route(WEAK_SOUNDS_URL, (route) => route.fulfill({ json: [] }))
+    await page.goto('/')
+
+    await expect(page.getByLabel('Focus on my weak sounds')).toBeDisabled()
+    await expect(
+      page.getByText('Score a few passages to build your weak-sound list.'),
+    ).toBeVisible()
+  })
+
+  test('should show an error when generation fails', async ({ page }) => {
+    await page.route(GENERATE_URL, (route) => route.fulfill({ status: 500 }))
+    await page.goto('/')
+
+    await page.getByRole('button', { name: 'Generate a passage' }).click()
+
+    await expect(page.getByRole('alert')).toContainText('Generation failed')
   })
 
   test('should reset to the record prompt after record again', async ({

@@ -23,6 +23,8 @@ The single-column practice surface for the passage reading feature. It shows a p
 │  │ │ The quick brown fox jumps over...│  │    │
 │  │ └──────────────────────────────────┘  │    │
 │  │ Edit the passage or type your own.    │    │ ← helper, or an inline error
+│  │ [✨ Generate a passage] ☐ Focus on    │    │ ← generate control, weak-sound toggle
+│  │    my weak sounds                     │    │
 │  │ [🗣] Hear it read aloud               │    │ ← native reference playback
 │  └──────────────────────────────────────┘    │
 │                                               │
@@ -80,6 +82,10 @@ The single-column practice surface for the passage reading feature. It shows a p
 - Passage card heading: `Read this aloud`
 - Passage helper: `Edit the passage or type your own, then read it aloud.`
 - Passage empty error: `Enter some text to practice`
+- Generate control: `Generate a passage`
+- Weak-sound toggle: `Focus on my weak sounds`
+- Weak-sound empty hint: `Score a few passages to build your weak-sound list.`
+- Generation failure: `Generation failed, try again or type your own passage.`
 - Reference caption: `Hear it read aloud`
 - Controls: `Record`, `Stop`, `Record again`, `Score`
 - Metric labels: `Completeness`, `Accuracy`, `Fluency`, `Phoneme quality`
@@ -89,7 +95,8 @@ The single-column practice surface for the passage reading feature. It shows a p
 
 ## Behavior
 
-- While idle the passage is an editable field seeded with a default passage. The user can edit it or type their own, and passage scoring aligns against whatever text is shown, so a typed passage scores against itself. The text is trimmed and validated at the input boundary, and empty or over-length text disables the reference and record controls with an inline error, stopping any reference clip that was playing. Once recording starts the passage locks to static text.
+- While idle the passage is an editable field seeded with a default passage. The user can edit it or type their own, and passage scoring aligns against whatever text is shown, so a typed passage scores against itself. The text is trimmed and validated at the input boundary, and empty or over-length text disables the reference and record controls with an inline error, stopping any reference clip that was playing. Once recording starts the passage locks to static text and the generate control hides.
+- Generate a passage asks the local LLM for a fresh passage and seeds the returned text into the same editable field, where it validates and scores like typed text. The weak-sound toggle biases generation toward the user's tracked problem sounds when on, and a general passage when off. It stays disabled with a hint until the tracker has data, so a new user sees why the bias is unavailable rather than getting a silent general passage. A generation failure shows an inline error and leaves the current text in place, so the surface never blanks. Generation source and the weak-sound wiring live in `.claude/context/frontend.md`.
 - The control cycles idle to recording to recorded. Recording captures the full clip, no streaming.
 - From the recorded state the user can play their own clip, re-record, or submit for scoring.
 - Submitting disables the control, spins the Score button, and fills the result region with a skeleton of the score cards and flagged-word rows until the score set or an error returns, so the wait reads as active rather than blank. The free-topic surface shows the same skeleton while its clip scores.

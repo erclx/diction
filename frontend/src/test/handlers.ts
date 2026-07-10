@@ -22,6 +22,11 @@ export const handlers = [
       ],
     }),
   ),
+  http.post('http://localhost:8000/api/content/generate', () =>
+    HttpResponse.json({
+      text: 'A freshly generated passage about the theater and the weather.',
+    }),
+  ),
   http.post('http://localhost:8000/api/free-topic/score', () =>
     HttpResponse.json({
       completeness: 100,

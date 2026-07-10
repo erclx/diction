@@ -44,4 +44,15 @@ describe('PassageScoring', () => {
     expect(screen.getByRole('button', { name: 'Record' })).toBeDisabled()
     expect(screen.getByText('Enter some text to practice')).toBeInTheDocument()
   })
+
+  it('should seed a generated passage into the editable field', async () => {
+    const user = userEvent.setup()
+    renderWithProviders(<PassageScoring />)
+
+    await user.click(screen.getByRole('button', { name: 'Generate a passage' }))
+
+    expect(await screen.findByDisplayValue(/freshly generated passage/)).toBe(
+      screen.getByLabelText('Passage to read'),
+    )
+  })
 })
