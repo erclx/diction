@@ -3,7 +3,8 @@ from typing import Protocol
 from diction.feedback.types import Critique, FlaggedWordContext
 
 MAX_CRITIQUE_POINTS = 3
-MAX_GENERATED_PASSAGE_LENGTH = 600
+MAX_GENERATED_PASSAGE_LENGTH = 500
+MAX_FOCUS_PHONEMES = 12
 
 
 def default_passage() -> str:

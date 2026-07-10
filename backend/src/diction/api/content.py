@@ -4,13 +4,11 @@ from typing import Annotated, Literal, cast
 from fastapi import APIRouter, Depends, Request
 from pydantic import BaseModel, ConfigDict, Field
 
-from diction.feedback.base import ContentGenerator, default_passage
+from diction.feedback.base import MAX_FOCUS_PHONEMES, ContentGenerator, default_passage
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=['content'])
-
-MAX_FOCUS_PHONEMES = 12
 
 
 class GenerateContentRequest(BaseModel):

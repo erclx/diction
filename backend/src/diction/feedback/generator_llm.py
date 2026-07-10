@@ -15,11 +15,13 @@ from collections.abc import Mapping
 from typing import Protocol, Self, cast
 
 from diction.config import Settings
-from diction.feedback.base import MAX_GENERATED_PASSAGE_LENGTH, default_passage
+from diction.feedback.base import (
+    MAX_FOCUS_PHONEMES,
+    MAX_GENERATED_PASSAGE_LENGTH,
+    default_passage,
+)
 
 logger = logging.getLogger(__name__)
-
-MAX_FOCUS_PHONEMES = 12
 
 _SYSTEM_PROMPT = (
     'You are an English tutor writing short passages for read-aloud '
