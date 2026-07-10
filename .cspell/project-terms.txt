@@ -2,6 +2,7 @@ accentedness
 ASR
 diction
 disfluent
+dogfooding
 drillable
 evals
 Fluenta

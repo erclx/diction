@@ -1,0 +1,90 @@
+{
+  "description": "Known-ground-truth recording fixtures. The committed source of truth the real-stack regression harness (tests/test_fixtures_regression.py) asserts against. Human-readable ground truth and the populate steps live in manifest.md.",
+  "how_to_run": "DICTION_FIXTURE_REGRESSION=1 uv run pytest tests/test_fixtures_regression.py",
+  "score_tolerance": 2.0,
+  "clips": [
+    {
+      "name": "passage-clean",
+      "mode": "passage",
+      "audio": "audio/passage-clean.wav",
+      "source": ".claude/.tmp/passage-scoring-spike/clean.wav",
+      "reference": "The three brothers thought about the weather. They walked through the thick forest and found a very old ship near the river.",
+      "expected": {
+        "scores": {
+          "completeness": 100.0,
+          "accuracy": 90.2,
+          "fluency": 73.2,
+          "phoneme_quality": 92.5
+        },
+        "flagged": []
+      }
+    },
+    {
+      "name": "passage-degraded",
+      "mode": "passage",
+      "audio": "audio/passage-degraded.wav",
+      "source": ".claude/.tmp/passage-scoring-spike/degraded.wav",
+      "reference": "The three brothers thought about the weather. They walked through the thick forest and found a very old ship near the river.",
+      "expected": {
+        "scores": {
+          "completeness": 95.5,
+          "accuracy": 81.6,
+          "fluency": 65.0,
+          "phoneme_quality": 83.3
+        },
+        "flagged": [
+          { "word": "brothers", "phoneme": "ð" },
+          { "word": "thought", "phoneme": "θ" },
+          { "word": "weather", "phoneme": "ð" },
+          { "word": "walked", "phoneme": "t" },
+          { "word": "thick", "phoneme": "θ" },
+          { "word": "forest", "phoneme": "ɪ" },
+          { "word": "and", "phoneme": "d" },
+          { "word": "very", "phoneme": "v" }
+        ]
+      }
+    },
+    {
+      "name": "free-topic-last-weekend-2",
+      "mode": "free-topic",
+      "audio": "audio/free-topic-last-weekend-2.wav",
+      "source": ".claude/.tmp/free-topic-spike/last-weekend-2.wav",
+      "expected": {
+        "transcript": "Last weekend, I have gone to the beach with my friend. Me and my friend was very excited about the trip. We drive there for about 3 hours. The weather was very nice and there was not much people on the beach. We decide to swim and after we play some games, I really think it was a great day. I forget to bring my camera so I only take photos with my phone. Honestly, I think everyone should visit this place at least 3 times.",
+        "scores": {
+          "completeness": 100.0,
+          "accuracy": 92.4,
+          "fluency": 70.4,
+          "phoneme_quality": 93.1
+        },
+        "flagged": [
+          { "word": "and", "phoneme": "d" },
+          { "word": "very", "phoneme": "v" },
+          { "word": "to", "phoneme": "uː" },
+          { "word": "and", "phoneme": "d" },
+          { "word": "to", "phoneme": "uː" }
+        ]
+      }
+    },
+    {
+      "name": "drill-three-correct",
+      "mode": "drill",
+      "audio": "audio/drill-three-correct.wav",
+      "source": "recorded in a dogfooding drill, 'three' said correctly",
+      "word": "three",
+      "target_phoneme": "θ",
+      "competitor_phoneme": "f",
+      "expected": { "target_substituted": false }
+    },
+    {
+      "name": "drill-three-as-free",
+      "mode": "drill",
+      "audio": "audio/drill-three-as-free.wav",
+      "source": "recorded in a dogfooding drill, 'three' said as 'free' (θ to f)",
+      "word": "three",
+      "target_phoneme": "θ",
+      "competitor_phoneme": "f",
+      "expected": { "target_substituted": true }
+    }
+  ]
+}
