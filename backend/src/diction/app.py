@@ -1,3 +1,4 @@
+import logging
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
@@ -29,6 +30,8 @@ from diction.tts.base import StubSynthesizer
 from diction.tts.cache import CachedSynthesizer, ReferenceAudioCache
 
 LOCALHOST_ORIGIN_REGEX = r'http://localhost:\d+'
+
+logger = logging.getLogger(__name__)
 
 
 @asynccontextmanager
@@ -111,6 +114,17 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
             ReferenceAudioCache(settings.reference_cache_dir),
             settings.tts_voice,
         )
+
+    logger.info(
+        'model stack resolved: scorer=%s transcriber=%s prosody=%s '
+        'explainer=%s critic=%s synth=%s',
+        type(app.state.scorer).__name__,
+        type(app.state.transcriber).__name__,
+        type(app.state.prosody_scorer).__name__,
+        type(app.state.explainer).__name__,
+        type(app.state.critic).__name__,
+        type(app.state.synth).__name__,
+    )
     yield
 
 
