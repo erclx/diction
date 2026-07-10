@@ -5,9 +5,9 @@ description: Local-LLM subsystem for per-word pronunciation explanations and the
 
 # Feedback
 
-The local-LLM feedback subsystem holds two independent paths behind one Ollama wiring. The explainer turns each scored flag in `POST /api/passages/score` into one short, plain-language reason. The critic turns a free-topic transcript in `POST /api/free-topic/score` into a short grammar and phrasing critique. Both follow the record-then-analyze pattern in `.claude/ARCHITECTURE.md` and mirror the scorer's optional-dependency-plus-stub shape so CI and e2e stay model-free.
+The local-LLM subsystem holds three independent paths behind one Ollama wiring. The explainer turns each scored flag in `POST /api/passages/score` into one short, plain-language reason. The critic turns a free-topic transcript in `POST /api/free-topic/score` into a short grammar and phrasing critique. The content generator authors a fresh practice passage in `POST /api/content/generate`, optionally biased toward the user's weak sounds. All three follow the record-then-analyze pattern in `.claude/ARCHITECTURE.md` and mirror the scorer's optional-dependency-plus-stub shape so CI and e2e stay model-free.
 
-The explainer and the critic are different concerns. The explainer speaks per word about pronunciation and returns one line per flag. The critic speaks once per session about grammar and phrasing over the whole transcript. They share the client wiring, the lazy import, and the lifespan-selection-by-stub-flag pattern, but neither extends the other.
+The explainer, the critic, and the generator are different concerns. The explainer speaks per word about pronunciation and returns one line per flag. The critic speaks once per session about grammar and phrasing over the whole transcript. The generator produces reading material rather than feedback on speech, and lives here only because it reuses the same resident model and wiring. All three share the client wiring, the lazy import, and the lifespan-selection-by-stub-flag pattern, but none extends the others.
 
 ## Layer responsibilities
 
@@ -15,8 +15,11 @@ The explainer and the critic are different concerns. The explainer speaks per wo
 - `feedback/base.py` owns the `Explainer` and `Critic` protocols, their stubs, the shared `default_explanation` template, the `default_critique`, and the `MAX_CRITIQUE_POINTS` cap.
 - `feedback/explainer_llm.py` owns the real `OllamaExplainer`: prompt assembly, the batched chat call, and reply parsing.
 - `feedback/critique_llm.py` owns the real `OllamaCritic`: the transcript-as-data system prompt, the chat call, and point parsing capped at `MAX_CRITIQUE_POINTS`.
+- `feedback/generator_llm.py` owns the real `OllamaContentGenerator`: the passage system prompt, an optional weak-sound focus line, the chat call, and reply cleaning that falls back to `default_passage` on empty or over-long output.
+- `feedback/base.py` also owns the `ContentGenerator` protocol, its `StubContentGenerator`, the shared `default_passage` fallback, and the `MAX_GENERATED_PASSAGE_LENGTH` cap.
 - `api/passages.py` calls the explainer once per session for all flagged words, then persists and returns the text.
 - `api/free_topic.py` transcribes the clip, scores it against its own transcript, then calls the critic once, and persists the scores, flagged words, transcript, and critique.
+- `api/content.py` calls the generator once and returns the passage text only. It persists nothing, since generation produces reading material rather than a scored session.
 
 ## Decisions
 
@@ -30,6 +33,8 @@ The explainer and the critic are different concerns. The explainer speaks per wo
 - The chat call passes `think=False`. This mattered for gemma4, a reasoning model that otherwise emits a long hidden thinking pass before the short answer, and stays set as cheap insurance against any reasoning-capable swap.
 - The critic model comes from `critic_model_id`, which defaults to `llm_model_id` when unset. The v0.7 spike A/B tested the resident `gemma2:9b` against `mistral-small3.2:24b` and `qwen3:30b` on planted-error transcripts and found no quality gain for 13x to 15x the latency, while the larger models left ~19 GB resident and thrashed to CPU beside the scoring stack. The 9b stays the default. The config split keeps a larger critic a one-line change if free-topic grammar later needs it, without touching the explainer.
 - The critic runs one chat call per session over the full transcript, not per sentence, so a one-to-two-minute monologue of 150 to 300 words stays well under the same `num_ctx=4096` cap the explainer uses.
+- The generator reuses the resident `llm_model_id` rather than taking a model of its own, so a passage is a third prompt against the same `gemma2:9b` with no new load or VRAM. It runs a higher `temperature=0.8` than the explainer and critic, since fresh reading material wants variety, not the terse determinism a coaching line needs. It is selected in the lifespan from `Settings.use_stub_generator` and held on `app.state.generator`, injected through `get_generator`, exactly as the explainer and critic are, and its `DICTION_USE_STUB_GENERATOR` flag is wired into `verify.yml` so e2e stays model-free.
+- Weak-sound bias is an explicit request, not the default. When the caller passes `focus_phonemes`, the prompt asks for a passage dense in words carrying those sounds, which is what turns generation into MVP feature 6 rather than a random-text button. An empty focus list asks for a general passage.
 
 ## Hidden contracts
 
@@ -40,6 +45,8 @@ The explainer and the critic are different concerns. The explainer speaks per wo
 - `OllamaExplainer.from_settings` raises `ModuleNotFoundError` when the `feedback` extra is absent. The lifespan maps it to an actionable `RuntimeError`, the same shape the scorer uses.
 - The critic is enrichment, not measurement, so `api/free_topic.py` wraps it in `_critique_or_default`: any raise degrades to `default_critique` and the scored session still persists and returns. Only transcription or scoring may fail a free-topic request. An Ollama outage must not discard a computed score.
 - Free-topic flagged words carry a `default_explanation` template rather than a per-word LLM reason. The route runs the critic, not the explainer, so a free-topic session spends one LLM call on the language critique and none on per-word pronunciation prose.
+- Generated text is displayed, then synthesized and scored, so it is validated at the boundary rather than trusted. `_clean_passage` collapses whitespace and degrades to `default_passage` when the reply is empty or exceeds `MAX_GENERATED_PASSAGE_LENGTH`, and `api/content.py` wraps the call in `_generate_or_default` so any raise, including an Ollama outage, degrades to the same fallback and still returns 200. A model hiccup never blanks the surface. The request caps `focus_phonemes` at `MAX_FOCUS_PHONEMES` and rejects any `kind` other than `passage` with a 422.
+- `MAX_GENERATED_PASSAGE_LENGTH` is held at the frontend `PASSAGE_MAX_LENGTH` of 500, not the 600 reference-text ceiling, because a generated passage seeds the editable passage textarea and a longer one is rejected there. The two caps are coupled and must move together. `MAX_FOCUS_PHONEMES` is single-sourced in `feedback/base.py` and imported by both the request model and the generator, so the request cap and the generator's defensive slice cannot drift.
 - `critique` returns at least one point. `OllamaCritic` falls back to `default_critique` on an empty reply, and `_parse_reply` caps the list at `MAX_CRITIQUE_POINTS`.
 
 ## Gotchas

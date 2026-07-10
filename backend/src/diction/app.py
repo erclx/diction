@@ -8,6 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from diction.api import (
+    content,
     drills,
     free_topic,
     health,
@@ -22,7 +23,7 @@ from diction.api import (
 )
 from diction.config import get_settings
 from diction.db.engine import create_db_and_tables
-from diction.feedback.base import StubCritic, StubExplainer
+from diction.feedback.base import StubContentGenerator, StubCritic, StubExplainer
 from diction.scoring.audio import ClipTooWeakError
 from diction.scoring.base import StubScorer
 from diction.scoring.prosody_base import StubProsodyScorer
@@ -99,6 +100,20 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
                 'to run against the stub critic.'
             ) from error
 
+    if settings.use_stub_generator:
+        app.state.generator = StubContentGenerator()
+    else:
+        from diction.feedback.generator_llm import OllamaContentGenerator
+
+        try:
+            app.state.generator = OllamaContentGenerator.from_settings(settings)
+        except ModuleNotFoundError as error:
+            raise RuntimeError(
+                'The feedback model stack is not installed. Run '
+                "'uv sync --extra feedback', or set DICTION_USE_STUB_GENERATOR=true "
+                'to run against the stub generator.'
+            ) from error
+
     if settings.use_stub_synth:
         app.state.synth = StubSynthesizer()
     else:
@@ -132,12 +147,13 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
 
     logger.info(
         'model stack resolved: scorer=%s transcriber=%s prosody=%s '
-        'explainer=%s critic=%s synth=%s',
+        'explainer=%s critic=%s generator=%s synth=%s',
         type(app.state.scorer).__name__,
         type(app.state.transcriber).__name__,
         type(app.state.prosody_scorer).__name__,
         type(app.state.explainer).__name__,
         type(app.state.critic).__name__,
+        type(app.state.generator).__name__,
         type(app.state.synth).__name__,
     )
     yield
@@ -154,6 +170,7 @@ def create_app() -> FastAPI:
         allow_headers=['*'],
     )
 
+    app.include_router(content.router, prefix='/api')
     app.include_router(drills.router, prefix='/api')
     app.include_router(free_topic.router, prefix='/api')
     app.include_router(health.router, prefix='/api')

@@ -3,6 +3,17 @@ from typing import Protocol
 from diction.feedback.types import Critique, FlaggedWordContext
 
 MAX_CRITIQUE_POINTS = 3
+MAX_GENERATED_PASSAGE_LENGTH = 500
+MAX_FOCUS_PHONEMES = 12
+
+
+def default_passage() -> str:
+    return (
+        'The morning light spread slowly across the quiet valley. '
+        'A cool breeze carried the smell of fresh rain through the open window. '
+        'She poured a cup of tea, opened her book, and began to read aloud, '
+        'letting each word settle before she moved on to the next.'
+    )
 
 
 def default_explanation(word: str, phoneme: str) -> str:
@@ -53,3 +64,17 @@ class StubCritic:
                 'Vary sentence openings instead of starting clauses with "and".',
             )
         )
+
+
+class ContentGenerator(Protocol):
+    def generate(self, focus_phonemes: list[str]) -> str: ...
+
+
+class StubContentGenerator:
+    """Deterministic canned passage behind the real contract. Used in CI, where
+    there is no local LLM, and kept deterministic so the e2e generation
+    assertions stay stable. Ignores the focus phonemes, which only bias the
+    real model."""
+
+    def generate(self, focus_phonemes: list[str]) -> str:
+        return default_passage()

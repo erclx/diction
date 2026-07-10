@@ -24,6 +24,7 @@ class Settings(BaseSettings):
     use_stub_prosody: bool = False
     use_stub_explainer: bool = False
     use_stub_critic: bool = False
+    use_stub_generator: bool = False
     use_stub_synth: bool = False
 
     phoneme_model_id: str = 'facebook/wav2vec2-xlsr-53-espeak-cv-ft'
