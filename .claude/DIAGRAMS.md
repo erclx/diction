@@ -106,13 +106,18 @@ flowchart TB
         NAV["Sidebar nav<br/>NavLink"]
     end
 
-    NAV -->|/| PRACTICE["Passage practice"]
+    NAV -->|/| PASSAGE["Passage practice"]
+    NAV -->|/routine| ROUTINE["Suggested routine"]
+    NAV -->|/shadowing| SHADOW["Shadowing"]
+    NAV -->|/free-topic| FREE["Free topic"]
+    NAV -->|/drills| DRILLS["Targeted drills home"]
+    DRILLS -->|/drills/production| PROD["Minimal pair production"]
+    DRILLS -->|/drills/ear-training| EAR["Minimal pair ear training"]
+    DRILLS -->|/drills/stress| STRESS["Stress and intonation"]
     NAV -->|/history| LIST["Session list"]
-    NAV -->|/progress| PROGRESS["Progress dashboard"]
     LIST -->|/history/:sessionId| DETAIL["Session detail"]
-    DETAIL -->|Back to history| LIST
-    UNKNOWN["Unknown path"] -->|redirect| PRACTICE
-    BAD_ID["Non-integer :sessionId"] -->|redirect| LIST
+    NAV -->|/progress| PROGRESS["Progress dashboard"]
+    UNKNOWN["Unknown path"] -->|redirect| PASSAGE
 ```
 
-The shell keeps URL state only, while TanStack Query owns every fetch. A refresh or a shared link resolves straight to the surface, so a session detail is deep-linkable and the browser back button walks the route history. An unknown path redirects to Practice, and a non-integer `:sessionId` redirects to the list so a mistyped id lands on the friendly surface rather than a blank one. The progress dashboard routes onto this same shell at `/progress`, and later surfaces slot in the same way.
+The shell keeps URL state only, while TanStack Query owns every fetch. A refresh or a shared link resolves straight to the surface, so a session detail is deep-linkable and the browser back button walks the route history. The sidebar groups the practice surfaces, passage, routine, shadowing, free topic, and the drill home, alongside history and progress. The drill home branches to the production, ear-training, and stress-and-intonation drills. An unknown path redirects to passage practice so a mistyped route lands on the primary surface rather than a blank one.

@@ -30,12 +30,13 @@ See `.claude/context/development.md` for the full workflow.
 
 ## Usage
 
-Start both servers, then open the frontend:
+Start the backend and frontend as a pair with one command:
 
 ```bash
-cd backend && bun run dev    # http://localhost:8000
-cd frontend && bun run dev   # http://localhost:5173
+bun run dev:all
 ```
+
+It picks a free port pair, wires the frontend to the backend, and prints the frontend URL. It defaults to stub models. Set `DICTION_DEV_MODELS=real` to use the installed speech models.
 
 ## Documentation
 
