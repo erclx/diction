@@ -9,6 +9,7 @@ import { OwnRecordingAudio } from '@/features/audio-channel/own-recording-audio'
 import { ReferenceButton } from '@/features/reference-audio/reference-button'
 import { useWeakSoundsQuery } from '@/features/progress-dashboard/use-weak-sounds'
 import { PASSAGE_MAX_LENGTH, validatePracticeText } from '@/lib/practice-text'
+import { cn } from '@/lib/utils'
 
 import { ClipTooWeakError, useScorePassage } from './use-score-passage'
 import { useGeneratePassage } from './use-generate-passage'
@@ -31,6 +32,7 @@ export function PassageScoring() {
 
   const validation = validatePracticeText(passage, PASSAGE_MAX_LENGTH)
   const isEditing = recorder.status === 'idle'
+  const hasWeakSounds = (weakSounds.data?.length ?? 0) > 0
 
   function handleReset() {
     recorder.reset()
@@ -48,11 +50,12 @@ export function PassageScoring() {
   }
 
   function handleGenerate() {
-    const focusPhonemes = biasToWeakSounds
-      ? (weakSounds.data ?? [])
-          .slice(0, FOCUS_PHONEME_COUNT)
-          .map((weakSound) => weakSound.phoneme)
-      : []
+    const focusPhonemes =
+      biasToWeakSounds && hasWeakSounds
+        ? (weakSounds.data ?? [])
+            .slice(0, FOCUS_PHONEME_COUNT)
+            .map((weakSound) => weakSound.phoneme)
+        : []
     generation.mutate(
       { focusPhonemes },
       { onSuccess: (text) => setPassage(text) },
@@ -120,18 +123,29 @@ export function PassageScoring() {
                   )}
                   Generate a passage
                 </Button>
-                <label className="flex items-center gap-2 text-sm text-muted-foreground">
+                <label
+                  className={cn(
+                    'flex items-center gap-2 text-sm text-muted-foreground',
+                    !hasWeakSounds && 'cursor-not-allowed opacity-60',
+                  )}
+                >
                   <input
                     type="checkbox"
                     checked={biasToWeakSounds}
+                    disabled={!hasWeakSounds}
                     onChange={(event) =>
                       setBiasToWeakSounds(event.target.checked)
                     }
-                    className="size-4 accent-primary"
+                    className="size-4 rounded-sm accent-primary outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed"
                   />
                   Focus on my weak sounds
                 </label>
               </div>
+              {!hasWeakSounds && (
+                <p className="text-sm text-muted-foreground">
+                  Score a few passages to build your weak-sound list.
+                </p>
+              )}
               {generation.isError && (
                 <p role="alert" className="text-sm text-destructive">
                   Generation failed, try again or type your own passage.

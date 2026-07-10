@@ -181,6 +181,18 @@ test.describe('passage scoring', () => {
     expect(focusPhonemes).toEqual(['θ'])
   })
 
+  test('should disable the weak-sound toggle when none are tracked', async ({
+    page,
+  }) => {
+    await page.route(WEAK_SOUNDS_URL, (route) => route.fulfill({ json: [] }))
+    await page.goto('/')
+
+    await expect(page.getByLabel('Focus on my weak sounds')).toBeDisabled()
+    await expect(
+      page.getByText('Score a few passages to build your weak-sound list.'),
+    ).toBeVisible()
+  })
+
   test('should show an error when generation fails', async ({ page }) => {
     await page.route(GENERATE_URL, (route) => route.fulfill({ status: 500 }))
     await page.goto('/')
