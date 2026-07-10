@@ -2,7 +2,7 @@
 writes figures/contrast_verdict.png. Harness-only: needs matplotlib and seaborn
 (`uv pip install matplotlib seaborn`), not app deps.
 
-Run from `backend/`: python calibration/contrast_plots.py
+Run from `backend/`: python calibration/scripts/contrast_plots.py
 """
 
 import json
@@ -16,7 +16,8 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 HERE = Path(__file__).parent
-FIGS = HERE / 'figures'
+DATA_DIR = HERE.parent / 'data'
+FIGS = HERE.parent / 'figures'
 
 BAD = '#b23a2e'
 ACCENT = '#0f766e'
@@ -39,7 +40,7 @@ def style() -> None:
 
 
 def main() -> None:
-    data = json.loads((HERE / 'contrast_eval.json').read_text())
+    data = json.loads((DATA_DIR / 'contrast_eval.json').read_text())
     tally = data['tally']
     rows = [r for r in data['rows'] if 'error' not in r]
 

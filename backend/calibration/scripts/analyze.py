@@ -11,6 +11,7 @@ from collections import defaultdict
 from pathlib import Path
 
 HERE = Path(__file__).parent
+DATA_DIR = HERE.parent / 'data'
 CONTRAST = {'θ', 'ð', 'ɹ', 'ɪ', 'iː', 'æ', 'ɛ', 'v', 'w', 's', 'ʃ', 'f'}
 AUC_GATE = 0.75
 K_CANDIDATES = [1.0, 1.3, 1.6, 2.0]
@@ -28,7 +29,7 @@ def auc(good: list[float], bad: list[float]) -> float:
 def main() -> None:
     good: dict[str, list[float]] = defaultdict(list)
     bad: dict[str, list[float]] = defaultdict(list)
-    for line in (HERE / 'pairs.jsonl').read_text().splitlines():
+    for line in (DATA_DIR / 'pairs.jsonl').read_text().splitlines():
         r = json.loads(line)
         if r['accuracy'] >= 2.0:
             good[r['phoneme']].append(r['gop'])
@@ -93,10 +94,9 @@ def main() -> None:
         }
         for p, ng, nb, mu, sd, a, _ in rows
     }
-    (HERE / 'baselines.json').write_text(
-        json.dumps(baselines, indent=2, ensure_ascii=False)
-    )
-    print(f'\nwrote baselines.json ({len(baselines)} phonemes)')
+    out = DATA_DIR / 'baselines.json'
+    out.write_text(json.dumps(baselines, indent=2, ensure_ascii=False))
+    print(f'\nwrote {out} ({len(baselines)} phonemes)')
 
     all_good = [x for p in phonemes for x in good[p]]
     all_bad = [x for p in phonemes for x in bad[p]]

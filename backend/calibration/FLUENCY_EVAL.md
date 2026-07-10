@@ -87,21 +87,21 @@ Needs the scoring extra plus the harness-only `pyarrow` and `huggingface_hub`
 
 ```bash
 PYTHONPATH=src uv run --with pyarrow --with huggingface_hub \
-  python calibration/fluency_eval.py 300   # smoke test first
+  python calibration/scripts/fluency_eval.py 300   # smoke test first
 PYTHONPATH=src uv run --with pyarrow --with huggingface_hub \
-  python calibration/fluency_eval.py 2500  # full fit + validation
+  python calibration/scripts/fluency_eval.py 2500  # full fit + validation
 ```
 
 A `tqdm` progress bar reports transcription throughput and ETA per split, so the
 sweep is not run blind.
 
 It transcribes the test split for the fit and the train split for held-out
-validation, then writes `fluency_model.json` with the fitted parameters and the
-two correlations, plus `fluency_pairs.jsonl` with the per-clip features and label
+validation, then writes `data/fluency_model.json` with the fitted parameters and the
+two correlations, plus `data/fluency_pairs.jsonl` with the per-clip features and label
 so the figure redraws without re-transcribing. Smoke-test on a few hundred rows
 before the full sweep, since the per-clip Whisper runtime is only knowable by
 running it. Redraw the figure from the dump:
 
 ```bash
-uv run --with matplotlib --with seaborn python calibration/fluency_plots.py
+uv run --with matplotlib --with seaborn python calibration/scripts/fluency_plots.py
 ```

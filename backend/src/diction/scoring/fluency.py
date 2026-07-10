@@ -16,7 +16,7 @@ single ratio misses:
   versus-even rhythm signal, the same per-word-duration measure `prosody.py` uses
 
 The model is a linear map from standardized features to a 0..100 score, fit
-against speechocean762's utterance fluency labels by `calibration/fluency_eval.py`
+against speechocean762's utterance fluency labels by `calibration/scripts/fluency_eval.py`
 and validated held-out (correlation 0.39, matching in-sample, so no overfit). Two
 of the four features carry the fit directly: `articulation_rate`, the dominant and
 most trustworthy term, and `duration_variation`. The two pause features do not.

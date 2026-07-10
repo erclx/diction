@@ -24,8 +24,8 @@
   "ignorePaths": [
     ".cspell/**",
     ".git/**",
-    "backend/calibration/contrast_plots.py",
-    "backend/calibration/fluency_plots.py",
-    "backend/calibration/plots.py"
+    "backend/calibration/scripts/contrast_plots.py",
+    "backend/calibration/scripts/fluency_plots.py",
+    "backend/calibration/scripts/plots.py"
   ]
 }

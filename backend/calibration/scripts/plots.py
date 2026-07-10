@@ -2,7 +2,7 @@
 the raw measured pairs, writes static PNGs to figures/. Harness-only: needs
 matplotlib and seaborn (`uv pip install matplotlib seaborn`), not app deps.
 
-Run: uv run --project . python calibration/plots.py
+Run: uv run --project . python calibration/scripts/plots.py
 """
 
 import json
@@ -16,7 +16,8 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 HERE = Path(__file__).parent
-FIGS = HERE / 'figures'
+DATA_DIR = HERE.parent / 'data'
+FIGS = HERE.parent / 'figures'
 
 # DESIGN.md palette, so the figures match the product's identity.
 GOOD = '#4f7a3f'
@@ -53,8 +54,8 @@ def style() -> None:
 
 
 def load_summary() -> list[dict[str, object]]:
-    base = json.loads((HERE / 'baselines.json').read_text())
-    dist = json.loads((HERE / 'distributions.json').read_text())
+    base = json.loads((DATA_DIR / 'baselines.json').read_text())
+    dist = json.loads((DATA_DIR / 'distributions.json').read_text())
     rows = []
     for phoneme, b in base.items():
         d = dist.get(phoneme, {})
@@ -75,7 +76,7 @@ def load_summary() -> list[dict[str, object]]:
 def load_pairs() -> tuple[dict[str, list[float]], dict[str, list[float]]]:
     good: dict[str, list[float]] = defaultdict(list)
     bad: dict[str, list[float]] = defaultdict(list)
-    for line in (HERE / 'pairs.jsonl').read_text().splitlines():
+    for line in (DATA_DIR / 'pairs.jsonl').read_text().splitlines():
         r = json.loads(line)
         if r['accuracy'] >= 2.0:
             good[r['phoneme']].append(r['gop'])
