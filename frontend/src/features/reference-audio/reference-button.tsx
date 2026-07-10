@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { AudioLines, Loader2, Square, TriangleAlert } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
@@ -19,6 +20,13 @@ export function ReferenceButton({
   disabled = false,
 }: ReferenceButtonProps) {
   const reference = useReferenceAudio(text)
+
+  const { isPlaying, stop } = reference
+  useEffect(() => {
+    if (disabled && isPlaying) {
+      stop()
+    }
+  }, [disabled, isPlaying, stop])
 
   const handleClick = () => {
     if (reference.isPlaying) {

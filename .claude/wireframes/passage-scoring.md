@@ -89,7 +89,7 @@ The single-column practice surface for the passage reading feature. It shows a p
 
 ## Behavior
 
-- While idle the passage is an editable field seeded with a default passage. The user can edit it or type their own, and passage scoring aligns against whatever text is shown, so a typed passage scores against itself. The text is trimmed and validated at the input boundary, and empty or over-length text disables the reference and record controls with an inline error. Once recording starts the passage locks to static text.
+- While idle the passage is an editable field seeded with a default passage. The user can edit it or type their own, and passage scoring aligns against whatever text is shown, so a typed passage scores against itself. The text is trimmed and validated at the input boundary, and empty or over-length text disables the reference and record controls with an inline error, stopping any reference clip that was playing. Once recording starts the passage locks to static text.
 - The control cycles idle to recording to recorded. Recording captures the full clip, no streaming.
 - From the recorded state the user can play their own clip, re-record, or submit for scoring.
 - Submitting disables the control, spins the Score button, and fills the result region with a skeleton of the score cards and flagged-word rows until the score set or an error returns, so the wait reads as active rather than blank. The free-topic surface shows the same skeleton while its clip scores.
