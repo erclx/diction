@@ -1,5 +1,12 @@
 import { useState } from 'react'
-import { ArrowRight, Loader2, Mic, RotateCcw, Square } from 'lucide-react'
+import {
+  ArrowRight,
+  Loader2,
+  Mic,
+  RotateCcw,
+  Sparkles,
+  Square,
+} from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -9,6 +16,7 @@ import { OwnRecordingAudio } from '@/features/audio-channel/own-recording-audio'
 import { ReferenceButton } from '@/features/reference-audio/reference-button'
 import { useRecorder } from '@/features/passage-scoring/use-recorder'
 import { ClipTooWeakError } from '@/features/passage-scoring/use-score-passage'
+import { useGenerateContent } from '@/features/practice-content/use-generate-content'
 
 import { SHADOWING_PROMPTS } from './shadowing-prompts'
 import { useScoreShadowing } from './use-score-shadowing'
@@ -16,10 +24,13 @@ import { useScoreShadowing } from './use-score-shadowing'
 export function Shadowing() {
   const recorder = useRecorder()
   const scoring = useScoreShadowing()
+  const generation = useGenerateContent()
   const clipTooWeakDetail =
     scoring.error instanceof ClipTooWeakError ? scoring.error.detail : null
   const [promptIndex, setPromptIndex] = useState(0)
-  const prompt = SHADOWING_PROMPTS[promptIndex % SHADOWING_PROMPTS.length]
+  const [generatedLine, setGeneratedLine] = useState<string | null>(null)
+  const prompt =
+    generatedLine ?? SHADOWING_PROMPTS[promptIndex % SHADOWING_PROMPTS.length]
 
   function handleScore() {
     if (!recorder.recording) {
@@ -35,8 +46,23 @@ export function Shadowing() {
 
   function handleNext() {
     setPromptIndex((index) => index + 1)
+    setGeneratedLine(null)
     recorder.reset()
     scoring.reset()
+    generation.reset()
+  }
+
+  function handleGenerate() {
+    generation.mutate(
+      { kind: 'shadowing' },
+      {
+        onSuccess: (text) => {
+          setGeneratedLine(text)
+          recorder.reset()
+          scoring.reset()
+        },
+      },
+    )
   }
 
   return (
@@ -51,8 +77,29 @@ export function Shadowing() {
       <Card>
         <CardContent className="flex flex-col gap-4 p-6">
           <p className="font-serif text-lg leading-relaxed">{prompt}</p>
+          <div className="flex flex-col gap-2 border-t pt-4">
+            <Button
+              variant="outline"
+              className="self-start"
+              onClick={handleGenerate}
+              disabled={generation.isPending}
+            >
+              {generation.isPending ? (
+                <Loader2 className="animate-spin" />
+              ) : (
+                <Sparkles />
+              )}
+              Generate a line
+            </Button>
+            {generation.isError && (
+              <p role="alert" className="text-sm text-destructive">
+                Generation failed, try again or use the next line.
+              </p>
+            )}
+          </div>
           <div className="flex items-center gap-2">
             <ReferenceButton
+              key={prompt}
               text={prompt}
               label="Play native reference for this line"
             />

@@ -1,10 +1,14 @@
-from typing import Protocol
+from collections.abc import Callable
+from typing import Literal, Protocol
 
 from diction.feedback.types import Critique, FlaggedWordContext
 
 MAX_CRITIQUE_POINTS = 3
 MAX_GENERATED_PASSAGE_LENGTH = 500
+MAX_GENERATED_LINE_LENGTH = 160
 MAX_FOCUS_PHONEMES = 12
+
+ContentKind = Literal['passage', 'shadowing', 'stress']
 
 
 def default_passage() -> str:
@@ -14,6 +18,35 @@ def default_passage() -> str:
         'She poured a cup of tea, opened her book, and began to read aloud, '
         'letting each word settle before she moved on to the next.'
     )
+
+
+def default_shadowing_line() -> str:
+    return 'The early bird catches the worm before the rest of the world wakes.'
+
+
+def default_stress_line() -> str:
+    return 'I never said she stole the money.'
+
+
+_DEFAULT_BY_KIND: dict[ContentKind, Callable[[], str]] = {
+    'passage': default_passage,
+    'shadowing': default_shadowing_line,
+    'stress': default_stress_line,
+}
+
+_MAX_LENGTH_BY_KIND: dict[ContentKind, int] = {
+    'passage': MAX_GENERATED_PASSAGE_LENGTH,
+    'shadowing': MAX_GENERATED_LINE_LENGTH,
+    'stress': MAX_GENERATED_LINE_LENGTH,
+}
+
+
+def default_content(kind: ContentKind) -> str:
+    return _DEFAULT_BY_KIND[kind]()
+
+
+def max_length_for(kind: ContentKind) -> int:
+    return _MAX_LENGTH_BY_KIND[kind]
 
 
 def default_explanation(word: str, phoneme: str) -> str:
@@ -67,14 +100,14 @@ class StubCritic:
 
 
 class ContentGenerator(Protocol):
-    def generate(self, focus_phonemes: list[str]) -> str: ...
+    def generate(self, kind: ContentKind, focus_phonemes: list[str]) -> str: ...
 
 
 class StubContentGenerator:
-    """Deterministic canned passage behind the real contract. Used in CI, where
+    """Deterministic canned content behind the real contract. Used in CI, where
     there is no local LLM, and kept deterministic so the e2e generation
-    assertions stay stable. Ignores the focus phonemes, which only bias the
-    real model."""
+    assertions stay stable. Returns the fixed default for the requested kind and
+    ignores the focus phonemes, which only bias the real model."""
 
-    def generate(self, focus_phonemes: list[str]) -> str:
-        return default_passage()
+    def generate(self, kind: ContentKind, focus_phonemes: list[str]) -> str:
+        return default_content(kind)

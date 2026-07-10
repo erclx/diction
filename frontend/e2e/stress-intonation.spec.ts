@@ -2,8 +2,10 @@ import { expect, type Page, test } from '@playwright/test'
 
 const ANALYZE_URL = '**/api/prosody/analyze'
 const REFERENCE_URL = '**/api/reference*'
+const GENERATE_URL = '**/api/content/generate'
 
 const WAV_BYTES = Buffer.from([82, 73, 70, 70])
+const GENERATED_LINE = 'I never claimed she took the change.'
 
 const MOCK_ANALYSIS = {
   rhythm_match: 88,
@@ -57,6 +59,27 @@ test.describe('stress and intonation', () => {
     await expect(page.getByText('Rhythm match')).toBeVisible()
     await expect(page.getByText('Intonation match')).toBeVisible()
     await expect(page.getByText(/directional read/)).toBeVisible()
+  })
+
+  test('should generate a line and analyze it against the reference', async ({
+    page,
+  }) => {
+    await page.route(GENERATE_URL, (route) =>
+      route.fulfill({ json: { text: GENERATED_LINE } }),
+    )
+    await page.goto('/drills/stress')
+
+    await page.getByRole('button', { name: 'Generate a line' }).click()
+    await expect(page.getByText(GENERATED_LINE)).toBeVisible()
+
+    const analyze = page.waitForRequest((candidate) =>
+      candidate.url().includes('/api/prosody/analyze'),
+    )
+    await recordAndAnalyze(page)
+    const request = await analyze
+
+    expect(request.postData()).toContain(GENERATED_LINE)
+    await expect(page.getByText('Rhythm match')).toBeVisible()
   })
 
   test('should advance to the next line after analyzing', async ({ page }) => {
