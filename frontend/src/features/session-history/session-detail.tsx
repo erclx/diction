@@ -7,6 +7,7 @@ import { OwnRecordingAudio } from '@/features/audio-channel/own-recording-audio'
 import { CritiqueList } from '@/features/free-topic/critique-list'
 import { FlaggedWordList } from '@/features/passage-scoring/flagged-word-list'
 import { ScoreMetric } from '@/features/passage-scoring/score-metric'
+import { useSpanPlayer } from '@/features/passage-scoring/use-span-player'
 
 import { formatSessionDate } from './format'
 import { SessionNotFoundError, useSessionQuery } from './use-sessions'
@@ -24,6 +25,10 @@ const METRICS = [
 
 export function SessionDetail({ id }: SessionDetailProps) {
   const query = useSessionQuery(id)
+  const recordingUrl = query.data?.has_recording
+    ? `${BACKEND_URL}/api/sessions/${id}/recording`
+    : undefined
+  const player = useSpanPlayer(recordingUrl)
 
   return (
     <div className="flex flex-col gap-6">
@@ -98,7 +103,10 @@ export function SessionDetail({ id }: SessionDetailProps) {
 
           <div className="flex flex-col gap-3">
             <h3 className="text-left text-xl font-medium">Flagged words</h3>
-            <FlaggedWordList words={query.data.flagged_words} />
+            <FlaggedWordList
+              words={query.data.flagged_words}
+              player={query.data.has_recording ? player : undefined}
+            />
           </div>
 
           {query.data.critique && (
