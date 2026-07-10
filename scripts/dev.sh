@@ -84,7 +84,26 @@ stop() {
   log "stopped this worktree's dev pair"
 }
 
+pair_running() {
+  [ -f "$PIDFILE" ] || return 1
+  local key value
+  while IFS='=' read -r key value; do
+    case "$key" in
+    BACKEND_PID | FRONTEND_PID)
+      if [ -n "$value" ] && kill -0 "$value" 2>/dev/null; then
+        return 0
+      fi
+      ;;
+    esac
+  done <"$PIDFILE"
+  return 1
+}
+
 start() {
+  if pair_running; then
+    warn "a dev pair is already running for this worktree. Use 'scripts/dev.sh restart' to replace it, or 'scripts/dev.sh stop' to end it."
+    exit 1
+  fi
   ensure_deps
   mkdir -p "$(dirname "$PIDFILE")"
 
