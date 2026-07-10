@@ -322,6 +322,17 @@ async function driveToResults(page: Page): Promise<void> {
   await page.getByRole('heading', { name: 'Flagged words' }).waitFor()
 }
 
+async function driveToScoringPending(page: Page): Promise<void> {
+  await page.route(
+    '**/api/passages/score',
+    () => new Promise<void>(() => undefined),
+  )
+  await page.getByRole('button', { name: 'Record', exact: true }).click()
+  await page.getByRole('button', { name: 'Stop' }).click()
+  await page.getByRole('button', { name: 'Score' }).click()
+  await page.getByRole('status', { name: 'Scoring in progress' }).waitFor()
+}
+
 async function scoreDrill(page: Page, body: unknown): Promise<void> {
   await page.route('**/api/drills/minimal-pair/score', (route) =>
     route.fulfill({
@@ -428,6 +439,7 @@ const NARROW_VIEWPORT = { width: 390, height: 800 }
 
 const CASES: readonly CaptureCase[] = [
   { section: 'passage-scoring', name: 'idle' },
+  { section: 'passage-scoring', name: 'pending', act: driveToScoringPending },
   { section: 'passage-scoring', name: 'results', act: driveToResults },
   { section: 'shadowing', name: 'scored', act: driveToShadowingScored },
   { section: 'stress-intonation', name: 'scored', act: driveToStressScored },
