@@ -23,6 +23,7 @@ Both scores and the drawn contour read as directional, not as a settled grade. P
 │                                               │
 │  ┌──────────────────────────────────────┐    │
 │  │ I never said she stole the money.     │    │ ← prompt line, dynamic
+│  │ [ ✦ Generate a line ]                  │    │ ← generate a fresh line locally
 │  │ [🗣] Hear the line, then read it back  │    │ ← native reference of the whole line
 │  └──────────────────────────────────────┘    │
 │                                               │
@@ -65,15 +66,17 @@ Both scores and the drawn contour read as directional, not as a settled grade. P
 - Reference caption: `Hear the line, then read it back`
 - Contour legend: `Reference` and `You`
 - Syllables: the reference word's espeak syllables, the stressed one highlighted, dynamic
-- Controls: `Record`, `Stop`, `Record again`, `Analyze`, `Next line`
+- Controls: `Generate a line`, `Record`, `Stop`, `Record again`, `Analyze`, `Next line`
 - Match scores: `Rhythm match` and `Intonation match`, each a rounded number, shown as neutral numbers rather than colored score bands
 - Directional caveat: `A directional read while prosody scoring is still being calibrated, not a settled grade.`, fine print
 - Generic failure: `Analysis failed, check the backend is running and try again.`
+- Generation failure: `Generation failed, try again or use the next line.`
 - Mic denied: `Allow microphone access, then record.`
 
 ## Behavior
 
 - One line shows at a time. The reference control plays the native rendering of that line, synthesized locally. Synthesis and caching live in `.claude/context/tts.md`.
+- `Generate a line` requests a fresh line from `POST /api/content/generate` with `kind: stress` and seeds it in place of the cycled prompt, then the reference and analysis paths run on the generated line unchanged. The hardcoded lines stay the instant offline default, so a generation outage still leaves a usable line. The generation subsystem lives in `.claude/context/feedback.md`.
 - The record control cycles idle to recording to recorded, the same capture path as passage scoring.
 - Submitting sends the line text plus the clip to `POST /api/prosody/analyze`, which synthesizes the same reference internally, draws both pitch contours, and marks the reference's stressed syllables. The route writes no session, so a rep never lands in history or the weak-sound rollup in v1.
 - The reference contour draws solid and the learner contour dashes over it on the same pitch scale, so the shapes compare directly rather than by absolute pitch. Both contours sit on a shared linguistic timeline, evenly split by faint per-word gridlines, so the same horizontal position is the same point in the sentence for both readers regardless of tempo. Both scores show as neutral numbers with a directional caveat, never colored grade bands, because the prosody score and the contour are uncalibrated and read as directional until calibration and the real-recording validation land.
