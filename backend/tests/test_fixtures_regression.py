@@ -26,14 +26,14 @@ if TYPE_CHECKING:
     from diction.scoring.transcription import WhisperTranscriber
 
 Clip = dict[str, object]
-RealScorer = tuple["PassageScorer", "WhisperTranscriber"]
+RealScorer = tuple['PassageScorer', 'WhisperTranscriber']
 
-FIXTURES_DIR = Path(__file__).parent / "fixtures" / "recordings"
-MANIFEST = FIXTURES_DIR / "manifest.json"
+FIXTURES_DIR = Path(__file__).parent / 'fixtures' / 'recordings'
+MANIFEST = FIXTURES_DIR / 'manifest.json'
 
 pytestmark = pytest.mark.skipif(
-    os.environ.get("DICTION_FIXTURE_REGRESSION") != "1",
-    reason="real-stack fixture regression; set DICTION_FIXTURE_REGRESSION=1 to run",
+    os.environ.get('DICTION_FIXTURE_REGRESSION') != '1',
+    reason='real-stack fixture regression; set DICTION_FIXTURE_REGRESSION=1 to run',
 )
 
 
@@ -42,29 +42,29 @@ def _manifest() -> dict[str, object]:
 
 
 def _clips() -> list[Clip]:
-    return cast(list[Clip], _manifest()["clips"])
+    return cast(list[Clip], _manifest()['clips'])
 
 
 def _score_tolerance() -> float:
-    return float(cast(float, _manifest()["score_tolerance"]))
+    return float(cast(float, _manifest()['score_tolerance']))
 
 
 def _clips_with_audio(mode: str) -> list[Clip]:
     return [
         clip
         for clip in _clips()
-        if clip["mode"] == mode
-        and not clip.get("audio_pending")
-        and (FIXTURES_DIR / cast(str, clip["audio"])).exists()
+        if clip['mode'] == mode
+        and not clip.get('audio_pending')
+        and (FIXTURES_DIR / cast(str, clip['audio'])).exists()
     ]
 
 
 def _audio_bytes(clip: Clip) -> bytes:
-    return (FIXTURES_DIR / cast(str, clip["audio"])).read_bytes()
+    return (FIXTURES_DIR / cast(str, clip['audio'])).read_bytes()
 
 
 def _expected(clip: Clip) -> dict[str, object]:
-    return cast(dict[str, object], clip["expected"])
+    return cast(dict[str, object], clip['expected'])
 
 
 def _actual_flag_pairs(result: ScoreResult) -> list[tuple[str, str]]:
@@ -72,22 +72,22 @@ def _actual_flag_pairs(result: ScoreResult) -> list[tuple[str, str]]:
 
 
 def _expected_flag_pairs(clip: Clip) -> list[tuple[str, str]]:
-    flagged = cast(list[dict[str, str]], _expected(clip)["flagged"])
-    return [(flag["word"], flag["phoneme"]) for flag in flagged]
+    flagged = cast(list[dict[str, str]], _expected(clip)['flagged'])
+    return [(flag['word'], flag['phoneme']) for flag in flagged]
 
 
 def _scores_out_of_band(result: ScoreResult, clip: Clip, tolerance: float) -> list[str]:
-    scores = cast(dict[str, float], _expected(clip)["scores"])
+    scores = cast(dict[str, float], _expected(clip)['scores'])
     return [
-        f"{key}: expected {value} +/- {tolerance}, got {getattr(result, key):.1f}"
+        f'{key}: expected {value} +/- {tolerance}, got {getattr(result, key):.1f}'
         for key, value in scores.items()
         if abs(getattr(result, key) - value) > tolerance
     ]
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope='session')
 def real_scorer() -> RealScorer:
-    pytest.importorskip("faster_whisper")
+    pytest.importorskip('faster_whisper')
     from diction.config import Settings
     from diction.scoring.scorer_gop import GopScorer
     from diction.scoring.transcription import WhisperTranscriber
@@ -99,91 +99,91 @@ def real_scorer() -> RealScorer:
     return GopScorer(settings, transcriber), transcriber
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope='session')
 def scored_fixtures(real_scorer: RealScorer) -> dict[str, tuple[ScoreResult, str]]:
     scorer, transcriber = real_scorer
     scored: dict[str, tuple[ScoreResult, str]] = {}
-    for clip in _clips_with_audio("passage"):
-        reference = cast(str, clip["reference"])
+    for clip in _clips_with_audio('passage'):
+        reference = cast(str, clip['reference'])
         result = scorer.score(reference, _audio_bytes(clip))
-        scored[cast(str, clip["name"])] = (result, reference)
-    for clip in _clips_with_audio("free-topic"):
+        scored[cast(str, clip['name'])] = (result, reference)
+    for clip in _clips_with_audio('free-topic'):
         audio = _audio_bytes(clip)
         transcript = transcriber.transcribe(audio).text
-        scored[cast(str, clip["name"])] = (scorer.score(transcript, audio), transcript)
+        scored[cast(str, clip['name'])] = (scorer.score(transcript, audio), transcript)
     return scored
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope='session')
 def contrast_fixtures(real_scorer: RealScorer) -> dict[str, ContrastResult]:
     scorer, _ = real_scorer
     scored: dict[str, ContrastResult] = {}
-    for clip in _clips_with_audio("drill"):
+    for clip in _clips_with_audio('drill'):
         result = scorer.score_target_contrast(
-            cast(str, clip["word"]),
+            cast(str, clip['word']),
             _audio_bytes(clip),
-            cast(str, clip["target_phoneme"]),
-            cast(str, clip["competitor_phoneme"]),
+            cast(str, clip['target_phoneme']),
+            cast(str, clip['competitor_phoneme']),
         )
-        scored[cast(str, clip["name"])] = result
+        scored[cast(str, clip['name'])] = result
     return scored
 
 
 @pytest.mark.parametrize(
-    "clip", _clips_with_audio("passage"), ids=lambda clip: cast(str, clip["name"])
+    'clip', _clips_with_audio('passage'), ids=lambda clip: cast(str, clip['name'])
 )
 def test_passage_fixture_flags_match_manifest(
     clip: Clip, scored_fixtures: dict[str, tuple[ScoreResult, str]]
 ) -> None:
-    result, _ = scored_fixtures[cast(str, clip["name"])]
+    result, _ = scored_fixtures[cast(str, clip['name'])]
     assert _actual_flag_pairs(result) == _expected_flag_pairs(clip)
 
 
 @pytest.mark.parametrize(
-    "clip", _clips_with_audio("passage"), ids=lambda clip: cast(str, clip["name"])
+    'clip', _clips_with_audio('passage'), ids=lambda clip: cast(str, clip['name'])
 )
 def test_passage_fixture_scores_within_band(
     clip: Clip, scored_fixtures: dict[str, tuple[ScoreResult, str]]
 ) -> None:
-    result, _ = scored_fixtures[cast(str, clip["name"])]
+    result, _ = scored_fixtures[cast(str, clip['name'])]
     assert _scores_out_of_band(result, clip, _score_tolerance()) == []
 
 
 @pytest.mark.parametrize(
-    "clip", _clips_with_audio("free-topic"), ids=lambda clip: cast(str, clip["name"])
+    'clip', _clips_with_audio('free-topic'), ids=lambda clip: cast(str, clip['name'])
 )
 def test_free_topic_fixture_transcript_matches_manifest(
     clip: Clip, scored_fixtures: dict[str, tuple[ScoreResult, str]]
 ) -> None:
-    _, transcript = scored_fixtures[cast(str, clip["name"])]
-    assert transcript == _expected(clip)["transcript"]
+    _, transcript = scored_fixtures[cast(str, clip['name'])]
+    assert transcript == _expected(clip)['transcript']
 
 
 @pytest.mark.parametrize(
-    "clip", _clips_with_audio("free-topic"), ids=lambda clip: cast(str, clip["name"])
+    'clip', _clips_with_audio('free-topic'), ids=lambda clip: cast(str, clip['name'])
 )
 def test_free_topic_fixture_flags_match_manifest(
     clip: Clip, scored_fixtures: dict[str, tuple[ScoreResult, str]]
 ) -> None:
-    result, _ = scored_fixtures[cast(str, clip["name"])]
+    result, _ = scored_fixtures[cast(str, clip['name'])]
     assert _actual_flag_pairs(result) == _expected_flag_pairs(clip)
 
 
 @pytest.mark.parametrize(
-    "clip", _clips_with_audio("free-topic"), ids=lambda clip: cast(str, clip["name"])
+    'clip', _clips_with_audio('free-topic'), ids=lambda clip: cast(str, clip['name'])
 )
 def test_free_topic_fixture_scores_within_band(
     clip: Clip, scored_fixtures: dict[str, tuple[ScoreResult, str]]
 ) -> None:
-    result, _ = scored_fixtures[cast(str, clip["name"])]
+    result, _ = scored_fixtures[cast(str, clip['name'])]
     assert _scores_out_of_band(result, clip, _score_tolerance()) == []
 
 
 @pytest.mark.parametrize(
-    "clip", _clips_with_audio("drill"), ids=lambda clip: cast(str, clip["name"])
+    'clip', _clips_with_audio('drill'), ids=lambda clip: cast(str, clip['name'])
 )
 def test_drill_fixture_verdict_matches_manifest(
     clip: Clip, contrast_fixtures: dict[str, ContrastResult]
 ) -> None:
-    result = contrast_fixtures[cast(str, clip["name"])]
-    assert result.target_substituted == _expected(clip)["target_substituted"]
+    result = contrast_fixtures[cast(str, clip['name'])]
+    assert result.target_substituted == _expected(clip)['target_substituted']
