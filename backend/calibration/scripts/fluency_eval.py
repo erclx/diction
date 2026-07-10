@@ -16,7 +16,7 @@ centers, scales, weights, and intercept, plus the validation metrics, to paste
 into `src/diction/scoring/fluency.py`. Scratch tooling, not shipped, not imported
 by the app.
 
-Run: PYTHONPATH=src uv run python calibration/fluency_eval.py [n_rows]
+Run: PYTHONPATH=src uv run python calibration/scripts/fluency_eval.py [n_rows]
 """
 
 import json
@@ -36,6 +36,7 @@ from diction.scoring.transcription import WhisperTranscriber
 
 FEATURE_NAMES = list(FLUENCY_WEIGHTS)
 LABEL_SCALE = 10.0  # dataset fluency is 0-10; the app score is 0-100.
+DATA_DIR = Path(__file__).parent.parent / 'data'
 
 
 def load_rows(split: str, n_rows: int) -> list[dict]:
@@ -107,7 +108,7 @@ def correlation(
 def main() -> None:
     n_rows = int(sys.argv[1]) if len(sys.argv) > 1 else 2500
     transcriber = WhisperTranscriber(Settings())
-    dump_path = Path(__file__).parent / 'fluency_pairs.jsonl'
+    dump_path = DATA_DIR / 'fluency_pairs.jsonl'
     dump = dump_path.open('w')
 
     fit_features, fit_labels = collect_samples(
@@ -154,7 +155,7 @@ def main() -> None:
             'held_out_samples': len(holdout_labels),
         },
     }
-    out = Path(__file__).parent / 'fluency_model.json'
+    out = DATA_DIR / 'fluency_model.json'
     out.write_text(json.dumps(model, indent=2))
     print(f'\nwrote {out}')
     print(f'wrote {dump_path} ({len(fit_labels) + len(holdout_labels)} per-clip rows)')

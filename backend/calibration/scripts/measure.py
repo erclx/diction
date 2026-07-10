@@ -5,7 +5,7 @@ per-phoneme separation between good and degraded renderings.
 Whisper is skipped: calibration aligns against the known reference text, so only
 the wav2vec2 emission and forced alignment are needed. Scratch, not shipped.
 
-Run: uv run python ../.claude/.tmp/score-calibration/measure.py [n_rows]
+Run from `backend/`: PYTHONPATH=src uv run python calibration/scripts/measure.py [n_rows]
 """
 
 import json
@@ -20,6 +20,8 @@ from huggingface_hub import hf_hub_download
 from diction.config import Settings
 from diction.scoring.audio import decode_audio
 from diction.scoring.scorer_gop import GopScorer
+
+DATA_DIR = Path(__file__).parent.parent / 'data'
 
 # espeak IPA tokens for the minimal-pair contrast set the drill trains. Kept
 # only to tag which measured phonemes are the drill's contrast phonemes.
@@ -122,7 +124,7 @@ def main() -> None:
     by_phoneme: dict[str, dict[str, list[float]]] = defaultdict(
         lambda: {'good': [], 'bad': []}
     )
-    raw_path = Path(__file__).parent / f'pairs-{split}.jsonl'
+    raw_path = DATA_DIR / f'pairs-{split}.jsonl'
     raw = raw_path.open('w')
     scored = 0
     for i, row in enumerate(rows):
@@ -170,7 +172,7 @@ def main() -> None:
             f'{str(sep):>12}'
         )
 
-    out = Path(__file__).parent / 'distributions.json'
+    out = DATA_DIR / 'distributions.json'
     out.write_text(json.dumps(summary, indent=2))
     print(f'\nwrote {out}')
 

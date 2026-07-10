@@ -19,7 +19,7 @@ the error that matters.
 Harness-only, not imported by the app. Needs the scoring and tts extras and a
 GPU helps.
 
-Run from `backend/`: PYTHONPATH=src uv run python calibration/contrast_eval.py
+Run from `backend/`: PYTHONPATH=src uv run python calibration/scripts/contrast_eval.py
 """
 
 import json
@@ -34,6 +34,7 @@ from diction.scoring.transcription import WhisperTranscriber
 from diction.tts.synth_kokoro import KokoroSynthesizer
 
 HERE = Path(__file__).parent
+DATA_DIR = HERE.parent / 'data'
 
 DECOY_WORDS = ('rabbit', 'table', 'orange')
 
@@ -130,7 +131,7 @@ def main() -> None:
 
     recognition = _recognition_check(scorer, clip)
 
-    out = HERE / 'contrast_eval.json'
+    out = DATA_DIR / 'contrast_eval.json'
     out.write_text(
         json.dumps(
             {'tally': tally, 'rows': rows, 'recognition': recognition},

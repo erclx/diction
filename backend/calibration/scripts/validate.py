@@ -2,7 +2,7 @@
 not the fit) to the train split, which was never used for fitting. Reports the
 real false-flag and catch rates the calibrated flag achieves on unseen data.
 
-Run: uv run --project backend python .claude/.tmp/score-calibration/validate.py
+Run from `backend/`: PYTHONPATH=src uv run python calibration/scripts/validate.py
 """
 
 import json
@@ -13,6 +13,7 @@ from pathlib import Path
 from diction.scoring.phoneme_baselines import FLAG_K, PHONEME_BASELINES
 
 HERE = Path(__file__).parent
+DATA_DIR = HERE.parent / 'data'
 CONTRAST = {'θ', 'ð', 'ɹ', 'ɪ', 'iː', 'æ', 'ɛ', 'v', 'w', 's', 'ʃ', 'f'}
 
 
@@ -27,7 +28,7 @@ def flagged(phoneme: str, gop: float) -> bool:
 def main() -> None:
     good_flags: dict[str, list[int]] = defaultdict(list)
     bad_flags: dict[str, list[int]] = defaultdict(list)
-    for line in (HERE / 'pairs-train.jsonl').read_text().splitlines():
+    for line in (DATA_DIR / 'pairs-train.jsonl').read_text().splitlines():
         r = json.loads(line)
         hit = int(flagged(r['phoneme'], r['gop']))
         if r['accuracy'] >= 2.0:

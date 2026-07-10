@@ -64,9 +64,9 @@ The same harness also checks the Whisper word-identity gate, which stops a clip 
 Needs the scoring and tts extras. From `backend/`:
 
 ```bash
-PYTHONPATH=src uv run python calibration/contrast_eval.py
-uv run --with matplotlib --with seaborn python calibration/contrast_plots.py
+PYTHONPATH=src uv run python calibration/scripts/contrast_eval.py
+uv run --with matplotlib --with seaborn python calibration/scripts/contrast_plots.py
 ```
 
-The first writes `contrast_eval.json`, the second reads it and writes
+The first writes `data/contrast_eval.json`, the second reads it and writes
 `figures/contrast_verdict.png`.

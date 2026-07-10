@@ -7,7 +7,7 @@ split, the 0.40 correlation the fit validates. Right: the long-pause-ratio
 distribution, near-zero for the whole corpus, which is why the pause features
 cannot be calibrated here and ship as reasoned rather than fitted.
 
-Run from `backend/`: python calibration/fluency_plots.py
+Run from `backend/`: python calibration/scripts/fluency_plots.py
 """
 
 import json
@@ -21,7 +21,8 @@ import numpy as np
 import seaborn as sns
 
 HERE = Path(__file__).parent
-FIGS = HERE / 'figures'
+DATA_DIR = HERE.parent / 'data'
+FIGS = HERE.parent / 'figures'
 
 ACCENT = '#0f766e'
 NEUTRAL = '#9a9186'
@@ -50,10 +51,10 @@ def predict(model: dict, row: dict) -> float:
 
 
 def main() -> None:
-    model = json.loads((HERE / 'fluency_model.json').read_text())
+    model = json.loads((DATA_DIR / 'fluency_model.json').read_text())
     rows = [
         json.loads(line)
-        for line in (HERE / 'fluency_pairs.jsonl').read_text().splitlines()
+        for line in (DATA_DIR / 'fluency_pairs.jsonl').read_text().splitlines()
     ]
     holdout = [row for row in rows if row['split'] == 'holdout']
 

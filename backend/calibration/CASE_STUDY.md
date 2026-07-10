@@ -52,6 +52,6 @@ The flag is trustworthy now. Two things are deliberately left alone. The fluency
 
 ## Reproduce it
 
-The whole experiment lives beside this file: `measure.py` runs the sweep, `analyze.py` fits the thresholds, `validate.py` checks them on held-out speech, and `plots.py` draws these figures. The models and dataset cache on first download and reuse forever, so a re-run is minutes, not ceremony. See the [README](README.md) for the steps.
+The whole experiment lives in `scripts/` beside this file: `scripts/measure.py` runs the sweep, `scripts/analyze.py` fits the thresholds, `scripts/validate.py` checks them on held-out speech, and `scripts/plots.py` draws these figures. The models and dataset cache on first download and reuse forever, so a re-run is minutes, not ceremony. See the [README](README.md) for the steps.
 
 Built for Diction, a local, offline pronunciation trainer that keeps every recording on your own machine.
