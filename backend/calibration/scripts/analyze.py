@@ -94,10 +94,9 @@ def main() -> None:
         }
         for p, ng, nb, mu, sd, a, _ in rows
     }
-    (DATA_DIR / 'baselines.json').write_text(
-        json.dumps(baselines, indent=2, ensure_ascii=False)
-    )
-    print(f'\nwrote baselines.json ({len(baselines)} phonemes)')
+    out = DATA_DIR / 'baselines.json'
+    out.write_text(json.dumps(baselines, indent=2, ensure_ascii=False))
+    print(f'\nwrote {out} ({len(baselines)} phonemes)')
 
     all_good = [x for p in phonemes for x in good[p]]
     all_bad = [x for p in phonemes for x in bad[p]]
