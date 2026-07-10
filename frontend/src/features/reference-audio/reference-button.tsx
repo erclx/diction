@@ -8,11 +8,16 @@ import { useReferenceAudio } from './use-reference-audio'
 interface ReferenceButtonProps {
   text: string
   label: string
+  disabled?: boolean
 }
 
 const STOP_LABEL = 'Stop playback'
 
-export function ReferenceButton({ text, label }: ReferenceButtonProps) {
+export function ReferenceButton({
+  text,
+  label,
+  disabled = false,
+}: ReferenceButtonProps) {
   const reference = useReferenceAudio(text)
 
   const handleClick = () => {
@@ -45,7 +50,7 @@ export function ReferenceButton({ text, label }: ReferenceButtonProps) {
         reference.isError && 'text-destructive',
         reference.isPlaying && 'text-primary',
       )}
-      disabled={reference.isFetching}
+      disabled={disabled || reference.isFetching}
       onClick={handleClick}
     >
       {reference.isFetching ? (
