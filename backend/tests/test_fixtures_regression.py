@@ -54,7 +54,7 @@ def _clips_with_audio(mode: str) -> list[Clip]:
         clip
         for clip in _clips()
         if clip['mode'] == mode
-        and not clip.get('audio_pending')
+        and isinstance(clip.get('audio'), str)
         and (FIXTURES_DIR / cast(str, clip['audio'])).exists()
     ]
 
