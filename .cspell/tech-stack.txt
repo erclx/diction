@@ -93,6 +93,7 @@ pydantic
 pykaldi
 pyproject
 pytest
+pytestmark
 pythonpath
 PYTHONUNBUFFERED
 qwen
