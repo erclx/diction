@@ -1,12 +1,16 @@
 from collections.abc import Mapping
 from dataclasses import dataclass, field
 
+import pytest
+
 from diction.feedback.base import (
     MAX_CRITIQUE_POINTS,
     MAX_GENERATED_PASSAGE_LENGTH,
+    ContentKind,
     StubContentGenerator,
     StubCritic,
     StubExplainer,
+    default_content,
     default_passage,
 )
 from diction.feedback.critique_llm import OllamaCritic
@@ -204,28 +208,43 @@ def test_ollama_critic_falls_back_to_default_on_an_empty_reply() -> None:
     assert len(critique.points) == 1
 
 
-def test_stub_content_generator_returns_a_nonempty_passage() -> None:
-    passage = StubContentGenerator().generate(['θ', 'v'])
+@pytest.mark.parametrize('kind', ['passage', 'shadowing', 'stress'])
+def test_stub_content_generator_returns_the_kind_default(kind: ContentKind) -> None:
+    text = StubContentGenerator().generate(kind, ['θ', 'v'])
 
-    assert passage == default_passage()
-    assert passage.strip()
+    assert text == default_content(kind)
+    assert text.strip()
 
 
 def test_ollama_content_generator_prompts_with_the_focus_phonemes() -> None:
     client = FakeChatClient(content='A calm passage to read aloud.')
     generator = OllamaContentGenerator(client=client, model_id='test-model')
 
-    generator.generate(['θ', 'ð'])
+    generator.generate('passage', ['θ', 'ð'])
 
     user_prompt = client.calls[0]['messages'][1]['content']
     assert 'θ' in user_prompt and 'ð' in user_prompt
+
+
+@pytest.mark.parametrize('kind', ['passage', 'shadowing', 'stress'])
+def test_ollama_content_generator_uses_a_kind_specific_system_prompt(
+    kind: ContentKind,
+) -> None:
+    client = FakeChatClient(content='A calm line to read aloud.')
+    generator = OllamaContentGenerator(client=client, model_id='test-model')
+
+    generator.generate(kind, [])
+
+    system_prompt = client.calls[0]['messages'][0]['content']
+    expected_shape = 'three to five sentences' if kind == 'passage' else 'one sentence'
+    assert expected_shape in system_prompt
 
 
 def test_ollama_content_generator_disables_the_reasoning_pass() -> None:
     client = FakeChatClient(content='A calm passage to read aloud.')
     generator = OllamaContentGenerator(client=client, model_id='test-model')
 
-    generator.generate([])
+    generator.generate('passage', [])
 
     assert client.calls[0]['think'] is False
 
@@ -234,7 +253,7 @@ def test_ollama_content_generator_caps_the_context_window() -> None:
     client = FakeChatClient(content='A calm passage to read aloud.')
     generator = OllamaContentGenerator(client=client, model_id='test-model')
 
-    generator.generate([])
+    generator.generate('passage', [])
 
     assert client.calls[0]['options']['num_ctx'] == 4096
 
@@ -243,24 +262,39 @@ def test_ollama_content_generator_collapses_whitespace_in_the_reply() -> None:
     client = FakeChatClient(content='  A calm   passage\n\nto read aloud.  ')
     generator = OllamaContentGenerator(client=client, model_id='test-model')
 
-    passage = generator.generate([])
+    passage = generator.generate('passage', [])
 
     assert passage == 'A calm passage to read aloud.'
 
 
-def test_ollama_content_generator_falls_back_on_an_empty_reply() -> None:
+@pytest.mark.parametrize('kind', ['passage', 'shadowing', 'stress'])
+def test_ollama_content_generator_falls_back_on_an_empty_reply(
+    kind: ContentKind,
+) -> None:
     client = FakeChatClient(content='   \n  ')
     generator = OllamaContentGenerator(client=client, model_id='test-model')
 
-    passage = generator.generate([])
+    text = generator.generate(kind, [])
 
-    assert passage == default_passage()
+    assert text == default_content(kind)
 
 
-def test_ollama_content_generator_falls_back_when_the_reply_is_too_long() -> None:
+def test_ollama_content_generator_falls_back_when_the_passage_is_too_long() -> None:
     client = FakeChatClient(content='word ' * (MAX_GENERATED_PASSAGE_LENGTH + 1))
     generator = OllamaContentGenerator(client=client, model_id='test-model')
 
-    passage = generator.generate([])
+    passage = generator.generate('passage', [])
 
     assert passage == default_passage()
+
+
+def test_ollama_content_generator_falls_back_when_a_line_exceeds_its_shorter_cap() -> (
+    None
+):
+    passage_length_reply = 'word ' * 60
+    client = FakeChatClient(content=passage_length_reply)
+    generator = OllamaContentGenerator(client=client, model_id='test-model')
+
+    line = generator.generate('shadowing', [])
+
+    assert line == default_content('shadowing')

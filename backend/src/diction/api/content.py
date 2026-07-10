@@ -1,10 +1,15 @@
 import logging
-from typing import Annotated, Literal, cast
+from typing import Annotated, cast
 
 from fastapi import APIRouter, Depends, Request
 from pydantic import BaseModel, ConfigDict, Field
 
-from diction.feedback.base import MAX_FOCUS_PHONEMES, ContentGenerator, default_passage
+from diction.feedback.base import (
+    MAX_FOCUS_PHONEMES,
+    ContentGenerator,
+    ContentKind,
+    default_content,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -14,7 +19,7 @@ router = APIRouter(tags=['content'])
 class GenerateContentRequest(BaseModel):
     model_config = ConfigDict(extra='forbid')
 
-    kind: Literal['passage'] = 'passage'
+    kind: ContentKind = 'passage'
     focus_phonemes: list[str] = Field(
         default_factory=list, max_length=MAX_FOCUS_PHONEMES
     )
@@ -34,16 +39,19 @@ def generate_content(
     payload: GenerateContentRequest,
 ) -> GeneratedContentResponse:
     return GeneratedContentResponse(
-        text=_generate_or_default(generator, payload.focus_phonemes)
+        text=_generate_or_default(generator, payload.kind, payload.focus_phonemes)
     )
 
 
-def _generate_or_default(generator: ContentGenerator, focus_phonemes: list[str]) -> str:
+def _generate_or_default(
+    generator: ContentGenerator, kind: ContentKind, focus_phonemes: list[str]
+) -> str:
     try:
-        return generator.generate(focus_phonemes)
+        return generator.generate(kind, focus_phonemes)
     except Exception:
         logger.warning(
-            'generator failed; returning the fallback passage instead',
+            'generator failed; returning the fallback %s instead',
+            kind,
             exc_info=True,
         )
-        return default_passage()
+        return default_content(kind)
