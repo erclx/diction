@@ -1,13 +1,22 @@
 import { useState } from 'react'
-import { ArrowRight, Loader2, Mic, RotateCcw, Square } from 'lucide-react'
+import {
+  ArrowRight,
+  Loader2,
+  Mic,
+  RotateCcw,
+  Shuffle,
+  Square,
+} from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Textarea } from '@/components/ui/textarea'
 import { LevelMeter } from '@/components/level-meter'
 import { OwnRecordingAudio } from '@/features/audio-channel/own-recording-audio'
 import { ScoringSkeleton } from '@/features/passage-scoring/scoring-skeleton'
 import { useRecorder } from '@/features/passage-scoring/use-recorder'
 import { ClipTooWeakError } from '@/features/passage-scoring/use-score-passage'
+import { TOPIC_MAX_LENGTH, validatePracticeText } from '@/lib/practice-text'
 
 import { FREE_TOPIC_PROMPTS } from './free-topic-prompts'
 import { FreeTopicResults } from './free-topic-results'
@@ -17,14 +26,23 @@ export function FreeTopic() {
   const recorder = useRecorder()
   const scoring = useScoreFreeTopic()
   const [promptIndex, setPromptIndex] = useState(0)
-  const topic = FREE_TOPIC_PROMPTS[promptIndex % FREE_TOPIC_PROMPTS.length]
+  const [topic, setTopic] = useState<string>(FREE_TOPIC_PROMPTS[0])
+
+  const validation = validatePracticeText(topic, TOPIC_MAX_LENGTH)
+  const isEditing = recorder.status === 'idle'
   const isClipTooWeak = scoring.error instanceof ClipTooWeakError
+
+  function suggestTopic() {
+    const nextIndex = promptIndex + 1
+    setPromptIndex(nextIndex)
+    setTopic(FREE_TOPIC_PROMPTS[nextIndex % FREE_TOPIC_PROMPTS.length])
+  }
 
   function handleScore() {
     if (!recorder.recording) {
       return
     }
-    scoring.mutate({ topic, audio: recorder.recording.blob })
+    scoring.mutate({ topic: validation.value, audio: recorder.recording.blob })
   }
 
   function handleRecordAgain() {
@@ -33,7 +51,7 @@ export function FreeTopic() {
   }
 
   function handleNext() {
-    setPromptIndex((index) => index + 1)
+    suggestTopic()
     recorder.reset()
     scoring.reset()
   }
@@ -53,7 +71,40 @@ export function FreeTopic() {
           <CardTitle>Speak about this</CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col gap-2">
-          <p className="font-serif text-lg leading-relaxed">{topic}</p>
+          {isEditing ? (
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="topic-input" className="sr-only">
+                Topic to speak about
+              </label>
+              <Textarea
+                id="topic-input"
+                value={topic}
+                onChange={(event) => setTopic(event.target.value)}
+                aria-invalid={validation.error !== null}
+                aria-describedby={validation.error ? 'topic-error' : undefined}
+                className="font-serif text-lg leading-relaxed"
+              />
+              <div className="flex items-center justify-between gap-2">
+                {validation.error ? (
+                  <p id="topic-error" className="text-sm text-destructive">
+                    {validation.error}
+                  </p>
+                ) : (
+                  <span className="text-sm text-muted-foreground">
+                    Type your own topic or shuffle for a suggestion.
+                  </span>
+                )}
+                <Button variant="ghost" size="sm" onClick={suggestTopic}>
+                  <Shuffle />
+                  Shuffle
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <p className="font-serif text-lg leading-relaxed">
+              {validation.value}
+            </p>
+          )}
           <span className="text-sm text-muted-foreground">
             Aim for one to two minutes of natural speech.
           </span>
@@ -62,7 +113,10 @@ export function FreeTopic() {
 
       <div className="flex flex-col items-center gap-3">
         {recorder.status === 'idle' && (
-          <Button onClick={() => void recorder.start()}>
+          <Button
+            onClick={() => void recorder.start()}
+            disabled={validation.error !== null}
+          >
             <Mic />
             Record
           </Button>

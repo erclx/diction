@@ -414,6 +414,11 @@ async function driveToStressScored(page: Page): Promise<void> {
   await page.getByText('Rhythm match').waitFor()
 }
 
+async function driveToFreeTopicIdle(page: Page): Promise<void> {
+  await page.getByRole('link', { name: 'Free topic' }).click()
+  await page.getByLabel('Topic to speak about').waitFor()
+}
+
 async function driveToProductionIdle(page: Page): Promise<void> {
   await openProduction(page)
   await page.getByRole('button', { name: 'Record', exact: true }).waitFor()
@@ -443,6 +448,7 @@ const CASES: readonly CaptureCase[] = [
   { section: 'passage-scoring', name: 'idle' },
   { section: 'passage-scoring', name: 'pending', act: driveToScoringPending },
   { section: 'passage-scoring', name: 'results', act: driveToResults },
+  { section: 'free-topic', name: 'idle', act: driveToFreeTopicIdle },
   { section: 'shadowing', name: 'scored', act: driveToShadowingScored },
   { section: 'stress-intonation', name: 'scored', act: driveToStressScored },
   { section: 'production-drill', name: 'idle', act: driveToProductionIdle },

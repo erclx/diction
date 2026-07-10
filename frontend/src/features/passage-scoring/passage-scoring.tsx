@@ -1,22 +1,29 @@
+import { useState } from 'react'
 import { Loader2, Mic, RotateCcw, Square } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Textarea } from '@/components/ui/textarea'
 import { LevelMeter } from '@/components/level-meter'
 import { OwnRecordingAudio } from '@/features/audio-channel/own-recording-audio'
 import { ReferenceButton } from '@/features/reference-audio/reference-button'
+import { PASSAGE_MAX_LENGTH, validatePracticeText } from '@/lib/practice-text'
 
 import { ClipTooWeakError, useScorePassage } from './use-score-passage'
 import { ScoreResults } from './score-results'
 import { ScoringSkeleton } from './scoring-skeleton'
 import { useRecorder } from './use-recorder'
 
-const PRACTICE_PASSAGE =
+const DEFAULT_PASSAGE =
   'The quick brown fox jumps over the lazy dog while three thoughtful children watch the bright morning sun rise above the quiet valley.'
 
 export function PassageScoring() {
   const recorder = useRecorder()
   const scoring = useScorePassage()
+  const [passage, setPassage] = useState(DEFAULT_PASSAGE)
+
+  const validation = validatePracticeText(passage, PASSAGE_MAX_LENGTH)
+  const isEditing = recorder.status === 'idle'
 
   function handleReset() {
     recorder.reset()
@@ -28,7 +35,7 @@ export function PassageScoring() {
       return
     }
     scoring.mutate({
-      passage: PRACTICE_PASSAGE,
+      passage: validation.value,
       audio: recorder.recording.blob,
     })
   }
@@ -49,13 +56,41 @@ export function PassageScoring() {
           <CardTitle>Read this aloud</CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
-          <p className="font-serif text-lg leading-relaxed">
-            {PRACTICE_PASSAGE}
-          </p>
+          {isEditing ? (
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="passage-input" className="sr-only">
+                Passage to read
+              </label>
+              <Textarea
+                id="passage-input"
+                value={passage}
+                onChange={(event) => setPassage(event.target.value)}
+                aria-invalid={validation.error !== null}
+                aria-describedby={
+                  validation.error ? 'passage-error' : undefined
+                }
+                className="min-h-24 font-serif text-lg leading-relaxed"
+              />
+              {validation.error ? (
+                <p id="passage-error" className="text-sm text-destructive">
+                  {validation.error}
+                </p>
+              ) : (
+                <p className="text-sm text-muted-foreground">
+                  Edit the passage or type your own, then read it aloud.
+                </p>
+              )}
+            </div>
+          ) : (
+            <p className="font-serif text-lg leading-relaxed">
+              {validation.value}
+            </p>
+          )}
           <div className="flex items-center gap-2">
             <ReferenceButton
-              text={PRACTICE_PASSAGE}
+              text={validation.value}
               label="Play native reference for the passage"
+              disabled={validation.error !== null}
             />
             <span className="text-sm text-muted-foreground">
               Hear it read aloud
@@ -66,7 +101,10 @@ export function PassageScoring() {
 
       <div className="flex flex-col items-center gap-3">
         {recorder.status === 'idle' && (
-          <Button onClick={() => void recorder.start()}>
+          <Button
+            onClick={() => void recorder.start()}
+            disabled={validation.error !== null}
+          >
             <Mic />
             Record
           </Button>

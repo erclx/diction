@@ -91,6 +91,39 @@ test.describe('passage scoring', () => {
     await expect(page.getByRole('alert')).toContainText('Scoring failed')
   })
 
+  test('should score a typed custom passage against itself', async ({
+    page,
+  }) => {
+    const customPassage = 'Please call Stella and ask her to bring these.'
+    let scoredPassage: string | null = null
+    await page.route(SCORE_URL, async (route) => {
+      scoredPassage = route.request().postDataBuffer()?.toString('utf8') ?? null
+      await route.fulfill({ json: MOCK_SCORE })
+    })
+    await page.goto('/')
+
+    const input = page.getByLabel('Passage to read')
+    await input.fill(customPassage)
+    await recordClip(page)
+    await page.getByRole('button', { name: 'Score' }).click()
+
+    await expect(page.getByText('Accuracy')).toBeVisible()
+    expect(scoredPassage).toContain(customPassage)
+  })
+
+  test('should block recording when the passage is emptied', async ({
+    page,
+  }) => {
+    await page.goto('/')
+
+    await page.getByLabel('Passage to read').fill('   ')
+
+    await expect(
+      page.getByRole('button', { name: 'Record', exact: true }),
+    ).toBeDisabled()
+    await expect(page.getByText('Enter some text to practice')).toBeVisible()
+  })
+
   test('should reset to the record prompt after record again', async ({
     page,
   }) => {
