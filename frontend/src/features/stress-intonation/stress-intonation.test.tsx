@@ -177,4 +177,29 @@ describe('StressIntonation', () => {
       expect(screen.getByRole('alert')).toHaveTextContent(/Generation failed/),
     )
   })
+
+  it('should clear the generation error when advancing to the next line', async () => {
+    const user = userEvent.setup()
+    server.use(
+      http.post(
+        'http://localhost:8000/api/content/generate',
+        () => new HttpResponse(null, { status: 500 }),
+      ),
+      http.post(ANALYZE_URL, () => HttpResponse.json(ANALYSIS)),
+    )
+    renderWithProviders(<StressIntonation />)
+
+    await user.click(screen.getByRole('button', { name: 'Generate a line' }))
+    await waitFor(() =>
+      expect(screen.getByRole('alert')).toHaveTextContent(/Generation failed/),
+    )
+    await user.click(screen.getByRole('button', { name: 'Analyze' }))
+    await waitFor(() =>
+      expect(screen.getByText('Rhythm match')).toBeInTheDocument(),
+    )
+
+    await user.click(screen.getByRole('button', { name: 'Next line' }))
+
+    expect(screen.queryByText(/Generation failed/)).not.toBeInTheDocument()
+  })
 })

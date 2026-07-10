@@ -70,4 +70,4 @@ Both scores read as directional, not as a settled grade. Shadowing is the first 
 - The record control cycles idle to recording to recorded, the same capture path as passage scoring.
 - Submitting sends the line text plus the clip to `POST /api/prosody/score`, which synthesizes the same reference internally and compares timing and pitch. The route writes no session, so a shadowing rep never lands in history or the weak-sound rollup in v1.
 - Both scores show as neutral numbers with a directional caveat, never colored grade bands, because the prosody score is uncalibrated and read as directional until calibration lands.
-- `Next line` advances to the next prompt and clears the recording and scores. `Record again` re-records the same line.
+- `Next line` advances to the next prompt and clears the recording, the scores, and any generation error, since the line it belonged to is gone. Changing the line also stops a reference clip still playing. `Record again` re-records the same line.

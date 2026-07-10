@@ -49,6 +49,7 @@ export function Shadowing() {
     setGeneratedLine(null)
     recorder.reset()
     scoring.reset()
+    generation.reset()
   }
 
   function handleGenerate() {
@@ -98,6 +99,7 @@ export function Shadowing() {
           </div>
           <div className="flex items-center gap-2">
             <ReferenceButton
+              key={prompt}
               text={prompt}
               label="Play native reference for this line"
             />
