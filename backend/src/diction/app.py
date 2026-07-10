@@ -119,8 +119,16 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         )
 
         logger.info('warming reference synthesizer')
-        await asyncio.to_thread(kokoro.synthesize, WARMUP_TEXT)
-        logger.info('reference synthesizer warm')
+        try:
+            await asyncio.to_thread(kokoro.synthesize, WARMUP_TEXT)
+        except Exception:
+            logger.warning(
+                'reference synthesizer warm-up failed, '
+                'falling back to lazy first-click synthesis',
+                exc_info=True,
+            )
+        else:
+            logger.info('reference synthesizer warm')
 
     logger.info(
         'model stack resolved: scorer=%s transcriber=%s prosody=%s '

@@ -21,6 +21,11 @@ class SpySynthesizer:
         return b'RIFF'
 
 
+class FailingSynthesizer:
+    def synthesize(self, text: str, voice: str | None = None) -> bytes:
+        raise RuntimeError('transient warm-up failure')
+
+
 def install_spy_synth(monkeypatch: pytest.MonkeyPatch) -> list[SpySynthesizer]:
     instances: list[SpySynthesizer] = []
 
@@ -29,6 +34,12 @@ def install_spy_synth(monkeypatch: pytest.MonkeyPatch) -> list[SpySynthesizer]:
     monkeypatch.setitem(sys.modules, 'diction.tts.synth_kokoro', fake_module)
 
     return instances
+
+
+def install_failing_synth(monkeypatch: pytest.MonkeyPatch) -> None:
+    fake_module = types.ModuleType('diction.tts.synth_kokoro')
+    fake_module.KokoroSynthesizer = lambda settings: FailingSynthesizer()  # type: ignore[attr-defined]
+    monkeypatch.setitem(sys.modules, 'diction.tts.synth_kokoro', fake_module)
 
 
 def settings_with_stub_synth(use_stub_synth: bool) -> Settings:
@@ -68,3 +79,19 @@ def test_skips_warm_up_on_the_stub_synth(monkeypatch: pytest.MonkeyPatch) -> Non
         assert isinstance(app.state.synth, StubSynthesizer)
 
     assert instances == []
+
+
+def test_warm_up_failure_does_not_abort_startup(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr('diction.app.create_db_and_tables', lambda: None)
+    monkeypatch.setattr(
+        'diction.app.get_settings', lambda: settings_with_stub_synth(False)
+    )
+    install_failing_synth(monkeypatch)
+
+    app = create_app()
+    with TestClient(app) as client:
+        response = client.get('/api/health')
+
+    assert response.status_code == 200
