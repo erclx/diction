@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { AudioLines, Loader2, Square, TriangleAlert } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
@@ -8,12 +9,24 @@ import { useReferenceAudio } from './use-reference-audio'
 interface ReferenceButtonProps {
   text: string
   label: string
+  disabled?: boolean
 }
 
 const STOP_LABEL = 'Stop playback'
 
-export function ReferenceButton({ text, label }: ReferenceButtonProps) {
+export function ReferenceButton({
+  text,
+  label,
+  disabled = false,
+}: ReferenceButtonProps) {
   const reference = useReferenceAudio(text)
+
+  const { isPlaying, stop } = reference
+  useEffect(() => {
+    if (disabled && isPlaying) {
+      stop()
+    }
+  }, [disabled, isPlaying, stop])
 
   const handleClick = () => {
     if (reference.isPlaying) {
@@ -45,7 +58,7 @@ export function ReferenceButton({ text, label }: ReferenceButtonProps) {
         reference.isError && 'text-destructive',
         reference.isPlaying && 'text-primary',
       )}
-      disabled={reference.isFetching}
+      disabled={disabled || reference.isFetching}
       onClick={handleClick}
     >
       {reference.isFetching ? (

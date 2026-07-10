@@ -21,12 +21,14 @@ Everything reads as directional. Scores are relative to the recognized words rat
 │                                               │
 │  ┌──────────────────────────────────────┐    │
 │  │ Speak about this                      │    │
-│  │ Describe a place you have traveled to │    │ ← topic prompt, dynamic, never scored
-│  │ and what made it memorable.           │    │
+│  │ ┌──────────────────────────────────┐  │    │ ← editable topic textarea, never scored
+│  │ │ Describe a place you have...     │  │    │
+│  │ └──────────────────────────────────┘  │    │
+│  │ Type your own topic     [ ⤮ Shuffle ] │    │ ← helper or error, plus suggestion cycle
 │  │ Aim for one to two minutes.           │    │
 │  └──────────────────────────────────────┘    │
 │                                               │
-│                 [ 🎤 Record ]                 │ ← record control
+│                 [ 🎤 Record ]                 │ ← record control, disabled on invalid text
 └──────────────────────────────────────────────┘
 ```
 
@@ -68,12 +70,14 @@ Everything reads as directional. Scores are relative to the recognized words rat
 - Title: `Free topic`
 - Subtitle: `Speak on the topic for a minute or two, then get pronunciation and language feedback.`
 - Prompt card title: `Speak about this`
-- Prompt line: one speaking topic, dynamic, never a scoring reference
+- Prompt line: one speaking topic, editable and never a scoring reference
+- Topic helper: `Type your own topic or shuffle for a suggestion.`
+- Topic empty error: `Enter some text to practice`
 - Prompt helper: `Aim for one to two minutes of natural speech.`
 - Section headings: `Pronunciation`, `Grammar and phrasing`, `What we heard`
 - Pronunciation caveat: `Scored against the words we recognized you saying, not a fixed script, so read these as a directional guide. Recognition also tidies up disfluent speech, so some slips may not show here.`, fine print
 - Critique empty state: `No grammar or phrasing notes this time, keep practicing.`
-- Controls: `Record`, `Stop`, `Record again`, `Score`, `Next topic`
+- Controls: `Record`, `Stop`, `Record again`, `Score`, `Next topic`, `Shuffle`
 - Too weak: `Recording was too short or quiet, record again and speak clearly.`
 - Generic failure: `Scoring failed, check the backend is running and try again.`
 - Mic denied: `Allow microphone access, then record.`
@@ -81,6 +85,7 @@ Everything reads as directional. Scores are relative to the recognized words rat
 ## Behavior
 
 - One topic shows at a time. The prompt is a speaking cue only, sent to the backend for storage context but never used as a scoring reference.
+- While idle the topic is an editable field seeded with a suggestion. The user can type their own topic or press `Shuffle` to cycle to the next fixed suggestion. The text is trimmed and validated at the input boundary, and empty text disables the record control with an inline error. Once recording starts the topic locks to static text.
 - The record control cycles idle to recording to recorded, the same capture path as passage scoring. There is no hard length cap, the prompt asks for one to two minutes.
 - Submitting sends the clip plus the topic to `POST /api/free-topic/score`. The route transcribes the clip, scores it against that transcript, and critiques the transcript, then persists a `free-topic` session with the scores, flagged words, transcript, and critique.
 - The two feedback sections stack, pronunciation first because it is the tool's core, critique second. Both are visible in one scroll rather than hidden behind tabs.

@@ -1,6 +1,7 @@
 import { screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { http, HttpResponse } from 'msw'
+import { useState } from 'react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { renderWithProviders } from '@/test/render'
@@ -10,6 +11,20 @@ import { ReferenceButton } from './reference-button'
 
 interface PlayableMedia {
   isPaused: boolean
+}
+
+function DisablingHarness() {
+  const [disabled, setDisabled] = useState(false)
+  return (
+    <>
+      <button onClick={() => setDisabled(true)}>invalidate</button>
+      <ReferenceButton
+        text="thought"
+        label="Hear thought"
+        disabled={disabled}
+      />
+    </>
+  )
 }
 
 describe('ReferenceButton', () => {
@@ -128,5 +143,25 @@ describe('ReferenceButton', () => {
     expect(
       screen.getByRole('button', { name: 'Hear thought' }),
     ).toBeInTheDocument()
+  })
+
+  it('should stop playback when it becomes disabled mid-clip', async () => {
+    serveReference()
+    const user = userEvent.setup()
+    renderWithProviders(<DisablingHarness />)
+
+    await user.click(screen.getByRole('button', { name: 'Hear thought' }))
+    await waitFor(() =>
+      expect(
+        screen.getByRole('button', { name: 'Stop playback' }),
+      ).toBeInTheDocument(),
+    )
+
+    await user.click(screen.getByRole('button', { name: 'invalidate' }))
+
+    await waitFor(() =>
+      expect(window.HTMLMediaElement.prototype.pause).toHaveBeenCalled(),
+    )
+    expect(screen.getByRole('button', { name: 'Hear thought' })).toBeDisabled()
   })
 })
