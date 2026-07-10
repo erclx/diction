@@ -12,6 +12,16 @@ Real recordings with documented ground truth. A fixed clip scored through the de
 
 Audio is not committed because the harness only runs where the `scoring` extra and the GPU live, and CI runs stub-only. The manifest is the shared artifact, and the audio sits beside it locally.
 
+The clips live in the main worktree tree only, never in a linked worktree, because a worktree cleanup wipes its own copy. Git does not carry the gitignored `audio/` between worktrees, so to run the harness from a linked worktree, copy the clips in first: `cp <main-root>/backend/tests/fixtures/recordings/audio/*.wav backend/tests/fixtures/recordings/audio/`.
+
+## Adding a fixture
+
+Do not spin up the dev server to record. Ask the human to record the clip themselves with any recorder (Windows Sound Recorder works), telling them exactly what to say and how to say it, for example "say only the word 'free', clearly and isolated, at least half a second". Then:
+
+1. Convert to 16 kHz mono with ffmpeg: `ffmpeg -i in.m4a -ac 1 -ar 16000 audio/<name>.wav`.
+2. Score it through the real scorer to capture ground truth (`scorer.score` for passage and free-topic, `scorer.score_target_contrast` for drill), running it twice to confirm the output is bit-identical.
+3. Write the captured values into `manifest.json` and the narrative here, then run the harness.
+
 ## Running the harness
 
 The harness is real-stack only and stays out of the default `uv run pytest` and CI. Run it explicitly from `backend/`:
@@ -52,6 +62,11 @@ A free-topic clip. Reference-free: the harness transcribes the clip and scores i
 
 The five pronunciation flags (`and` /d/ ×2, `very` /v/, `to` /uː/ ×2) are all function-word reductions of the same class as the passage-degraded false flags. Treat them as a current-behavior guard, not as confirmed mispronunciations.
 
-### drill-minimal-pair
+### drill-three-correct and drill-three-as-free
 
-Pending. No real learner isolated-word clip exists yet, and the single-word spike used TTS audio, which the plan rules out as an unmeasured proxy. During a dogfooding drill, record one clip that says the wrong side of a contrast (for example "free" for "three"), promote it to `audio/drill-*.wav`, and fill `word`, `target_phoneme`, `competitor_phoneme`, and the expected verdict in `manifest.json` from a capture run. The harness already has the drill assertion wired and will pick the clip up once its audio and fields are present.
+Two real recordings of the `three` / `free` contrast (θ against f), scored through `score_target_contrast` with `word` = three, target θ, competitor f. This is the minimal-pair drill path, so the assertion is the verdict, not a flag list.
+
+- `drill-three-correct`: "three" said correctly. The scorer returns `target_substituted = false` (phoneme quality 88.3), and the word-identity gate hears "three". This guards against a false substitution alarm on a clean rep.
+- `drill-three-as-free`: "three" said as "free", the deliberate θ to f substitution. The scorer returns `target_substituted = true` (phoneme quality 71.4), and the gate hears "free". This guards the core drill behavior of catching the wrong sound.
+
+Both were recorded outside the app (Windows Sound Recorder) and converted to 16 kHz mono with ffmpeg. The verdicts are bit-identical across two runs, so they are stable regression baselines like the passage and free-topic clips.

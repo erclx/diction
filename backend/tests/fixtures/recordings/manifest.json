@@ -67,10 +67,24 @@
       }
     },
     {
-      "name": "drill-minimal-pair",
+      "name": "drill-three-correct",
       "mode": "drill",
-      "audio_pending": true,
-      "note": "No real learner isolated-word clip exists yet. Record one during a dogfooding drill (say the wrong side of a contrast, e.g. 'free' for 'three'), promote it to audio/drill-*.wav, and fill word, target_phoneme, competitor_phoneme, and expected.target_substituted / expected.phoneme_quality from a capture run."
+      "audio": "audio/drill-three-correct.wav",
+      "source": "recorded in a dogfooding drill, 'three' said correctly",
+      "word": "three",
+      "target_phoneme": "θ",
+      "competitor_phoneme": "f",
+      "expected": { "target_substituted": false }
+    },
+    {
+      "name": "drill-three-as-free",
+      "mode": "drill",
+      "audio": "audio/drill-three-as-free.wav",
+      "source": "recorded in a dogfooding drill, 'three' said as 'free' (θ to f)",
+      "word": "three",
+      "target_phoneme": "θ",
+      "competitor_phoneme": "f",
+      "expected": { "target_substituted": true }
     }
   ]
 }
