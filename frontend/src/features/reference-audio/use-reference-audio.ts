@@ -93,6 +93,10 @@ export function useReferenceAudio(text: string): ReferenceAudio {
       channel.release(stop)
       setIsPlaying(false)
     })
+    audio.addEventListener('error', () => {
+      channel.release(stop)
+      setIsPlaying(false)
+    })
     return audio
   }, [channel, stop])
 
