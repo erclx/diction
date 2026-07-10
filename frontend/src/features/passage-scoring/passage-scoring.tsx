@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Loader2, Mic, RotateCcw, Square } from 'lucide-react'
+import { Loader2, Mic, RotateCcw, Sparkles, Square } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -7,9 +7,11 @@ import { Textarea } from '@/components/ui/textarea'
 import { LevelMeter } from '@/components/level-meter'
 import { OwnRecordingAudio } from '@/features/audio-channel/own-recording-audio'
 import { ReferenceButton } from '@/features/reference-audio/reference-button'
+import { useWeakSoundsQuery } from '@/features/progress-dashboard/use-weak-sounds'
 import { PASSAGE_MAX_LENGTH, validatePracticeText } from '@/lib/practice-text'
 
 import { ClipTooWeakError, useScorePassage } from './use-score-passage'
+import { useGeneratePassage } from './use-generate-passage'
 import { ScoreResults } from './score-results'
 import { ScoringSkeleton } from './scoring-skeleton'
 import { useRecorder } from './use-recorder'
@@ -17,10 +19,15 @@ import { useRecorder } from './use-recorder'
 const DEFAULT_PASSAGE =
   'The quick brown fox jumps over the lazy dog while three thoughtful children watch the bright morning sun rise above the quiet valley.'
 
+const FOCUS_PHONEME_COUNT = 5
+
 export function PassageScoring() {
   const recorder = useRecorder()
   const scoring = useScorePassage()
+  const generation = useGeneratePassage()
+  const weakSounds = useWeakSoundsQuery()
   const [passage, setPassage] = useState(DEFAULT_PASSAGE)
+  const [biasToWeakSounds, setBiasToWeakSounds] = useState(false)
 
   const validation = validatePracticeText(passage, PASSAGE_MAX_LENGTH)
   const isEditing = recorder.status === 'idle'
@@ -38,6 +45,18 @@ export function PassageScoring() {
       passage: validation.value,
       audio: recorder.recording.blob,
     })
+  }
+
+  function handleGenerate() {
+    const focusPhonemes = biasToWeakSounds
+      ? (weakSounds.data ?? [])
+          .slice(0, FOCUS_PHONEME_COUNT)
+          .map((weakSound) => weakSound.phoneme)
+      : []
+    generation.mutate(
+      { focusPhonemes },
+      { onSuccess: (text) => setPassage(text) },
+    )
   }
 
   const isClipTooWeak = scoring.error instanceof ClipTooWeakError
@@ -85,6 +104,40 @@ export function PassageScoring() {
             <p className="font-serif text-lg leading-relaxed">
               {validation.value}
             </p>
+          )}
+          {isEditing && (
+            <div className="flex flex-col gap-2 border-t pt-4">
+              <div className="flex flex-wrap items-center gap-3">
+                <Button
+                  variant="outline"
+                  onClick={handleGenerate}
+                  disabled={generation.isPending}
+                >
+                  {generation.isPending ? (
+                    <Loader2 className="animate-spin" />
+                  ) : (
+                    <Sparkles />
+                  )}
+                  Generate a passage
+                </Button>
+                <label className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <input
+                    type="checkbox"
+                    checked={biasToWeakSounds}
+                    onChange={(event) =>
+                      setBiasToWeakSounds(event.target.checked)
+                    }
+                    className="size-4 accent-primary"
+                  />
+                  Focus on my weak sounds
+                </label>
+              </div>
+              {generation.isError && (
+                <p role="alert" className="text-sm text-destructive">
+                  Generation failed, try again or type your own passage.
+                </p>
+              )}
+            </div>
           )}
           <div className="flex items-center gap-2">
             <ReferenceButton
