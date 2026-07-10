@@ -162,8 +162,6 @@ describe('ReferenceButton', () => {
     await waitFor(() =>
       expect(window.HTMLMediaElement.prototype.pause).toHaveBeenCalled(),
     )
-    expect(
-      screen.getByRole('button', { name: 'Hear thought' }),
-    ).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Hear thought' })).toBeDisabled()
   })
 })
