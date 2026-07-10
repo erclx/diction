@@ -109,6 +109,7 @@ setsid
 shellcheck
 shfmt
 sidepanel
+silero
 soundfile
 spacy
 speechocean
