@@ -1,3 +1,4 @@
+import asyncio
 import logging
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
@@ -30,6 +31,7 @@ from diction.tts.base import StubSynthesizer
 from diction.tts.cache import CachedSynthesizer, ReferenceAudioCache
 
 LOCALHOST_ORIGIN_REGEX = r'http://localhost:\d+'
+WARMUP_TEXT = 'Warm up.'
 
 logger = logging.getLogger(__name__)
 
@@ -109,11 +111,16 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
                 'to run against the stub synthesizer.'
             ) from error
 
+        kokoro = KokoroSynthesizer(settings)
         app.state.synth = CachedSynthesizer(
-            KokoroSynthesizer(settings),
+            kokoro,
             ReferenceAudioCache(settings.reference_cache_dir),
             settings.tts_voice,
         )
+
+        logger.info('warming reference synthesizer')
+        await asyncio.to_thread(kokoro.synthesize, WARMUP_TEXT)
+        logger.info('reference synthesizer warm')
 
     logger.info(
         'model stack resolved: scorer=%s transcriber=%s prosody=%s '
