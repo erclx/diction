@@ -79,6 +79,8 @@ const MOCK_SESSION_DETAIL = {
   created_at: '2026-07-02T09:14:00Z',
   mode: 'passage',
   passage: 'The early bird catches the worm.',
+  transcript: null,
+  critique: null,
   completeness: 90.9,
   accuracy: 94.5,
   fluency: 98,
@@ -322,6 +324,17 @@ async function driveToResults(page: Page): Promise<void> {
   await page.getByRole('heading', { name: 'Flagged words' }).waitFor()
 }
 
+async function driveToScoringPending(page: Page): Promise<void> {
+  await page.route(
+    '**/api/passages/score',
+    () => new Promise<void>(() => undefined),
+  )
+  await page.getByRole('button', { name: 'Record', exact: true }).click()
+  await page.getByRole('button', { name: 'Stop' }).click()
+  await page.getByRole('button', { name: 'Score' }).click()
+  await page.getByRole('status', { name: 'Scoring in progress' }).waitFor()
+}
+
 async function scoreDrill(page: Page, body: unknown): Promise<void> {
   await page.route('**/api/drills/minimal-pair/score', (route) =>
     route.fulfill({
@@ -428,6 +441,7 @@ const NARROW_VIEWPORT = { width: 390, height: 800 }
 
 const CASES: readonly CaptureCase[] = [
   { section: 'passage-scoring', name: 'idle' },
+  { section: 'passage-scoring', name: 'pending', act: driveToScoringPending },
   { section: 'passage-scoring', name: 'results', act: driveToResults },
   { section: 'shadowing', name: 'scored', act: driveToShadowingScored },
   { section: 'stress-intonation', name: 'scored', act: driveToStressScored },

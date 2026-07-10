@@ -8,6 +8,7 @@ import { ReferenceButton } from '@/features/reference-audio/reference-button'
 
 import { ClipTooWeakError, useScorePassage } from './use-score-passage'
 import { ScoreResults } from './score-results'
+import { ScoringSkeleton } from './scoring-skeleton'
 import { useRecorder } from './use-recorder'
 
 const PRACTICE_PASSAGE =
@@ -134,6 +135,8 @@ export function PassageScoring() {
           Scoring failed, check the backend is running and try again.
         </p>
       )}
+
+      {scoring.isPending && <ScoringSkeleton />}
 
       {scoring.isSuccess && (
         <ScoreResults

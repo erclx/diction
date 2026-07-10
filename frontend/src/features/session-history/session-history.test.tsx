@@ -39,6 +39,67 @@ describe('SessionHistory', () => {
     ).toBeInTheDocument()
   })
 
+  it('should play the recording span for a flagged word when the session has a recording', async () => {
+    renderWithProviders(
+      <Routes>
+        <Route path="/history/:sessionId" element={<SessionHistory />} />
+      </Routes>,
+      { initialEntries: ['/history/12'] },
+    )
+
+    expect(
+      await screen.findByRole('button', {
+        name: 'Play your recording of thought',
+      }),
+    ).toBeInTheDocument()
+  })
+
+  it('should show only the reference for a flagged word when the session has no recording', async () => {
+    server.use(
+      http.get('http://localhost:8000/api/sessions/:id', () =>
+        HttpResponse.json({
+          id: 14,
+          created_at: '2026-07-02T09:14:00Z',
+          mode: 'passage',
+          passage: 'The early bird catches the worm.',
+          transcript: null,
+          critique: null,
+          completeness: 90.9,
+          accuracy: 92.2,
+          fluency: 98,
+          phoneme_quality: 94,
+          has_recording: false,
+          flagged_words: [
+            {
+              word: 'thought',
+              start: 6.19,
+              end: 6.59,
+              phoneme: 'θ',
+              explanation: 'Say th, not t.',
+            },
+          ],
+        }),
+      ),
+    )
+    renderWithProviders(
+      <Routes>
+        <Route path="/history/:sessionId" element={<SessionHistory />} />
+      </Routes>,
+      { initialEntries: ['/history/14'] },
+    )
+
+    expect(
+      await screen.findByRole('button', {
+        name: 'Play native reference for thought',
+      }),
+    ).toBeInTheDocument()
+    expect(
+      screen.queryByRole('button', {
+        name: 'Play your recording of thought',
+      }),
+    ).not.toBeInTheDocument()
+  })
+
   it('should show the transcript and critique for a free-topic session detail', async () => {
     server.use(
       http.get('http://localhost:8000/api/sessions/:id', () =>

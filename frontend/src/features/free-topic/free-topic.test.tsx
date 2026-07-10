@@ -78,6 +78,32 @@ describe('FreeTopic', () => {
     )
   })
 
+  it('should show a scoring skeleton while the score is in flight', async () => {
+    let release: () => void = () => {}
+    const pending = new Promise<void>((resolve) => {
+      release = resolve
+    })
+    server.use(
+      http.post(SCORE_URL, async () => {
+        await pending
+        return HttpResponse.json(SCORE_BODY)
+      }),
+    )
+    renderWithProviders(<FreeTopic />)
+
+    await score()
+
+    expect(
+      await screen.findByRole('status', { name: 'Scoring in progress' }),
+    ).toBeInTheDocument()
+
+    release()
+
+    await waitFor(() =>
+      expect(screen.getByText('Grammar and phrasing')).toBeInTheDocument(),
+    )
+  })
+
   it('should surface an actionable message when scoring fails', async () => {
     server.use(
       http.post(SCORE_URL, () => new HttpResponse(null, { status: 500 })),

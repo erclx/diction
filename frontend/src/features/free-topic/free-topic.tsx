@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { LevelMeter } from '@/components/level-meter'
 import { OwnRecordingAudio } from '@/features/audio-channel/own-recording-audio'
+import { ScoringSkeleton } from '@/features/passage-scoring/scoring-skeleton'
 import { useRecorder } from '@/features/passage-scoring/use-recorder'
 import { ClipTooWeakError } from '@/features/passage-scoring/use-score-passage'
 
@@ -132,6 +133,8 @@ export function FreeTopic() {
           Scoring failed, check the backend is running and try again.
         </p>
       )}
+
+      {scoring.isPending && <ScoringSkeleton />}
 
       {scoring.isSuccess && (
         <div className="flex flex-col gap-6">

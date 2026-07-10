@@ -48,7 +48,7 @@ The review surface for saved passage and free-topic sessions. It reads `GET /api
 │  └──────────────────────────────────────┘    │
 │  Flagged words                                │
 │  ┌──────────────────────────────────────┐    │
-│  │ thought  (θ)                          │    │
+│  │ [🔊][🗣] thought  (θ)                 │    │ ← own span when stored, native reference
 │  │ The "th" came out as "t"...           │    │
 │  └──────────────────────────────────────┘    │
 │  Grammar and phrasing                         │ ← free-topic only, the stored critique
@@ -95,4 +95,5 @@ The review surface for saved passage and free-topic sessions. It reads `GET /api
 - The passage text renders above the scores when the session stored it, so the reader sees what was practiced next to how it scored.
 - A free-topic session renders its grammar critique and recognized transcript below the flagged words, the same two sections shown right after the free-topic analysis, so history holds everything the analysis surfaced.
 - A player renders under the scores when the session has a stored clip, reusing the passage surface's own-recording transport so the reader can replay their read. Sessions saved before recording capture landed show no player.
+- Each flagged word plays its own recorded span alongside the native reference when the session has a stored clip, matching the live passage surface. A session with no stored recording shows only the reference, so history stays truthful about what it can replay.
 - The empty state is the onboarding case, distinct from a filtered-empty case, and routes the user to Practice. The list fails fast with a Retry, and an unknown id shows a not-found message rather than a spinner.

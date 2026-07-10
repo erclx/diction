@@ -34,6 +34,19 @@ The single-column practice surface for the passage reading feature. It shows a p
 │         [ ↺ Record again ]  [ Score ]         │ ← re-record or submit
 ```
 
+## Scoring
+
+```plaintext
+│         [ ↺ Record again ]  [ ⟳ Score ]       │ ← Score spins, both disabled
+│  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐ │ ← metric-card skeletons
+│  │ ▏▏▏▏▏▏▏▏ │ │ ▏▏▏▏▏▏▏▏ │ │ ▏▏▏▏▏▏▏▏ │ │ ▏▏▏▏▏▏▏▏ │ │   pulsing placeholders
+│  └──────────┘ └──────────┘ └──────────┘ └──────────┘ │
+│  Flagged words                                │
+│  ┌──────────────────────────────────────┐    │ ← flagged-row skeletons
+│  │ [▮][▮] ▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏  │    │
+│  └──────────────────────────────────────┘    │
+```
+
 ## Scored
 
 ```plaintext
@@ -73,7 +86,7 @@ The single-column practice surface for the passage reading feature. It shows a p
 
 - The control cycles idle to recording to recorded. Recording captures the full clip, no streaming.
 - From the recorded state the user can play their own clip, re-record, or submit for scoring.
-- Submitting disables the control and shows a spinner until the score set or an error returns.
+- Submitting disables the control, spins the Score button, and fills the result region with a skeleton of the score cards and flagged-word rows until the score set or an error returns, so the wait reads as active rather than blank. The free-topic surface shows the same skeleton while its clip scores.
 - A too-weak clip shows a re-record prompt distinct from a generic failure, matching the 422 boundary.
 - Each metric is colored by band: green at 90 and above, amber at 75 to 89, red below 75.
 - Each flagged word plays its own recorded span. Score band coloring and span playback mechanics live in `.claude/context/frontend.md`.
