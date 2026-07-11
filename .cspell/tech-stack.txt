@@ -49,6 +49,8 @@ kokoro
 kore
 kwargs
 labelledby
+landmarker
+landmarkers
 lessac
 linalg
 linecap
@@ -57,6 +59,7 @@ lintstagedrc
 loadedmetadata
 lstsq
 matplotlib
+mediapipe
 misaki
 mispeech
 mistral
@@ -113,6 +116,7 @@ sidepanel
 soundfile
 spacy
 speechocean
+srgb
 sqlite
 sqlmodel
 stdlib
@@ -143,4 +147,5 @@ worktree
 worktrees
 xlink
 xlsr
+xnnpack
 xtts

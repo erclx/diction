@@ -10,12 +10,14 @@ model without rebuilding the setup. It is not imported by the app.
 This file is the runbook. The method, decisions, and findings live in
 `.claude/context/calibration.md`, and the narrative write-up is `CASE_STUDY.md`.
 
-Two separate evals live alongside it. `scripts/contrast_eval.py` measures whether the
+Three separate evals live alongside it. `scripts/contrast_eval.py` measures whether the
 production drill's pass-or-retry verdict tells the target sound of a minimal pair
 from its competitor, written up in `CONTRAST_EVAL.md`. `scripts/fluency_eval.py` fits the
 reference-free passage fluency score against the corpus fluency labels, written up
-in `FLUENCY_EVAL.md`. Both are different questions from the phoneme-threshold fit,
-so they stay out of the case study.
+in `FLUENCY_EVAL.md`. `scripts/eye_contact_eval.py` measures whether the interview
+eye-contact metric separates a lens-look from an off-axis screen-glance on two real
+clips, written up in `EYE_CONTACT_EVAL.md`. All three are different questions from
+the phoneme-threshold fit, so they stay out of the case study.
 
 ## The loop
 
@@ -71,9 +73,14 @@ Runnable scripts live in `scripts/`, fitted artifacts in `data/`, rendered figur
 - `scripts/contrast_plots.py`: draws the verdict-error figure into `figures/`.
 - `scripts/fluency_eval.py`: fits the reference-free fluency model, writes `data/fluency_model.json` and `data/fluency_pairs.jsonl`.
 - `scripts/fluency_plots.py`: draws the fluency-fit figure into `figures/` from the dump.
+- `scripts/eye_contact_eval.py`: separate interview eye-contact separation eval, writes `data/eye_contact_eval.json`. Needs the `interview` extra and the two clips under `tests/fixtures/interview/video/`.
+- `scripts/eye_contact_plots.py`: draws the yaw-separation figure into `figures/` from the dump.
 - `data/distributions.json`: per-phoneme good-vs-bad GOP summary.
 - `data/baselines.json`: the fitted table, source of `phoneme_baselines.py`.
 - `data/pairs*.jsonl`: raw measured pairs, gitignored, rebuilt by a `scripts/measure.py` re-run.
 - `CONTRAST_EVAL.md`: findings for the minimal-pair verdict eval.
 - `FLUENCY_EVAL.md`: method and findings for the fluency fit.
+- `EYE_CONTACT_EVAL.md`: method and findings for the interview eye-contact separation.
+- `data/eye_contact_eval.json`: per-frame yaw and pitch dump plus the yaw-threshold sweep.
+- `figures/eye_contact_separation.png`: the yaw-distribution and separation-sweep figure.
 - `CASE_STUDY.md`: the write-up, in editorial voice, embedding the figures.

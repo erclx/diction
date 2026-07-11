@@ -50,6 +50,7 @@ def settings_with_stub_synth(use_stub_synth: bool) -> Settings:
         use_stub_critic=True,
         use_stub_generator=True,
         use_stub_synth=use_stub_synth,
+        use_stub_interview=True,
     )
 
 

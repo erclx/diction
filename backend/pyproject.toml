@@ -28,6 +28,12 @@ feedback = [
     "ollama>=0.4",
 ]
 
+# Opt-in interview CV stack. Install with `uv sync --extra interview`.
+interview = [
+    "av>=12",
+    "mediapipe>=0.10",
+]
+
 # Opt-in local TTS for native reference audio. Install with `uv sync --extra tts`.
 tts = [
     "kokoro>=0.9",

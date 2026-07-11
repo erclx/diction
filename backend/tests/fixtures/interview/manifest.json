@@ -1,0 +1,28 @@
+{
+  "description": "Interview CV separation fixtures. The committed source of truth the real-stack separation harness (tests/test_interview_regression.py) asserts against. Human-readable ground truth and populate steps live in manifest.md.",
+  "how_to_run": "DICTION_INTERVIEW_REGRESSION=1 uv run pytest tests/test_interview_regression.py",
+  "clips": {
+    "good": {
+      "video": "video/good.mp4",
+      "source": "/mnt/c/Users/Eric Le/Pictures/Camera Roll/good.mp4",
+      "note": "Looked into the lens, one hand gesture visible."
+    },
+    "bad": {
+      "video": "video/bad.mp4",
+      "source": "/mnt/c/Users/Eric Le/Pictures/Camera Roll/bad.mp4",
+      "note": "Read from notes held off-axis, no gesture."
+    },
+    "slouch": {
+      "video": "video/slouch.mp4",
+      "source": "/mnt/c/Users/Eric Le/Pictures/Camera Roll/slouch.mp4",
+      "note": "Deliberate lateral lean, one shoulder dropped well below the other."
+    }
+  },
+  "separation": {
+    "eye_contact_min_separation_pct": 15.0,
+    "gesture_ratio_min_separation": 0.05,
+    "tilt_level_ceiling_deg": 10.0,
+    "tilt_lean_min_deg": 10.0,
+    "tilt_min_separation_deg": 5.0
+  }
+}
