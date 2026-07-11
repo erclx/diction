@@ -14,6 +14,7 @@ Per-domain narrative loaded on demand
 - [Drills](drills.md): Curated minimal-pair drill content keyed by phoneme contrast, and its read-only lookup API
 - [Feedback](feedback.md): Local-LLM subsystem for per-word pronunciation explanations and the free-topic grammar and phrasing critique
 - [Frontend](frontend.md): React SPA structure, shadcn and token setup, mic capture, and the score client
+- [Interview](interview.md): Computer-vision scorer for interview delivery: posture and eye-contact signals from a recorded answer, its protocol, stub, and separation harness
 - [Research](research.md): Pronunciation-assessment prior art, the GOP algorithm, evidence-backed learning techniques, and cloud cost baselines
 - [Scoring](scoring.md): GOP pronunciation-scoring pipeline, its models, alignment, and the passage-score contract
 - [Storage](storage.md): SQLite persistence layer: table models, engine, and session access
