@@ -2,7 +2,7 @@
 
 Sequences the MVP scope from `.claude/REQUIREMENTS.md` into versions, each a usable increment. Ordered by dependency and de-risking. Phase labels, not release tags, per `.claude/standards/versioning.md`. The active version's granular work lives in `.claude/TASKS.md`.
 
-v0.1 to v0.7 complete the MVP. v0.8 extends scope past the original MVP into interview practice, pending a requirements addendum and a Phase-0 spike.
+v0.1 to v0.7 complete the MVP. v0.8 extends scope past the original MVP into interview practice, its requirements now captured and a Phase-0 spike landed with a conditional go.
 
 | Version | Status | Outcome                                                                          | Features                                                            | Depends on                                                                                                        |
 | ------- | ------ | -------------------------------------------------------------------------------- | ------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
