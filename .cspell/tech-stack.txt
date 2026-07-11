@@ -72,6 +72,7 @@ networkidle
 newsreader
 njsproj
 noopener
+noqa
 noreferrer
 ntvs
 numpy
@@ -133,6 +134,7 @@ tqdm
 tsgolint
 unseekable
 unstub
+uselist
 uvicorn
 venv
 virtualenv

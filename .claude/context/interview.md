@@ -7,7 +7,9 @@ description: Computer-vision scorer for interview delivery: posture and eye-cont
 
 The CV scoring subsystem for interview practice mode. It runs the MediaPipe pose and face landmarkers over a recorded answer to derive posture and eye-contact signals, the delivery half of the combined interview report that stacks alongside the reused GOP pronunciation scores. The pipeline was vendored and adapted from a portable computer-vision scorer built for a separate project. It follows the scoring subsystem's optional-dependency plus stub pattern.
 
-The CV foundation and the content route have landed. The combined report surface and the score route that composes CV with GOP are still downstream. The delivery-speech metrics (pace, fillers, pauses) also land later, composing the existing Whisper transcriber rather than duplicating faster-whisper.
+The CV foundation, the content route, and the score route that composes CV with GOP have landed. The combined report surface is still downstream. The delivery-speech metrics (pace, fillers, pauses) also land later, composing the existing Whisper transcriber rather than duplicating faster-whisper.
+
+`POST /api/interview/score` (`api/interview.py`) is where the two scorers meet. It runs `app.state.interview_scorer` on a temp copy of the uploaded webm for the posture and eye-contact report, then transcribes and scores GOP against the client-posted scripted answer, and persists the result as a `mode='interview'` `PracticeSession` plus an `InterviewMetrics` row. CV is the enrichment that degrades to an absent report on failure, while GOP is the primary that fails the request. See `.claude/context/api.md` for the route contract and `.claude/context/storage.md` for the `InterviewMetrics` table.
 
 ## Layer responsibilities
 
