@@ -96,9 +96,7 @@ test.describe('interview', () => {
     await expect(
       page.getByRole('heading', { name: 'Pronunciation' }),
     ).toBeVisible()
-    await expect(
-      page.getByRole('heading', { name: 'Delivery' }),
-    ).toBeHidden()
+    await expect(page.getByRole('heading', { name: 'Delivery' })).toBeHidden()
   })
 
   test('should show an honest empty state when no questions are configured', async ({
