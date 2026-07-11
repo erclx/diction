@@ -14,6 +14,7 @@ Non-native and self-conscious English speakers want to improve pronunciation, ar
 - Practice the same trouble sounds repeatedly until they improve, with resurfacing over time
 - Hear native pronunciation for direct comparison and shadowing practice
 - See progress over time, per-sound and overall
+- Rehearse spoken interview delivery, not just pronunciation, and get one combined report on a recorded answer
 - Run entirely offline and locally, with no recurring cost and no data leaving the machine
 
 ## Non-goals
@@ -41,6 +42,7 @@ Non-native and self-conscious English speakers want to improve pronunciation, ar
 12. Spaced resurfacing: previously-missed words and sounds reappear in later sessions on an increasing interval once improved
 13. Progress dashboard: overall score trend and per-sound accuracy trend over time
 14. Suggested practice routine: rotates session types across passage, minimal pairs, shadowing, and free-topic instead of leaving mode choice fully manual
+15. Interview practice mode: record a spoken answer to an interview prompt and get pronunciation feedback alongside delivery, posture, and eye-contact metrics
 
 ## Tech stack
 
@@ -51,6 +53,7 @@ Non-native and self-conscious English speakers want to improve pronunciation, ar
 - Piper or Coqui XTTS for local text-to-speech and native reference audio
 - SQLite for local session history and progress storage
 - FastAPI backend serving a Vite and React browser UI for mic recording and results display
+- MediaPipe face and pose landmarks for eye-contact and posture metrics in interview mode
 
 ## Constraints
 
