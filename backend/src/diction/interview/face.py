@@ -173,9 +173,12 @@ def _iter_frames(video_path: Path) -> Iterator[tuple[int, object, int]]:
         stream = container.streams.video[0]
         time_base = float(stream.time_base) if stream.time_base else 0.0
         average_rate = float(stream.average_rate) if stream.average_rate else 30.0
+        previous_timestamp_ms = -1
         for frame_index, frame in enumerate(container.decode(stream)):
             if frame.pts is not None and time_base:
                 timestamp_ms = int(frame.pts * time_base * 1000)
             else:
                 timestamp_ms = int(frame_index * 1000 / average_rate)
+            timestamp_ms = max(timestamp_ms, previous_timestamp_ms + 1)
+            previous_timestamp_ms = timestamp_ms
             yield frame_index, frame.to_ndarray(format='rgb24'), timestamp_ms

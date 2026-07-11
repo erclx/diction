@@ -42,5 +42,10 @@ class PostureSummary:
 
 @dataclass(frozen=True, slots=True)
 class InterviewReport:
+    """The computer-vision half of the interview report: posture and eye contact.
+    The v1 metric set also names delivery (pace, fillers, pauses, duration), which
+    a later PR adds by composing the existing Whisper transcriber. Extend this
+    report with those fields rather than treating it as the complete contract."""
+
     posture: PostureSummary
     eye_contact: EyeContactSummary

@@ -28,7 +28,7 @@ This is the foundation PR of the interview arc. The content route (`me/questions
 ## Hidden contracts
 
 - `CvInterviewScorer.score` takes a video `Path`, not bytes. The downstream content route persists the upload, then passes the path. PyAV decodes both the browser's webm and the mp4 calibration clips, so no transcode step is needed.
-- MediaPipe VIDEO running mode requires a monotonic per-frame timestamp. The frame iterators derive it from the stream `pts` and `time_base`, falling back to `frame_index / average_rate` when `pts` is absent.
+- MediaPipe VIDEO running mode requires a strictly increasing per-frame timestamp. The frame iterators derive it from the stream `pts` and `time_base`, falling back to `frame_index / average_rate` when `pts` is absent, then clamp each value to at least the previous plus one. The clamp matters for webm from the browser's MediaRecorder, whose variable frame timing can round two frames to the same millisecond, which would otherwise make `detect_for_video` raise.
 - A clip where no face or pose is detected yields empty samples, and the summaries return zeroed values rather than raising.
 
 ## Gotchas

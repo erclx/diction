@@ -1,8 +1,10 @@
 """The real CV interview scorer. Runs the MediaPipe pose and face landmarkers
-over a recorded answer to derive posture and eye-contact signals. mediapipe and
-av live in the optional `interview` dependency group and are imported only inside
-the pose and face detection functions, so constructing this scorer never pulls
-them in."""
+over a recorded answer to derive posture and eye-contact signals. This module
+top-imports `av` and `mediapipe` from the optional `interview` dependency group,
+so importing it without the extra raises `ModuleNotFoundError` at the app
+lifespan, where the guard turns it into an actionable `uv sync --extra interview`
+message. The pose and face math, the protocol, and the stub import cleanly
+without the extra, since only this module pulls the heavy libraries."""
 
 from pathlib import Path
 
