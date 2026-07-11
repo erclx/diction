@@ -44,15 +44,21 @@ def test_lateral_lean_reads_a_large_tilt() -> None:
 
 
 def test_gaze_on_the_forward_axis_counts_as_looking() -> None:
-    looking = is_looking(yaw_deg=2.0, pitch_deg=-3.0, iris_offset_value=0.05)
+    looking = is_looking(yaw_deg=2.0, iris_offset_value=0.05)
 
     assert looking is True
 
 
-def test_gaze_held_off_axis_does_not_count_as_looking() -> None:
-    off_axis = is_looking(yaw_deg=25.0, pitch_deg=-3.0, iris_offset_value=0.05)
+def test_head_turned_off_the_lens_axis_does_not_count_as_looking() -> None:
+    off_axis = is_looking(yaw_deg=10.0, iris_offset_value=0.05)
 
     assert off_axis is False
+
+
+def test_eyes_cut_aside_with_head_forward_does_not_count_as_looking() -> None:
+    iris_cut = is_looking(yaw_deg=1.0, iris_offset_value=0.30)
+
+    assert iris_cut is False
 
 
 def test_eye_contact_summary_is_the_looking_fraction() -> None:

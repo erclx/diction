@@ -1,12 +1,17 @@
 """MediaPipe FaceLandmarker wrapper plus head-pose-aware gaze classification.
 
-Eye-contact scores gaze against an absolute forward axis: head yaw and pitch
-from the facial transformation matrix combined with iris offset, all near zero
-means looking at the lens. There is no per-clip baseline subtraction, so a take
-held off-axis from the first frame reads as off-axis rather than being
-normalized against its own skewed opening. Whether the fixed yaw, pitch, and
-iris thresholds are tight enough without that baseline is the open calibration
-question the real-recording separation gate tests.
+Eye-contact scores gaze against an absolute forward axis, with no per-clip
+baseline subtraction, so a take held off-axis from the first frame reads as
+off-axis rather than being normalized against its own skewed opening. The signal
+is head yaw (horizontal angle to the lens) plus iris offset, both near zero means
+looking at the lens. Pitch is deliberately excluded: the webcam sits above the
+monitor, so a straight lens-look already tilts the face up several degrees, which
+makes an absolute pitch axis camera-dependent rather than a clean forward
+reference. Yaw carries the separation because the lens is horizontally centered,
+so looking at it means a yaw near zero regardless of the vertical offset. The
+real-recording gate confirmed a lens-look and an off-axis screen-glance separate
+cleanly on yaw. The threshold stays a directional placeholder, calibrated on two
+clips, the same footing as the composite accentedness and prosody scores.
 
 mediapipe and av are in the optional `interview` dependency group, imported only
 inside the detection function so importing the gaze math never pulls them in.
@@ -20,8 +25,7 @@ from pathlib import Path
 
 from diction.interview.types import EyeContactSample, EyeContactSummary
 
-GAZE_YAW_THRESHOLD_DEG: float = 15.0
-GAZE_PITCH_THRESHOLD_DEG: float = 12.0
+GAZE_YAW_THRESHOLD_DEG: float = 7.0
 IRIS_OFFSET_THRESHOLD: float = 0.18
 
 MEDIAPIPE_FACE_MODEL_URL: str = (
@@ -42,7 +46,6 @@ _RIGHT_EYE_OUTER_INDEX: int = 263
 class _RawSample:
     frame_index: int
     yaw_deg: float
-    pitch_deg: float
     iris_offset: float
 
 
@@ -51,7 +54,6 @@ def detect_eye_contact(
     *,
     cache_dir: Path,
     yaw_threshold_deg: float = GAZE_YAW_THRESHOLD_DEG,
-    pitch_threshold_deg: float = GAZE_PITCH_THRESHOLD_DEG,
 ) -> list[EyeContactSample]:
     import mediapipe as mp
     from mediapipe.tasks import python as mp_python
@@ -74,11 +76,7 @@ def detect_eye_contact(
             if sample is not None:
                 raw_samples.append(sample)
 
-    return classify_samples(
-        raw_samples,
-        yaw_threshold_deg=yaw_threshold_deg,
-        pitch_threshold_deg=pitch_threshold_deg,
-    )
+    return classify_samples(raw_samples, yaw_threshold_deg=yaw_threshold_deg)
 
 
 def summarize_eye_contact(samples: list[EyeContactSample]) -> EyeContactSummary:
@@ -118,14 +116,10 @@ def iris_offset(landmarks: list[object]) -> float:
 def is_looking(
     *,
     yaw_deg: float,
-    pitch_deg: float,
     iris_offset_value: float,
     yaw_threshold_deg: float = GAZE_YAW_THRESHOLD_DEG,
-    pitch_threshold_deg: float = GAZE_PITCH_THRESHOLD_DEG,
 ) -> bool:
-    head_aligned = (
-        abs(yaw_deg) <= yaw_threshold_deg and abs(pitch_deg) <= pitch_threshold_deg
-    )
+    head_aligned = abs(yaw_deg) <= yaw_threshold_deg
     iris_centered = iris_offset_value <= IRIS_OFFSET_THRESHOLD
     return head_aligned and iris_centered
 
@@ -134,17 +128,14 @@ def classify_samples(
     raw_samples: list[_RawSample],
     *,
     yaw_threshold_deg: float = GAZE_YAW_THRESHOLD_DEG,
-    pitch_threshold_deg: float = GAZE_PITCH_THRESHOLD_DEG,
 ) -> list[EyeContactSample]:
     return [
         EyeContactSample(
             frame_index=sample.frame_index,
             is_looking=is_looking(
                 yaw_deg=sample.yaw_deg,
-                pitch_deg=sample.pitch_deg,
                 iris_offset_value=sample.iris_offset,
                 yaw_threshold_deg=yaw_threshold_deg,
-                pitch_threshold_deg=pitch_threshold_deg,
             ),
         )
         for sample in raw_samples
@@ -167,11 +158,10 @@ def _raw_sample_from_result(result: object, frame_index: int) -> _RawSample | No
     landmarks_list = getattr(result, 'face_landmarks', None) or []
     if not matrices or not landmarks_list:
         return None
-    yaw_deg, pitch_deg = yaw_pitch_from_matrix(matrices[0])
+    yaw_deg, _pitch_deg = yaw_pitch_from_matrix(matrices[0])
     return _RawSample(
         frame_index=frame_index,
         yaw_deg=yaw_deg,
-        pitch_deg=pitch_deg,
         iris_offset=iris_offset(landmarks_list[0]),
     )
 
