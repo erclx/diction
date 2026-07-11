@@ -49,7 +49,6 @@ kokoro
 kore
 kwargs
 labelledby
-landmarker
 lessac
 linalg
 linecap
@@ -111,7 +110,6 @@ setsid
 shellcheck
 shfmt
 sidepanel
-silero
 soundfile
 spacy
 speechocean
@@ -145,5 +143,4 @@ worktree
 worktrees
 xlink
 xlsr
-xnnpack
 xtts
