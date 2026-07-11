@@ -32,6 +32,8 @@ class Settings(BaseSettings):
     whisper_model_id: str = 'large-v3'
     mediapipe_cache_dir: Path = BACKEND_ROOT / '.cache' / 'mediapipe-models'
 
+    interview_source_dir: Path | None = None
+
     llm_model_id: str = 'gemma2:9b'
     critic_model_id: str | None = None
     ollama_base_url: str = 'http://localhost:11434'

@@ -12,6 +12,7 @@ from diction.api import (
     drills,
     free_topic,
     health,
+    interview,
     minimal_pairs,
     passages,
     prosody,
@@ -190,6 +191,7 @@ def create_app() -> FastAPI:
     app.include_router(drills.router, prefix='/api')
     app.include_router(free_topic.router, prefix='/api')
     app.include_router(health.router, prefix='/api')
+    app.include_router(interview.router, prefix='/api')
     app.include_router(minimal_pairs.router, prefix='/api')
     app.include_router(passages.router, prefix='/api')
     app.include_router(prosody.router, prefix='/api')
