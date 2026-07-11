@@ -8,6 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { ReferenceButton } from '@/features/reference-audio/reference-button'
 
 import { collapseLineBreaks } from './interview-question'
 import type { InterviewQuestion } from './interview-question'
@@ -32,6 +33,9 @@ export function QuestionPicker({
   onSelect,
 }: QuestionPickerProps) {
   const selected = selectedIndex === null ? null : questions[selectedIndex]
+  const rehearsalAnswer = selected
+    ? collapseLineBreaks(selected.scripted_answer)
+    : ''
 
   function handleChange(value: string) {
     onSelect(Number(value))
@@ -92,11 +96,19 @@ export function QuestionPicker({
             ) : null}
 
             <div className="flex flex-col gap-1.5">
-              <h3 className="text-sm font-medium text-muted-foreground">
-                Answer to rehearse
-              </h3>
+              <div className="flex items-center justify-between gap-2">
+                <h3 className="text-sm font-medium text-muted-foreground">
+                  Answer to rehearse
+                </h3>
+                {rehearsalAnswer ? (
+                  <ReferenceButton
+                    text={rehearsalAnswer}
+                    label="Hear the model answer"
+                  />
+                ) : null}
+              </div>
               <p className="rounded-lg border bg-muted/40 p-3 text-left text-sm leading-relaxed">
-                {collapseLineBreaks(selected.scripted_answer)}
+                {rehearsalAnswer}
               </p>
             </div>
           </div>

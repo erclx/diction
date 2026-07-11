@@ -94,6 +94,16 @@ describe('Interview', () => {
     expect(screen.getByText('scope')).toBeInTheDocument()
   })
 
+  it('should offer native playback of the scripted answer to rehearse', async () => {
+    renderWithProviders(<Interview />)
+
+    await selectQuestion()
+
+    expect(
+      screen.getByRole('button', { name: 'Hear the model answer' }),
+    ).toBeInTheDocument()
+  })
+
   it('should post the video, scripted answer, and question when scoring', async () => {
     const appended: Array<[string, unknown]> = []
     const appendSpy = vi
