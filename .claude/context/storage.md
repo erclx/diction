@@ -9,17 +9,19 @@ The persistence layer every practice mode writes through. One SQLite file per ru
 
 ## Layer responsibilities
 
-- `db/models.py` owns the `PracticeSession`, `FlaggedWord`, and `DrillRep` table models.
+- `db/models.py` owns the `PracticeSession`, `FlaggedWord`, `InterviewMetrics`, and `DrillRep` table models.
 - `db/engine.py` owns the engine, `create_db_and_tables`, `reset_dev_database`, and the `get_session` request dependency.
 - `storage/sessions.py` owns `save_session`, `get_session_by_id`, and `list_sessions` so routes stay thin.
 - `storage/drills.py` owns `save_drill_rep` and `list_drill_reps`, the same thin-route pattern for drill outcomes.
 - `storage/recordings.py` owns `store_recording` and `recording_file`, the write-and-locate helpers for on-disk clips keyed by session id.
+- `storage/interview.py` owns `save_interview_metrics` and `get_interview_metrics_by_session`, the write and by-session read for the interview CV signals that sit beside a `PracticeSession`.
 - `storage/weak_sounds.py` owns `aggregate_weak_sounds`, a read-only cross-session rollup of `FlaggedWord` grouped by `phoneme` for the weak-sound priority list.
 - `storage/resurfacing.py` owns `aggregate_resurfacing`, a read-only recompute of each phoneme's spaced-review schedule from its dated `FlaggedWord` misses and production and ear-training `DrillRep` outcomes, run through the pure `scoring/resurfacing.py` Leitner scheduler and returned due-first.
 
 ## Decisions
 
 - Run mode selects the database. `Settings.run_mode` is `user` or `dev`. `user` binds a persistent file under `backend/data`, `dev` binds a scratch file under `backend/.dev-data` that the lifespan wipes before `create_all`, so dev and CI boot empty. `config.py` derives `resolved_db_path` and `resolved_recordings_dir` from the mode, and the engine reads the resolved path without knowing the mode. `dev.sh` and CI set `DICTION_RUN_MODE=dev`.
+- Interview CV signals persist as an `InterviewMetrics` row keyed to `session_id`, not widened `PracticeSession` columns, the same call `DrillRep` made, since the four signals (`eye_contact_pct`, `stability`, `gesture_ratio`, `shoulder_tilt_deg`) are interview-only and a widened session table would carry four null columns for every passage and drill row. The link is a one-to-one `Relationship` with `uselist=False` on the session side and the FK on the metrics side. The interview score route writes the row after the session commits, so a metrics-save failure logs and rolls back its own transaction while the pronunciation session survives.
 - Drills persist as `DrillRep`, not widened `PracticeSession` columns. `mode` is one of `production`, `ear-training`, `shadowing`, or `stress`, `target` holds the phoneme for the minimal-pair drills and the reference prompt for the prosody drills, `passed` is the verdict where one exists, and `score` is the directional prosody match where one exists. The shape matches the phoneme-keyed weak-sound rollup that v0.6 resurfacing reads.
 - Recording bytes live on disk, never in SQLite. A passage save writes `<recordings_dir>/<session_id>.webm` after the row id exists, then stores the filename on `PracticeSession.recording_path`. `GET /api/sessions/{id}/recording` serves it back as a `FileResponse`.
 - `PracticeSession.passage` stores the read text so the history detail can show what was practiced next to how it scored. It is nullable, since drills and any pre-recording rows have none.
@@ -41,5 +43,6 @@ The persistence layer every practice mode writes through. One SQLite file per ru
 ## Gotchas
 
 - SQLite ignores foreign-key constraints unless the pragma is set per connection. That is the whole reason `make_engine` exists rather than a bare `create_engine`.
-- `FlaggedWord` gained `phoneme`, `start`, and `end` for scoring output. `PracticeSession` gained `recording_path` and `passage`, and the `DrillRep` table landed alongside. Adding columns needs a local DB reset, since there are no migrations yet.
+- `FlaggedWord` gained `phoneme`, `start`, and `end` for scoring output. `PracticeSession` gained `recording_path` and `passage`, and the `DrillRep` and `InterviewMetrics` tables landed alongside. Adding a column or a table needs a local DB reset, since there are no migrations yet.
+- `PracticeSession.interview_metrics` is annotated `Optional['InterviewMetrics']`, not `'InterviewMetrics | None'`. SQLAlchemy cannot resolve a `'X | None'` forward-reference string as an expression and fails mapper init, so the `Optional[...]` form is required and carries a `# noqa: UP037, UP045` for the two ruff rules it trips. `InterviewMetrics` is defined after `PracticeSession`, which is why the forward reference exists at all.
 - The user database moved from `backend/diction.db` to `backend/data/diction.db`. A pre-move database is orphaned and must be re-created by a fresh boot.
