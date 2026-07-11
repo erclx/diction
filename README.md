@@ -10,6 +10,7 @@ Non-native speakers rarely get an ongoing feedback loop for pronunciation. One-o
 - Suggested practice routine that rotates modes for one sitting, due sounds first
 - Minimal pair, shadowing, and stress-and-intonation drills
 - Free-topic conversation: speak on a prompt and get pronunciation scores plus a grammar and phrasing critique
+- Interview practice: record a spoken answer on camera and get one combined report of pronunciation and delivery
 - Native reference playback for comparison and shadowing, with a choice of reference voice
 - Runs fully offline on local hardware, no cloud APIs
 
