@@ -9,6 +9,7 @@ import {
   Speech,
   Target,
   TrendingUp,
+  Video,
   Waves,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
@@ -31,6 +32,7 @@ import {
 import { AudioChannelProvider } from '@/features/audio-channel/audio-channel'
 import { EarTraining } from '@/features/ear-training/ear-training'
 import { FreeTopic } from '@/features/free-topic/free-topic'
+import { Interview } from '@/features/interview/interview'
 import { PassageScoring } from '@/features/passage-scoring/passage-scoring'
 import { ProductionDrill } from '@/features/production-drill/production-drill'
 import { ProgressDashboard } from '@/features/progress-dashboard/progress-dashboard'
@@ -91,6 +93,7 @@ const NAV_SECTIONS: readonly NavSection[] = [
       { to: '/', label: 'Passage', icon: Mic },
       { to: '/shadowing', label: 'Shadowing', icon: Waves },
       { to: '/free-topic', label: 'Free topic', icon: MessagesSquare },
+      { to: '/interview', label: 'Interview', icon: Video },
     ],
   },
   {
@@ -197,6 +200,7 @@ export function App() {
             <Route path="/routine" element={<RoutineHome />} />
             <Route path="/shadowing" element={<Shadowing />} />
             <Route path="/free-topic" element={<FreeTopic />} />
+            <Route path="/interview" element={<Interview />} />
             <Route path="/drills" element={<TargetedDrills />} />
             <Route path="/drills/ear-training" element={<EarTraining />} />
             <Route path="/drills/production" element={<ProductionDrill />} />
