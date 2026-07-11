@@ -26,7 +26,7 @@ Everything reads as directional. Pronunciation is scored against the scripted an
 │  │ └──────────────────────────────────┘  │    │
 │  │ Tell me about a project you led.      │    │ ← the question prompt
 │  │ Beats to hit  (scope) (team) (outcome)│    │ ← keyword beats as chips
-│  │ Answer to rehearse                    │    │
+│  │ Answer to rehearse            [ 🔊 ]  │    │ ← heading with native playback control
 │  │ ┌──────────────────────────────────┐  │    │ ← scripted answer, hard wraps collapsed
 │  │ │ I led the migration end to end.  │  │    │
 │  │ └──────────────────────────────────┘  │    │
@@ -97,6 +97,7 @@ Everything reads as directional. Pronunciation is scored against the scripted an
 - No-selection helper: `Choose a question to see its beats and the answer to rehearse.`
 - Beats heading: `Beats to hit`
 - Answer heading: `Answer to rehearse`
+- Answer playback control: `Hear the model answer`
 - Section headings: `Pronunciation`, `Delivery`, `Your answer`, `What we heard`
 - Pronunciation caveat: `Scored against the scripted answer you rehearsed. Read these as a directional guide.`, fine print
 - Delivery metric labels: `Eye contact`, `Stability`, `Gesture ratio`, `Shoulder tilt`
@@ -111,7 +112,7 @@ Everything reads as directional. Pronunciation is scored against the scripted an
 ## Behavior
 
 - The question list comes from the operator's env-configured bank. When the bank is empty or unset the surface shows the empty state rather than a fabricated question, since interview content is operator-owned.
-- Questions group by category in the picker. Selecting one shows its prompt, its keyword beats as chips, and the scripted answer to rehearse. The scripted answer's authoring line breaks collapse to spaces for display, since the parser preserves the source wrap.
+- Questions group by category in the picker. Selecting one shows its prompt, its keyword beats as chips, and the scripted answer to rehearse. The scripted answer's authoring line breaks collapse to spaces for display, since the parser preserves the source wrap. The answer carries a native-playback control beside its heading, the same `ReferenceButton` and app-wide voice the passage and shadowing surfaces use, so the user can hear the model answer read aloud and shadow it. It reuses the shared reference route, whose text cap was raised to 1000 chars so a full scripted answer synthesizes.
 - The record control is disabled until a question is picked, since the score route needs the scripted answer as its pronunciation reference. Changing the question resets any in-progress recording and result.
 - Recording captures video and audio. A mirrored live preview shows the user while recording, and the shared capture meter reads the audio level. Denied camera or microphone access shows a clear message rather than failing silently.
 - Submitting posts the clip, the scripted answer, and the question text to `POST /api/interview/score`. The route scores pronunciation against the scripted answer, runs the CV scorer on the video, transcribes for the "what we heard" line, and persists a `interview` session carrying the question as its prompt.
