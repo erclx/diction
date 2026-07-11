@@ -26,9 +26,11 @@ class Settings(BaseSettings):
     use_stub_critic: bool = False
     use_stub_generator: bool = False
     use_stub_synth: bool = False
+    use_stub_interview: bool = False
 
     phoneme_model_id: str = 'facebook/wav2vec2-xlsr-53-espeak-cv-ft'
     whisper_model_id: str = 'large-v3'
+    mediapipe_cache_dir: Path = BACKEND_ROOT / '.cache' / 'mediapipe-models'
 
     llm_model_id: str = 'gemma2:9b'
     critic_model_id: str | None = None

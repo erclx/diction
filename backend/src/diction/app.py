@@ -24,6 +24,7 @@ from diction.api import (
 from diction.config import get_settings
 from diction.db.engine import create_db_and_tables
 from diction.feedback.base import StubContentGenerator, StubCritic, StubExplainer
+from diction.interview.base import StubInterviewScorer
 from diction.scoring.audio import ClipTooWeakError
 from diction.scoring.base import StubScorer
 from diction.scoring.prosody_base import StubProsodyScorer
@@ -114,6 +115,20 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
                 'to run against the stub generator.'
             ) from error
 
+    if settings.use_stub_interview:
+        app.state.interview_scorer = StubInterviewScorer()
+    else:
+        try:
+            from diction.interview.scorer_cv import CvInterviewScorer
+        except ModuleNotFoundError as error:
+            raise RuntimeError(
+                'The interview CV stack is not installed. Run '
+                "'uv sync --extra interview', or set DICTION_USE_STUB_INTERVIEW=true "
+                'to run against the stub interview scorer.'
+            ) from error
+
+        app.state.interview_scorer = CvInterviewScorer(settings)
+
     if settings.use_stub_synth:
         app.state.synth = StubSynthesizer()
     else:
@@ -147,7 +162,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
 
     logger.info(
         'model stack resolved: scorer=%s transcriber=%s prosody=%s '
-        'explainer=%s critic=%s generator=%s synth=%s',
+        'explainer=%s critic=%s generator=%s synth=%s interview=%s',
         type(app.state.scorer).__name__,
         type(app.state.transcriber).__name__,
         type(app.state.prosody_scorer).__name__,
@@ -155,6 +170,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         type(app.state.critic).__name__,
         type(app.state.generator).__name__,
         type(app.state.synth).__name__,
+        type(app.state.interview_scorer).__name__,
     )
     yield
 
