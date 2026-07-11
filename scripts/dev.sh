@@ -48,8 +48,8 @@ ensure_deps() {
 }
 
 ensure_real_stack() {
-  log "syncing real model extras (scoring, tts, feedback)"
-  (cd "$ROOT/backend" && uv sync --extra scoring --extra tts --extra feedback)
+  log "syncing real model extras (scoring, tts, feedback, interview)"
+  (cd "$ROOT/backend" && uv sync --extra scoring --extra tts --extra feedback --extra interview)
 
   log "Kokoro self-downloads its model on first real boot (cached in the HF cache)"
 
@@ -123,6 +123,7 @@ start() {
     export DICTION_USE_STUB_CRITIC="${DICTION_USE_STUB_CRITIC:-false}"
     export DICTION_USE_STUB_GENERATOR="${DICTION_USE_STUB_GENERATOR:-false}"
     export DICTION_USE_STUB_SYNTH="${DICTION_USE_STUB_SYNTH:-false}"
+    export DICTION_USE_STUB_INTERVIEW="${DICTION_USE_STUB_INTERVIEW:-false}"
     log "model stack: real (installed extras, stubs off unless explicitly set)"
   else
     export DICTION_USE_STUB_SCORER=true
@@ -131,6 +132,7 @@ start() {
     export DICTION_USE_STUB_CRITIC=true
     export DICTION_USE_STUB_GENERATOR=true
     export DICTION_USE_STUB_SYNTH=true
+    export DICTION_USE_STUB_INTERVIEW=true
     log "model stack: stub (set DICTION_DEV_MODELS=real to use installed models)"
   fi
 

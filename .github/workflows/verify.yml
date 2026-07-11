@@ -136,6 +136,9 @@ jobs:
           DICTION_USE_STUB_CRITIC: 'true'
           DICTION_USE_STUB_GENERATOR: 'true'
           DICTION_USE_STUB_SYNTH: 'true'
+          # No MediaPipe or GPU in CI: serve canned CV metrics instead of
+          # running the interview pose and face landmarkers.
+          DICTION_USE_STUB_INTERVIEW: 'true'
         run: |
           (cd ../backend && uv run uvicorn diction.main:app --app-dir src --port 8000) &
           BACKEND_PID=$!
