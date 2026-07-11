@@ -116,6 +116,7 @@ sidepanel
 soundfile
 spacy
 speechocean
+srgb
 sqlite
 sqlmodel
 stdlib
