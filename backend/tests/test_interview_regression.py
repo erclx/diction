@@ -37,9 +37,9 @@ def _manifest() -> dict[str, object]:
     return cast(dict[str, object], json.loads(MANIFEST.read_text()))
 
 
-def _clip_path(name: str) -> Path:
+def _clip_paths() -> dict[str, Path]:
     clips = cast(dict[str, dict[str, str]], _manifest()['clips'])
-    return FIXTURES_DIR / clips[name]['video']
+    return {name: FIXTURES_DIR / meta['video'] for name, meta in clips.items()}
 
 
 def _separation() -> dict[str, float]:
@@ -50,16 +50,15 @@ def _separation() -> dict[str, float]:
 def scored_clips() -> dict[str, InterviewReport]:
     pytest.importorskip('mediapipe')
     pytest.importorskip('av')
-    good_path = _clip_path('good')
-    bad_path = _clip_path('bad')
-    if not good_path.exists() or not bad_path.exists():
+    paths = _clip_paths()
+    if not all(path.exists() for path in paths.values()):
         pytest.skip('interview clips absent; repopulate video/ from manifest sources')
 
     from diction.config import Settings
     from diction.interview.scorer_cv import CvInterviewScorer
 
     scorer = CvInterviewScorer(Settings(use_stub_interview=False))
-    return {'good': scorer.score(good_path), 'bad': scorer.score(bad_path)}
+    return {name: scorer.score(path) for name, path in paths.items()}
 
 
 def test_eye_contact_separates_good_from_bad(
@@ -80,10 +79,24 @@ def test_gesture_ratio_separates_good_from_bad(
     assert good - bad >= _separation()['gesture_ratio_min_separation']
 
 
-def test_shoulder_tilt_reads_near_level_on_both_clips(
+def test_shoulder_tilt_reads_near_level_on_the_upright_clips(
     scored_clips: dict[str, InterviewReport],
 ) -> None:
     ceiling = _separation()['tilt_level_ceiling_deg']
 
     assert scored_clips['good'].posture.shoulder_tilt_deg < ceiling
     assert scored_clips['bad'].posture.shoulder_tilt_deg < ceiling
+
+
+def test_shoulder_tilt_separates_a_lateral_slouch(
+    scored_clips: dict[str, InterviewReport],
+) -> None:
+    separation = _separation()
+    slouch = scored_clips['slouch'].posture.shoulder_tilt_deg
+    upright = max(
+        scored_clips['good'].posture.shoulder_tilt_deg,
+        scored_clips['bad'].posture.shoulder_tilt_deg,
+    )
+
+    assert slouch >= separation['tilt_lean_min_deg']
+    assert slouch - upright >= separation['tilt_min_separation_deg']

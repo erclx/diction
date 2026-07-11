@@ -11,11 +11,18 @@
       "video": "video/bad.mp4",
       "source": "/mnt/c/Users/Eric Le/Pictures/Camera Roll/bad.mp4",
       "note": "Read from notes held off-axis, no gesture."
+    },
+    "slouch": {
+      "video": "video/slouch.mp4",
+      "source": "/mnt/c/Users/Eric Le/Pictures/Camera Roll/slouch.mp4",
+      "note": "Deliberate lateral lean, one shoulder dropped well below the other."
     }
   },
   "separation": {
     "eye_contact_min_separation_pct": 15.0,
     "gesture_ratio_min_separation": 0.05,
-    "tilt_level_ceiling_deg": 10.0
+    "tilt_level_ceiling_deg": 10.0,
+    "tilt_lean_min_deg": 10.0,
+    "tilt_min_separation_deg": 5.0
   }
 }
