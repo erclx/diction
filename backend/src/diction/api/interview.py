@@ -94,6 +94,7 @@ def score_interview(
     interview_scorer: Annotated[InterviewScorer, Depends(get_interview_scorer)],
     video: Annotated[UploadFile, File()],
     scripted_answer: Annotated[str, Form()],
+    question: Annotated[str | None, Form()] = None,
 ) -> InterviewScoreResponse:
     clip = video.file.read()
     cv_report = _score_cv_or_none(interview_scorer, clip)
@@ -102,6 +103,7 @@ def score_interview(
     record = PracticeSession(
         mode='interview',
         passage=scripted_answer,
+        prompt=question,
         transcript=transcript.text,
         completeness=result.completeness,
         accuracy=result.accuracy,

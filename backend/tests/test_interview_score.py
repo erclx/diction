@@ -123,10 +123,17 @@ def _fixed_report() -> InterviewReport:
     )
 
 
-def _post(client: TestClient, answer: str = 'I led the migration end to end') -> object:
+def _post(
+    client: TestClient,
+    answer: str = 'I led the migration end to end',
+    question: str | None = None,
+) -> object:
+    data = {'scripted_answer': answer}
+    if question is not None:
+        data['question'] = question
     return client.post(
         '/api/interview/score',
-        data={'scripted_answer': answer},
+        data=data,
         files={'video': ('clip.webm', b'fake-bytes', 'video/webm')},
     )
 
@@ -162,6 +169,38 @@ def test_score_returns_pronunciation_cv_and_transcript_and_persists(
         assert metrics is not None
         assert metrics.eye_contact_pct == 82.0
         assert metrics.shoulder_tilt_deg == 6.0
+
+
+def test_score_persists_the_question_prompt_when_posted(
+    client: TestClient, engine: Engine
+) -> None:
+    client.app.dependency_overrides[get_scorer] = lambda: FakeScorer(_fixed_result())
+    client.app.dependency_overrides[get_interview_scorer] = lambda: FakeInterviewScorer(
+        _fixed_report()
+    )
+
+    response = _post(client, question='Tell me about a project you led.')
+
+    assert response.status_code == 200
+    with Session(engine) as session:
+        saved = sessions_storage.list_sessions(session)
+        assert saved[0].prompt == 'Tell me about a project you led.'
+
+
+def test_score_persists_a_null_prompt_when_the_question_is_omitted(
+    client: TestClient, engine: Engine
+) -> None:
+    client.app.dependency_overrides[get_scorer] = lambda: FakeScorer(_fixed_result())
+    client.app.dependency_overrides[get_interview_scorer] = lambda: FakeInterviewScorer(
+        _fixed_report()
+    )
+
+    response = _post(client)
+
+    assert response.status_code == 200
+    with Session(engine) as session:
+        saved = sessions_storage.list_sessions(session)
+        assert saved[0].prompt is None
 
 
 def test_score_pronunciation_uses_the_scripted_answer_as_reference(

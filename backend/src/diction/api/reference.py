@@ -10,7 +10,7 @@ from diction.tts.base import Synthesizer
 
 router = APIRouter(tags=['reference'])
 
-MAX_REFERENCE_TEXT_LENGTH = 600
+MAX_REFERENCE_TEXT_LENGTH = 1000
 SYNTHESIS_TIMEOUT_SECONDS = 30.0
 
 
