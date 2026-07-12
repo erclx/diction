@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { BACKEND_URL } from '@/config'
 
@@ -52,6 +52,28 @@ export function useSessionsQuery() {
     queryFn: fetchSessions,
     staleTime: SESSIONS_STALE_MS,
     retry: false,
+  })
+}
+
+async function deleteSession(id: number): Promise<void> {
+  const response = await fetch(`${BACKEND_URL}/api/sessions/${id}`, {
+    method: 'DELETE',
+    signal: AbortSignal.timeout(SESSIONS_TIMEOUT_MS),
+  })
+
+  if (!response.ok) {
+    throw new Error(`Failed to delete session with status ${response.status}`)
+  }
+}
+
+export function useDeleteSession() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: deleteSession,
+    onSuccess: (_data, id) => {
+      queryClient.removeQueries({ queryKey: sessionKey(id) })
+      return queryClient.invalidateQueries({ queryKey: sessionsKey })
+    },
   })
 }
 

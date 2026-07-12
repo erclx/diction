@@ -13,3 +13,7 @@ def store_recording(recordings_dir: Path, session_id: int, data: bytes) -> str:
 def recording_file(recordings_dir: Path, filename: str) -> Path | None:
     path = recordings_dir / filename
     return path if path.is_file() else None
+
+
+def remove_recording(recordings_dir: Path, filename: str) -> None:
+    (recordings_dir / filename).unlink(missing_ok=True)

@@ -1,7 +1,8 @@
-import { screen } from '@testing-library/react'
+import { screen, waitFor, within } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { http, HttpResponse } from 'msw'
 import { Route, Routes } from 'react-router-dom'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 
 import { renderWithProviders } from '@/test/render'
 import { server } from '@/test/server'
@@ -233,6 +234,66 @@ describe('SessionHistory', () => {
     expect(
       screen.getByRole('button', { name: 'Play your recording' }),
     ).toBeInTheDocument()
+  })
+
+  it('should delete the session and return to the list once the confirm is accepted', async () => {
+    const deleteSpy = vi.fn()
+    server.use(
+      http.delete(
+        'http://localhost:8000/api/sessions/:id',
+        () => (deleteSpy(), new HttpResponse(null, { status: 204 })),
+      ),
+    )
+    const user = userEvent.setup()
+    renderWithProviders(
+      <Routes>
+        <Route path="/history" element={<SessionHistory />} />
+        <Route path="/history/:sessionId" element={<SessionHistory />} />
+      </Routes>,
+      { initialEntries: ['/history/12'] },
+    )
+
+    await user.click(
+      await screen.findByRole('button', { name: 'Delete session' }),
+    )
+    const dialog = await screen.findByRole('alertdialog')
+    await user.click(
+      within(dialog).getByRole('button', { name: 'Delete session' }),
+    )
+
+    expect(await screen.findByText('92.2')).toBeInTheDocument()
+    expect(screen.queryByText('Completeness')).not.toBeInTheDocument()
+    expect(deleteSpy).toHaveBeenCalledTimes(1)
+  })
+
+  it('should not delete the session when the confirm is cancelled', async () => {
+    const deleteSpy = vi.fn()
+    server.use(
+      http.delete(
+        'http://localhost:8000/api/sessions/:id',
+        () => (deleteSpy(), new HttpResponse(null, { status: 204 })),
+      ),
+    )
+    const user = userEvent.setup()
+    renderWithProviders(
+      <Routes>
+        <Route path="/history" element={<SessionHistory />} />
+        <Route path="/history/:sessionId" element={<SessionHistory />} />
+      </Routes>,
+      { initialEntries: ['/history/12'] },
+    )
+
+    await user.click(
+      await screen.findByRole('button', { name: 'Delete session' }),
+    )
+    const dialog = await screen.findByRole('alertdialog')
+    await user.click(within(dialog).getByRole('button', { name: 'Cancel' }))
+
+    await waitFor(() =>
+      expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument(),
+    )
+    expect(screen.getByText('Completeness')).toBeInTheDocument()
+    expect(deleteSpy).not.toHaveBeenCalled()
   })
 
   it('should redirect an invalid session id to the list', async () => {

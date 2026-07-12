@@ -213,6 +213,54 @@ test.describe('session history', () => {
     await expect(page.getByRole('button', { name: 'Retry' })).toBeVisible()
   })
 
+  test('should delete a session from the detail and return to the list', async ({
+    page,
+  }) => {
+    let deleteCalled = false
+    await page.route(DETAIL_URL, (route) => {
+      if (route.request().method() === 'DELETE') {
+        deleteCalled = true
+        return route.fulfill({ status: 204 })
+      }
+      return route.fulfill({ json: MOCK_DETAIL })
+    })
+    await page.route(LIST_URL, (route) => route.fulfill({ json: MOCK_LIST }))
+
+    await page.goto('/history/12')
+    await expect(page.getByText('Completeness')).toBeVisible()
+
+    await page.getByRole('button', { name: 'Delete session' }).click()
+    const dialog = page.getByRole('alertdialog')
+    await expect(dialog).toBeVisible()
+    await dialog.getByRole('button', { name: 'Delete session' }).click()
+
+    await expect(page).toHaveURL(/\/history$/)
+    await expect(page.getByText('92.2')).toBeVisible()
+    expect(deleteCalled).toBe(true)
+  })
+
+  test('should show an error and stay on the detail when the delete fails', async ({
+    page,
+  }) => {
+    await page.route(DETAIL_URL, (route) => {
+      if (route.request().method() === 'DELETE') {
+        return route.fulfill({ status: 500 })
+      }
+      return route.fulfill({ json: MOCK_DETAIL })
+    })
+    await page.route(LIST_URL, (route) => route.fulfill({ json: MOCK_LIST }))
+
+    await page.goto('/history/12')
+    await page.getByRole('button', { name: 'Delete session' }).click()
+    await page
+      .getByRole('alertdialog')
+      .getByRole('button', { name: 'Delete session' })
+      .click()
+
+    await expect(page.getByRole('alert')).toContainText('Could not delete')
+    await expect(page).toHaveURL(/\/history\/12$/)
+  })
+
   test('should show a not-found message for a missing session', async ({
     page,
   }) => {
