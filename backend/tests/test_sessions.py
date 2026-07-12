@@ -256,3 +256,33 @@ def test_recording_returns_404_when_the_file_is_missing(
     response = client.get(f'/api/sessions/{session_id}/recording')
 
     assert response.status_code == 404
+
+
+def test_delete_removes_a_session_and_a_subsequent_get_404s(
+    client: TestClient, engine: Engine
+) -> None:
+    session_id = _seed(engine, _passage_session(accuracy=88.0))
+
+    response = client.delete(f'/api/sessions/{session_id}')
+
+    assert response.status_code == 204
+    assert client.get(f'/api/sessions/{session_id}').status_code == 404
+
+
+def test_delete_returns_404_for_an_unknown_id(client: TestClient) -> None:
+    response = client.delete('/api/sessions/999')
+
+    assert response.status_code == 404
+
+
+def test_delete_removes_the_stored_clip_from_disk(
+    client: TestClient, engine: Engine, recordings_dir: Path
+) -> None:
+    session_id = _seed_with_recording(engine, recordings_dir)
+    clip = recordings_dir / f'{session_id}.webm'
+    assert clip.is_file()
+
+    response = client.delete(f'/api/sessions/{session_id}')
+
+    assert response.status_code == 204
+    assert not clip.exists()

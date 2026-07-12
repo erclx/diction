@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Response
 from fastapi.responses import FileResponse
 from pydantic import BaseModel, ConfigDict
 from sqlmodel import Session
@@ -16,8 +16,12 @@ from diction.config import Settings, get_settings
 from diction.db.engine import get_session
 from diction.db.models import InterviewMetrics
 from diction.storage.interview import get_interview_metrics_by_session
-from diction.storage.recordings import recording_file
-from diction.storage.sessions import get_session_by_id, list_sessions
+from diction.storage.recordings import recording_file, remove_recording
+from diction.storage.sessions import (
+    delete_session,
+    get_session_by_id,
+    list_sessions,
+)
 
 router = APIRouter(tags=['sessions'])
 
@@ -73,6 +77,20 @@ def read_session(
             get_interview_metrics_by_session(session, session_id)
         )
     return detail
+
+
+@router.delete('/sessions/{session_id}', status_code=204)
+def remove_session(
+    session: Annotated[Session, Depends(get_session)],
+    settings: Annotated[Settings, Depends(get_settings)],
+    session_id: int,
+) -> Response:
+    deleted = delete_session(session, session_id)
+    if deleted is None:
+        raise HTTPException(status_code=404, detail='Session not found')
+    if deleted.recording_path is not None:
+        remove_recording(settings.resolved_recordings_dir, deleted.recording_path)
+    return Response(status_code=204)
 
 
 def _cv_from_metrics(metrics: InterviewMetrics | None) -> CvReportResponse | None:

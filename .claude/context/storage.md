@@ -11,9 +11,9 @@ The persistence layer every practice mode writes through. One SQLite file per ru
 
 - `db/models.py` owns the `PracticeSession`, `FlaggedWord`, `InterviewMetrics`, and `DrillRep` table models.
 - `db/engine.py` owns the engine, `create_db_and_tables`, `reset_dev_database`, and the `get_session` request dependency.
-- `storage/sessions.py` owns `save_session`, `get_session_by_id`, and `list_sessions` so routes stay thin.
+- `storage/sessions.py` owns `save_session`, `get_session_by_id`, `list_sessions`, and `delete_session` so routes stay thin.
 - `storage/drills.py` owns `save_drill_rep` and `list_drill_reps`, the same thin-route pattern for drill outcomes.
-- `storage/recordings.py` owns `store_recording` and `recording_file`, the write-and-locate helpers for on-disk clips keyed by session id.
+- `storage/recordings.py` owns `store_recording`, `recording_file`, and `remove_recording`, the write, locate, and delete helpers for on-disk clips keyed by session id.
 - `storage/interview.py` owns `save_interview_metrics` and `get_interview_metrics_by_session`, the write and by-session read for the interview CV signals that sit beside a `PracticeSession`.
 - `storage/weak_sounds.py` owns `aggregate_weak_sounds`, a read-only cross-session rollup of `FlaggedWord` grouped by `phoneme` for the weak-sound priority list.
 - `storage/resurfacing.py` owns `aggregate_resurfacing`, a read-only recompute of each phoneme's spaced-review schedule from its dated `FlaggedWord` misses and production and ear-training `DrillRep` outcomes, run through the pure `scoring/resurfacing.py` Leitner scheduler and returned due-first.
@@ -38,6 +38,7 @@ The persistence layer every practice mode writes through. One SQLite file per ru
 - `DrillRep.passed` and `DrillRep.score` are both nullable. Production and ear-training reps carry a `passed` verdict with null score, prosody reps carry a directional `score` with null verdict, and neither invents the missing value.
 - Resurfacing recomputes from history on read, holding no scheduler state and adding no table or migration, the same bet `aggregate_weak_sounds` makes. It reads only the two phoneme-keyed event sources: a `FlaggedWord` occurrence dated by its session is a miss, a production or ear-training `DrillRep` is a pass or miss by its `passed` verdict, and shadowing and stress reps are prompt-level so they are excluded. Stored datetimes are normalized to aware UTC before comparison, since SQLite hands back naive values and the scheduler compares against `datetime.now(UTC)`. The interval ladder is a placeholder on the same directional footing as the GOP and prosody thresholds, so the due ordering is the trustworthy signal and the exact next-due dates are not.
 - Recording write is save, refresh, write file, set path, commit again. The session id exists only after the first commit, so a failure between the two commits leaves a row without a file. The retrieval route treats a missing file as a soft 404 through `recording_file` returning `None`.
+- `delete_session` clears the `FlaggedWord` and `InterviewMetrics` children by explicit select-and-delete, then the `PracticeSession`, in one commit. This avoids `ON DELETE CASCADE` on those foreign keys and the local DB reset a schema change would force, keeping the delete in one testable place. It returns a `DeletedSession` value object carrying the freed `recording_path`, or `None` when the id is unknown, so the route distinguishes a missing session from a found one that never recorded, which a bare `str | None` recording path could not. The clip unlink is the route's job through `remove_recording`, run after this commit returns.
 - Storage functions take the session as their first argument. Tests pass a temp-file session directly.
 - `list_sessions` and `list_drill_reps` order newest-first with `id` as a tiebreaker on equal `created_at`.
 

@@ -2,10 +2,10 @@ from collections.abc import Iterator
 
 import pytest
 from sqlalchemy.exc import IntegrityError
-from sqlmodel import Session, SQLModel
+from sqlmodel import Session, SQLModel, col, select
 
 from diction.db.engine import make_engine
-from diction.db.models import FlaggedWord, PracticeSession
+from diction.db.models import FlaggedWord, InterviewMetrics, PracticeSession
 from diction.storage import sessions as sessions_storage
 
 
@@ -56,6 +56,50 @@ def test_list_sessions_returns_newest_first(db_session: Session) -> None:
     result = sessions_storage.list_sessions(db_session)
 
     assert [session.id for session in result] == [newer.id, older.id]
+
+
+def test_delete_session_removes_children_and_returns_recording_path(
+    db_session: Session,
+) -> None:
+    record = make_session('interview')
+    record.recording_path = '7.webm'
+    record.flagged_words = [
+        FlaggedWord(word='walk', phoneme='w', start=0.1, end=0.3, explanation='wok'),
+    ]
+    saved = sessions_storage.save_session(db_session, record)
+    assert saved.id is not None
+    db_session.add(
+        InterviewMetrics(
+            session_id=saved.id,
+            eye_contact_pct=94.0,
+            stability=0.82,
+            gesture_ratio=0.12,
+            shoulder_tilt_deg=6.0,
+        )
+    )
+    db_session.commit()
+
+    deleted = sessions_storage.delete_session(db_session, saved.id)
+
+    assert deleted is not None
+    assert deleted.recording_path == '7.webm'
+    assert sessions_storage.get_session_by_id(db_session, saved.id) is None
+    assert (
+        db_session.exec(
+            select(FlaggedWord).where(col(FlaggedWord.session_id) == saved.id)
+        ).all()
+        == []
+    )
+    assert (
+        db_session.exec(
+            select(InterviewMetrics).where(col(InterviewMetrics.session_id) == saved.id)
+        ).first()
+        is None
+    )
+
+
+def test_delete_session_returns_none_for_an_unknown_id(db_session: Session) -> None:
+    assert sessions_storage.delete_session(db_session, 999) is None
 
 
 def test_flagged_word_rejects_unknown_session(db_session: Session) -> None:
