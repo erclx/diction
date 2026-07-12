@@ -177,9 +177,7 @@ test.describe('session history', () => {
       page.getByText('Tell me about a time you solved a hard problem.'),
     ).toBeVisible()
     await expect(page.getByText('Answer to rehearse')).toBeVisible()
-    await expect(
-      page.getByRole('heading', { name: 'Delivery' }),
-    ).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Delivery' })).toBeVisible()
     await expect(page.locator('video')).toBeVisible()
   })
 

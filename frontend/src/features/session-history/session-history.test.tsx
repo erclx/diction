@@ -156,7 +156,11 @@ describe('SessionHistory', () => {
           phoneme_quality: 88,
           has_recording: true,
           cv: {
-            posture: { stability: 0.82, gesture_ratio: 0.12, shoulder_tilt_deg: 6 },
+            posture: {
+              stability: 0.82,
+              gesture_ratio: 0.12,
+              shoulder_tilt_deg: 6,
+            },
             eye_contact: { looking_pct: 94 },
           },
           flagged_words: [],
