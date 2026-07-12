@@ -146,6 +146,7 @@ export const handlers = [
       created_at: '2026-07-02T09:14:00Z',
       mode: 'passage',
       passage: 'The early bird catches the worm.',
+      prompt: null,
       transcript: null,
       critique: null,
       completeness: 90.9,
@@ -153,6 +154,7 @@ export const handlers = [
       fluency: 98,
       phoneme_quality: 94,
       has_recording: true,
+      cv: null,
       flagged_words: [
         {
           word: 'thought',

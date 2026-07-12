@@ -18,6 +18,7 @@ const MOCK_DETAIL = {
   created_at: '2026-07-02T09:14:00Z',
   mode: 'passage',
   passage: 'The early bird catches the worm.',
+  prompt: null,
   transcript: null,
   critique: null,
   completeness: 90.9,
@@ -25,6 +26,7 @@ const MOCK_DETAIL = {
   fluency: 98,
   phoneme_quality: 94,
   has_recording: false,
+  cv: null,
   flagged_words: [
     {
       word: 'thought',
@@ -34,6 +36,26 @@ const MOCK_DETAIL = {
       explanation: 'Say th, not t.',
     },
   ],
+}
+
+const MOCK_INTERVIEW_DETAIL = {
+  id: 15,
+  created_at: '2026-07-02T09:14:00Z',
+  mode: 'interview',
+  passage: 'I led the migration and cut latency in half.',
+  prompt: 'Tell me about a time you solved a hard problem.',
+  transcript: 'i led the migration and cut latency in half',
+  critique: null,
+  completeness: 100,
+  accuracy: 90,
+  fluency: 85,
+  phoneme_quality: 88,
+  has_recording: true,
+  cv: {
+    posture: { stability: 0.82, gesture_ratio: 0.12, shoulder_tilt_deg: 6 },
+    eye_contact: { looking_pct: 94 },
+  },
+  flagged_words: [],
 }
 
 async function openHistory(page: Page): Promise<void> {
@@ -137,6 +159,26 @@ test.describe('session history', () => {
 
     await expect(page).toHaveURL(/\/history$/)
     await expect(page.getByText('92.2')).toBeVisible()
+  })
+
+  test('should render the question, delivery, and video for an interview session detail', async ({
+    page,
+  }) => {
+    await page.route(DETAIL_URL, (route) =>
+      route.fulfill({ json: MOCK_INTERVIEW_DETAIL }),
+    )
+    await page.route('**/api/sessions/*/recording', (route) =>
+      route.fulfill({ contentType: 'video/webm', body: '' }),
+    )
+
+    await page.goto('/history/15')
+
+    await expect(
+      page.getByText('Tell me about a time you solved a hard problem.'),
+    ).toBeVisible()
+    await expect(page.getByText('Answer to rehearse')).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Delivery' })).toBeVisible()
+    await expect(page.locator('video')).toBeVisible()
   })
 
   test('should redirect an unknown path to practice', async ({ page }) => {

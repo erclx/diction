@@ -1,5 +1,6 @@
 import { z } from 'zod'
 
+import { CvReportSchema } from '@/features/interview/interview-result'
 import { FlaggedWordSchema } from '@/features/passage-scoring/score-result'
 
 export const SessionListItemSchema = z.object({
@@ -17,6 +18,7 @@ export const SessionDetailSchema = z.object({
   created_at: z.string(),
   mode: z.string(),
   passage: z.string().nullable(),
+  prompt: z.string().nullable(),
   transcript: z.string().nullable(),
   critique: z.string().nullable(),
   completeness: z.number(),
@@ -24,6 +26,7 @@ export const SessionDetailSchema = z.object({
   fluency: z.number(),
   phoneme_quality: z.number(),
   has_recording: z.boolean(),
+  cv: CvReportSchema.nullable(),
   flagged_words: z.array(FlaggedWordSchema),
 })
 
