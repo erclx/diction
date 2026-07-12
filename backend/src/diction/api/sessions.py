@@ -6,9 +6,16 @@ from fastapi.responses import FileResponse
 from pydantic import BaseModel, ConfigDict
 from sqlmodel import Session
 
+from diction.api.interview import (
+    CvReportResponse,
+    EyeContactResponse,
+    PostureResponse,
+)
 from diction.api.schemas import FlaggedWordResponse
 from diction.config import Settings, get_settings
 from diction.db.engine import get_session
+from diction.db.models import InterviewMetrics
+from diction.storage.interview import get_interview_metrics_by_session
 from diction.storage.recordings import recording_file
 from diction.storage.sessions import get_session_by_id, list_sessions
 
@@ -32,6 +39,7 @@ class SessionDetailResponse(BaseModel):
     created_at: datetime
     mode: str
     passage: str | None
+    prompt: str | None
     transcript: str | None
     critique: str | None
     completeness: float
@@ -39,6 +47,7 @@ class SessionDetailResponse(BaseModel):
     fluency: float
     phoneme_quality: float
     has_recording: bool = False
+    cv: CvReportResponse | None = None
     flagged_words: list[FlaggedWordResponse]
 
 
@@ -59,7 +68,23 @@ def read_session(
         raise HTTPException(status_code=404, detail='Session not found')
     detail = SessionDetailResponse.model_validate(record)
     detail.has_recording = record.recording_path is not None
+    detail.cv = _cv_from_metrics(
+        get_interview_metrics_by_session(session, session_id)
+    )
     return detail
+
+
+def _cv_from_metrics(metrics: InterviewMetrics | None) -> CvReportResponse | None:
+    if metrics is None:
+        return None
+    return CvReportResponse(
+        posture=PostureResponse(
+            stability=metrics.stability,
+            gesture_ratio=metrics.gesture_ratio,
+            shoulder_tilt_deg=metrics.shoulder_tilt_deg,
+        ),
+        eye_contact=EyeContactResponse(looking_pct=metrics.eye_contact_pct),
+    )
 
 
 @router.get('/sessions/{session_id}/recording')
@@ -74,4 +99,5 @@ def read_session_recording(
     path = recording_file(settings.resolved_recordings_dir, record.recording_path)
     if path is None:
         raise HTTPException(status_code=404, detail='Recording not found')
-    return FileResponse(path, media_type='audio/webm')
+    media_type = 'video/webm' if record.mode == 'interview' else 'audio/webm'
+    return FileResponse(path, media_type=media_type)

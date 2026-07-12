@@ -5,7 +5,7 @@ description: The history surface where the user browses past sessions and opens 
 
 # Session history
 
-The review surface for saved passage and free-topic sessions. It reads `GET /api/sessions` for a dated list, newest first, and `GET /api/sessions/{id}` for one session's four scores, flagged words, stored recording, and the mode-specific fields: the passage text for a passage read, or the recognized transcript and grammar critique for a free-topic session. Reached from the History nav in the app shell sidebar. A single-column layout at `/history` for the list and `/history/:sessionId` for the detail, so a detail is deep-linkable and the browser back button returns to the list. Drills persist as reps for the weak-sound tracker, not as history entries, so only passage reads and free-topic sittings appear here.
+The review surface for saved passage, free-topic, and interview sessions. It reads `GET /api/sessions` for a dated list, newest first, and `GET /api/sessions/{id}` for one session's four scores, flagged words, stored recording, and the mode-specific fields: the passage text for a passage read, the recognized transcript and grammar critique for a free-topic session, or the question prompt, delivery metrics, and video for an interview rep. Reached from the History nav in the app shell sidebar. A single-column layout at `/history` for the list and `/history/:sessionId` for the detail, so a detail is deep-linkable and the browser back button returns to the list. Drills persist as reps for the weak-sound tracker, not as history entries, so only passage reads, free-topic sittings, and interview reps appear here.
 
 ## List
 
@@ -61,6 +61,31 @@ The review surface for saved passage and free-topic sessions. It reads `GET /api
 │  └──────────────────────────────────────┘    │
 ```
 
+## Interview detail
+
+```plaintext
+│  Jul 2, 2026, 11:14 AM                        │ ← session date heading
+│  Interview                                    │ ← mode label
+│  Question                                     │ ← interview only, the prompt practiced
+│  ┌──────────────────────────────────────┐    │
+│  │ Tell me about a time you solved...    │    │
+│  └──────────────────────────────────────┘    │
+│  Answer to rehearse                           │ ← interview relabels the passage block
+│  ┌──────────────────────────────────────┐    │
+│  │ I led the migration and cut latency...│    │
+│  └──────────────────────────────────────┘    │
+│  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐ │ ← four pronunciation scores
+│  └──────────┘ └──────────┘ └──────────┘ └──────────┘ │
+│  Delivery                                     │ ← interview only, shown when cv is present
+│  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐ │   posture and eye-contact scalars
+│  │ Eye 94%  │ │ Stab .82 │ │ Gest .12 │ │ Tilt 6°  │ │
+│  └──────────┘ └──────────┘ └──────────┘ └──────────┘ │
+│  Your recording                               │
+│  ┌──────────────────────────────────────┐    │
+│  │  ▶ video with controls                │    │ ← interview plays the webm as video
+│  └──────────────────────────────────────┘    │
+```
+
 ## Empty
 
 ```plaintext
@@ -77,8 +102,10 @@ The review surface for saved passage and free-topic sessions. It reads `GET /api
 - Title: `Session history`
 - Subtitle: `Review your past readings and the words each one flagged.`
 - Back control: `Back to history`
-- Passage heading: `Passage`
+- Passage heading: `Passage`, relabeled `Answer to rehearse` for an interview session
 - Recording heading: `Your recording`
+- Interview question heading: `Question`
+- Interview delivery heading: `Delivery`
 - Free-topic critique heading: `Grammar and phrasing`
 - Free-topic transcript heading: `What you said`
 - Metric labels: `Completeness`, `Accuracy`, `Fluency`, `Phoneme quality`
@@ -94,6 +121,7 @@ The review surface for saved passage and free-topic sessions. It reads `GET /api
 - The headline accuracy and the detail metrics share one band coloring with the passage surface: green at 90 and above, amber at 75 to 89, red below 75.
 - The passage text renders above the scores when the session stored it, so the reader sees what was practiced next to how it scored.
 - A free-topic session renders its grammar critique and recognized transcript below the flagged words, the same two sections shown right after the free-topic analysis, so history holds everything the analysis surfaced.
+- An interview session renders the question prompt above the scores and relabels the scripted-answer block to `Answer to rehearse`, so a `Question` and an answer read as a pair rather than two passages. Its delivery metrics render below the scores when the CV report persisted, and hide when the scorer degraded, so a past rep never shows zeros. The recording plays as a video rather than the audio transport, since the interview clip carries a video track.
 - A player renders under the scores when the session has a stored clip, reusing the passage surface's own-recording transport so the reader can replay their read. Sessions saved before recording capture landed show no player.
 - Each flagged word plays its own recorded span alongside the native reference when the session has a stored clip, matching the live passage surface. A session with no stored recording shows only the reference, so history stays truthful about what it can replay.
 - The empty state is the onboarding case, distinct from a filtered-empty case, and routes the user to Practice. The list fails fast with a Retry, and an unknown id shows a not-found message rather than a spinner.

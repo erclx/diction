@@ -62,6 +62,7 @@ describe('SessionHistory', () => {
           created_at: '2026-07-02T09:14:00Z',
           mode: 'passage',
           passage: 'The early bird catches the worm.',
+          prompt: null,
           transcript: null,
           critique: null,
           completeness: 90.9,
@@ -69,6 +70,7 @@ describe('SessionHistory', () => {
           fluency: 98,
           phoneme_quality: 94,
           has_recording: false,
+          cv: null,
           flagged_words: [
             {
               word: 'thought',
@@ -108,6 +110,7 @@ describe('SessionHistory', () => {
           created_at: '2026-07-02T09:14:00Z',
           mode: 'free-topic',
           passage: null,
+          prompt: null,
           transcript: 'we drives to the park before it start raining',
           critique:
             'Use past tense: say "we drove".\nSubject-verb agreement: "it started".',
@@ -116,6 +119,7 @@ describe('SessionHistory', () => {
           fluency: 84,
           phoneme_quality: 88,
           has_recording: true,
+          cv: null,
           flagged_words: [],
         }),
       ),
@@ -132,6 +136,98 @@ describe('SessionHistory', () => {
     expect(screen.getByText(/it started/)).toBeInTheDocument()
     expect(
       screen.getByText('we drives to the park before it start raining'),
+    ).toBeInTheDocument()
+  })
+
+  it('should render the question, delivery metrics, and video for an interview session detail', async () => {
+    server.use(
+      http.get('http://localhost:8000/api/sessions/:id', () =>
+        HttpResponse.json({
+          id: 15,
+          created_at: '2026-07-02T09:14:00Z',
+          mode: 'interview',
+          passage: 'I led the migration and cut latency in half.',
+          prompt: 'Tell me about a time you solved a hard problem.',
+          transcript: 'i led the migration and cut latency in half',
+          critique: null,
+          completeness: 100,
+          accuracy: 90,
+          fluency: 85,
+          phoneme_quality: 88,
+          has_recording: true,
+          cv: {
+            posture: { stability: 0.82, gesture_ratio: 0.12, shoulder_tilt_deg: 6 },
+            eye_contact: { looking_pct: 94 },
+          },
+          flagged_words: [],
+        }),
+      ),
+    )
+    const { container } = renderWithProviders(
+      <Routes>
+        <Route path="/history/:sessionId" element={<SessionHistory />} />
+      </Routes>,
+      { initialEntries: ['/history/15'] },
+    )
+
+    expect(await screen.findByText('Question')).toBeInTheDocument()
+    expect(
+      screen.getByText('Tell me about a time you solved a hard problem.'),
+    ).toBeInTheDocument()
+    expect(screen.getByText('Answer to rehearse')).toBeInTheDocument()
+    expect(screen.getByText('Delivery')).toBeInTheDocument()
+    expect(container.querySelector('video')).toBeInTheDocument()
+    expect(
+      screen.queryByRole('button', { name: 'Play your recording' }),
+    ).not.toBeInTheDocument()
+  })
+
+  it('should hide the delivery metrics for an interview session with no cv report', async () => {
+    server.use(
+      http.get('http://localhost:8000/api/sessions/:id', () =>
+        HttpResponse.json({
+          id: 16,
+          created_at: '2026-07-02T09:14:00Z',
+          mode: 'interview',
+          passage: 'I led the migration and cut latency in half.',
+          prompt: 'Tell me about a time you solved a hard problem.',
+          transcript: 'i led the migration',
+          critique: null,
+          completeness: 100,
+          accuracy: 90,
+          fluency: 85,
+          phoneme_quality: 88,
+          has_recording: true,
+          cv: null,
+          flagged_words: [],
+        }),
+      ),
+    )
+    renderWithProviders(
+      <Routes>
+        <Route path="/history/:sessionId" element={<SessionHistory />} />
+      </Routes>,
+      { initialEntries: ['/history/16'] },
+    )
+
+    expect(await screen.findByText('Question')).toBeInTheDocument()
+    expect(screen.queryByText('Delivery')).not.toBeInTheDocument()
+  })
+
+  it('should not render the question or delivery blocks for a passage session detail', async () => {
+    const { container } = renderWithProviders(
+      <Routes>
+        <Route path="/history/:sessionId" element={<SessionHistory />} />
+      </Routes>,
+      { initialEntries: ['/history/12'] },
+    )
+
+    expect(await screen.findByText('Completeness')).toBeInTheDocument()
+    expect(screen.queryByText('Question')).not.toBeInTheDocument()
+    expect(screen.queryByText('Delivery')).not.toBeInTheDocument()
+    expect(container.querySelector('video')).not.toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: 'Play your recording' }),
     ).toBeInTheDocument()
   })
 

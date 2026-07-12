@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { BACKEND_URL } from '@/config'
 import { OwnRecordingAudio } from '@/features/audio-channel/own-recording-audio'
 import { CritiqueList } from '@/features/free-topic/critique-list'
+import { DeliveryMetrics } from '@/features/interview/delivery-metrics'
 import { FlaggedWordList } from '@/features/passage-scoring/flagged-word-list'
 import { ScoreMetric } from '@/features/passage-scoring/score-metric'
 import { useSpanPlayer } from '@/features/passage-scoring/use-span-player'
@@ -72,9 +73,22 @@ export function SessionDetail({ id }: SessionDetailProps) {
             </p>
           </header>
 
+          {query.data.prompt && (
+            <div className="flex flex-col gap-3">
+              <h3 className="text-left text-xl font-medium">Question</h3>
+              <p className="rounded-lg border bg-card p-4 text-left font-serif text-base leading-relaxed">
+                {query.data.prompt}
+              </p>
+            </div>
+          )}
+
           {query.data.passage && (
             <div className="flex flex-col gap-3">
-              <h3 className="text-left text-xl font-medium">Passage</h3>
+              <h3 className="text-left text-xl font-medium">
+                {query.data.mode === 'interview'
+                  ? 'Answer to rehearse'
+                  : 'Passage'}
+              </h3>
               <p className="rounded-lg border bg-card p-4 text-left font-serif text-base leading-relaxed">
                 {query.data.passage}
               </p>
@@ -91,13 +105,23 @@ export function SessionDetail({ id }: SessionDetailProps) {
             ))}
           </div>
 
+          {query.data.cv && <DeliveryMetrics cv={query.data.cv} />}
+
           {query.data.has_recording && (
             <div className="flex flex-col gap-3">
               <h3 className="text-left text-xl font-medium">Your recording</h3>
-              <OwnRecordingAudio
-                src={`${BACKEND_URL}/api/sessions/${query.data.id}/recording`}
-                className="w-full max-w-sm"
-              />
+              {query.data.mode === 'interview' ? (
+                <video
+                  src={`${BACKEND_URL}/api/sessions/${query.data.id}/recording`}
+                  controls
+                  className="w-full max-w-md rounded-lg border"
+                />
+              ) : (
+                <OwnRecordingAudio
+                  src={`${BACKEND_URL}/api/sessions/${query.data.id}/recording`}
+                  className="w-full max-w-sm"
+                />
+              )}
             </div>
           )}
 

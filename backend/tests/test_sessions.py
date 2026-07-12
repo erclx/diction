@@ -9,7 +9,8 @@ from sqlmodel import Session, SQLModel
 from diction.app import create_app
 from diction.config import Settings, get_settings
 from diction.db.engine import get_session, make_engine
-from diction.db.models import FlaggedWord, PracticeSession
+from diction.db.models import FlaggedWord, InterviewMetrics, PracticeSession
+from diction.storage.interview import save_interview_metrics
 from diction.storage.sessions import save_session
 
 
@@ -121,6 +122,59 @@ def test_detail_returns_transcript_and_critique_for_a_free_topic_session(
     assert body['passage'] is None
 
 
+def _interview_session() -> PracticeSession:
+    return PracticeSession(
+        mode='interview',
+        passage='I led the migration and cut latency in half.',
+        prompt='Tell me about a time you solved a hard problem.',
+        transcript='i led the migration and cut latency in half',
+        completeness=100.0,
+        accuracy=90.0,
+        fluency=85.0,
+        phoneme_quality=88.0,
+    )
+
+
+def test_detail_returns_prompt_and_cv_for_an_interview_session(
+    client: TestClient, engine: Engine
+) -> None:
+    session_id = _seed(engine, _interview_session())
+    with Session(engine) as session:
+        save_interview_metrics(
+            session,
+            InterviewMetrics(
+                session_id=session_id,
+                eye_contact_pct=94.0,
+                stability=0.82,
+                gesture_ratio=0.12,
+                shoulder_tilt_deg=6.0,
+            ),
+        )
+
+    response = client.get(f'/api/sessions/{session_id}')
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body['prompt'] == 'Tell me about a time you solved a hard problem.'
+    assert body['cv']['eye_contact']['looking_pct'] == 94.0
+    assert body['cv']['posture']['stability'] == 0.82
+    assert body['cv']['posture']['gesture_ratio'] == 0.12
+    assert body['cv']['posture']['shoulder_tilt_deg'] == 6.0
+
+
+def test_detail_returns_null_prompt_and_cv_for_a_passage_session(
+    client: TestClient, engine: Engine
+) -> None:
+    session_id = _seed(engine, _passage_session(accuracy=92.0))
+
+    response = client.get(f'/api/sessions/{session_id}')
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body['prompt'] is None
+    assert body['cv'] is None
+
+
 def test_detail_reports_has_recording_when_a_clip_is_stored(
     client: TestClient, engine: Engine, recordings_dir: Path
 ) -> None:
@@ -162,6 +216,25 @@ def test_recording_serves_the_stored_clip(
     assert response.status_code == 200
     assert response.content == b'clip-bytes'
     assert response.headers['content-type'] == 'audio/webm'
+
+
+def test_recording_serves_an_interview_clip_as_video(
+    client: TestClient, engine: Engine, recordings_dir: Path
+) -> None:
+    session_id = _seed(engine, _interview_session())
+    recordings_dir.mkdir(parents=True, exist_ok=True)
+    (recordings_dir / f'{session_id}.webm').write_bytes(b'clip-bytes')
+    with Session(engine) as session:
+        stored = session.get(PracticeSession, session_id)
+        assert stored is not None
+        stored.recording_path = f'{session_id}.webm'
+        session.add(stored)
+        session.commit()
+
+    response = client.get(f'/api/sessions/{session_id}/recording')
+
+    assert response.status_code == 200
+    assert response.headers['content-type'] == 'video/webm'
 
 
 def test_recording_returns_404_when_the_session_has_no_recording(
