@@ -32,7 +32,7 @@ The review surface for saved passage, free-topic, and interview sessions. It rea
 
 ```plaintext
 │  [ ← Back to history ]                        │ ← returns to the list
-│  Jul 2, 2026, 11:14 AM                        │ ← session date heading
+│  Jul 2, 2026, 11:14 AM        [ 🗑 Delete ]   │ ← date heading, destructive delete at right
 │  Passage                                      │ ← mode label
 │  Passage                                      │ ← section heading for the text read
 │  ┌──────────────────────────────────────┐    │
@@ -86,6 +86,18 @@ The review surface for saved passage, free-topic, and interview sessions. It rea
 │  └──────────────────────────────────────┘    │
 ```
 
+## Delete confirm
+
+```plaintext
+│  ┌──────────────────────────────────────┐    │ ← AlertDialog over the detail
+│  │ Delete this session?                  │    │
+│  │ This permanently removes the session, │    │
+│  │ its flagged words, and its recording  │    │
+│  │ from disk. This cannot be undone.     │    │
+│  │              [ Cancel ] [ 🗑 Delete ] │    │ ← Cancel dismisses, Delete fires the mutation
+│  └──────────────────────────────────────┘    │
+```
+
 ## Empty
 
 ```plaintext
@@ -102,6 +114,12 @@ The review surface for saved passage, free-topic, and interview sessions. It rea
 - Title: `Session history`
 - Subtitle: `Review your past readings and the words each one flagged.`
 - Back control: `Back to history`
+- Delete control: `Delete session`
+- Delete confirm title: `Delete this session?`
+- Delete confirm body: `This permanently removes the session, its flagged words, and its recording from disk. This cannot be undone.`
+- Delete confirm actions: `Cancel` and `Delete session`
+- Delete pending action: `Deleting…`
+- Delete failure: `Could not delete this session, try again.`
 - Passage heading: `Passage`, relabeled `Answer to rehearse` for an interview session
 - Recording heading: `Your recording`
 - Interview question heading: `Question`
@@ -124,4 +142,5 @@ The review surface for saved passage, free-topic, and interview sessions. It rea
 - An interview session renders the question prompt above the scores and relabels the scripted-answer block to `Answer to rehearse`, so a `Question` and an answer read as a pair rather than two passages. Its delivery metrics render below the scores when the CV report persisted, and hide when the scorer degraded, so a past rep never shows zeros. The recording plays as a video rather than the audio transport, since the interview clip carries a video track.
 - A player renders under the scores when the session has a stored clip, reusing the passage surface's own-recording transport so the reader can replay their read. Sessions saved before recording capture landed show no player.
 - Each flagged word plays its own recorded span alongside the native reference when the session has a stored clip, matching the live passage surface. A session with no stored recording shows only the reference, so history stays truthful about what it can replay.
+- The detail header carries a destructive `Delete session` control at the right of the date heading, in the detail rather than a list row so the action sits next to the full context of what is being removed. It opens an `AlertDialog` confirm rather than deleting on a single click, so a mis-tap cannot destroy a recording. Confirming fires `DELETE /api/sessions/{id}`, invalidates the list, and navigates back to `/history` where the deleted row is gone. Cancelling dismisses the dialog and fires nothing. A failed delete leaves the user on the detail with an inline error so they can retry.
 - The empty state is the onboarding case, distinct from a filtered-empty case, and routes the user to Practice. The list fails fast with a Retry, and an unknown id shows a not-found message rather than a spinner.

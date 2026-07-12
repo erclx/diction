@@ -8,7 +8,7 @@ description: React SPA structure, shadcn and token setup, mic capture, and the s
 ## Layer responsibilities
 
 - `frontend/src/features/<feature>/` owns one domain slice with its components, hooks, and API client
-- `frontend/src/components/ui/` owns vendored shadcn primitives, treated as generated source. `frontend/src/components/` above it holds shared cross-feature UI that is not a primitive, such as `metric-card.tsx` (the score card with its directional-caveat popover) and `level-meter.tsx` (the live capture meter)
+- `frontend/src/components/ui/` owns vendored shadcn primitives, treated as generated source. These are authored against the unified `radix-ui` package (`import { Dialog as SheetPrimitive } from 'radix-ui'`), not the shadcn CLI's per-component `@radix-ui/react-*` packages, so a new primitive like `alert-dialog.tsx` (the destructive-confirm dialog the session-delete control opens) mirrors `sheet.tsx`'s import shape by hand rather than pulling a redundant dependency, and reuses `buttonVariants` for its action buttons so the project focus ring carries through. `frontend/src/components/` above it holds shared cross-feature UI that is not a primitive, such as `metric-card.tsx` (the score card with its directional-caveat popover) and `level-meter.tsx` (the live capture meter)
 - `frontend/src/lib/utils.ts` owns the `cn` class merge helper
 - `frontend/src/config.ts` owns the validated `BACKEND_URL`, the only place `import.meta.env` is read
 - `frontend/src/test/` owns test infrastructure, MSW server and the provider render helper, not tests

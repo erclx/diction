@@ -166,4 +166,8 @@ export const handlers = [
       ],
     }),
   ),
+  http.delete(
+    'http://localhost:8000/api/sessions/:id',
+    () => new HttpResponse(null, { status: 204 }),
+  ),
 ]

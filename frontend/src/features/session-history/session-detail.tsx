@@ -1,7 +1,18 @@
-import { ArrowLeft, Loader2 } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import { ArrowLeft, Loader2, Trash2 } from 'lucide-react'
+import { Link, useNavigate } from 'react-router-dom'
 
-import { Button } from '@/components/ui/button'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog'
+import { Button, buttonVariants } from '@/components/ui/button'
 import { BACKEND_URL } from '@/config'
 import { OwnRecordingAudio } from '@/features/audio-channel/own-recording-audio'
 import { CritiqueList } from '@/features/free-topic/critique-list'
@@ -11,7 +22,11 @@ import { ScoreMetric } from '@/features/passage-scoring/score-metric'
 import { useSpanPlayer } from '@/features/passage-scoring/use-span-player'
 
 import { formatSessionDate } from './format'
-import { SessionNotFoundError, useSessionQuery } from './use-sessions'
+import {
+  SessionNotFoundError,
+  useDeleteSession,
+  useSessionQuery,
+} from './use-sessions'
 
 interface SessionDetailProps {
   id: number
@@ -23,6 +38,60 @@ const METRICS = [
   { key: 'fluency', label: 'Fluency' },
   { key: 'phoneme_quality', label: 'Phoneme quality' },
 ] as const
+
+interface SessionDeleteControlProps {
+  id: number
+}
+
+function SessionDeleteControl({ id }: SessionDeleteControlProps) {
+  const navigate = useNavigate()
+  const deletion = useDeleteSession()
+
+  const handleConfirmDelete = () => {
+    deletion.mutate(id, {
+      onSuccess: () => navigate('/history'),
+    })
+  }
+
+  return (
+    <div className="flex flex-col items-end gap-2">
+      <AlertDialog>
+        <AlertDialogTrigger asChild>
+          <Button variant="destructive" size="sm">
+            <Trash2 />
+            Delete session
+          </Button>
+        </AlertDialogTrigger>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this session?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This permanently removes the session, its flagged words, and its
+              recording from disk. This cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deletion.isPending}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              className={buttonVariants({ variant: 'destructive' })}
+              disabled={deletion.isPending}
+              onClick={handleConfirmDelete}
+            >
+              {deletion.isPending ? 'Deleting…' : 'Delete session'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+      {deletion.isError && (
+        <p role="alert" className="text-sm text-destructive">
+          Could not delete this session, try again.
+        </p>
+      )}
+    </div>
+  )
+}
 
 export function SessionDetail({ id }: SessionDetailProps) {
   const query = useSessionQuery(id)
@@ -64,14 +133,17 @@ export function SessionDetail({ id }: SessionDetailProps) {
 
       {query.isSuccess && (
         <section className="flex flex-col gap-6" aria-label="Session detail">
-          <header className="flex flex-col gap-1 text-left">
-            <h2 className="font-serif text-xl font-semibold">
-              {formatSessionDate(query.data.created_at)}
-            </h2>
-            <p className="text-sm capitalize text-muted-foreground">
-              {query.data.mode}
-            </p>
-          </header>
+          <div className="flex items-start justify-between gap-4">
+            <header className="flex flex-col gap-1 text-left">
+              <h2 className="font-serif text-xl font-semibold">
+                {formatSessionDate(query.data.created_at)}
+              </h2>
+              <p className="text-sm capitalize text-muted-foreground">
+                {query.data.mode}
+              </p>
+            </header>
+            <SessionDeleteControl id={query.data.id} />
+          </div>
 
           {query.data.prompt && (
             <div className="flex flex-col gap-3">
