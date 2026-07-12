@@ -13,7 +13,7 @@ export interface ScoreInterviewInput {
   video: Blob
 }
 
-const SCORE_TIMEOUT_MS = 120_000
+const SCORE_TIMEOUT_MS = 300_000
 
 async function scoreInterview({
   scriptedAnswer,
