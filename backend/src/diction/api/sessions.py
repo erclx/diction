@@ -68,7 +68,10 @@ def read_session(
         raise HTTPException(status_code=404, detail='Session not found')
     detail = SessionDetailResponse.model_validate(record)
     detail.has_recording = record.recording_path is not None
-    detail.cv = _cv_from_metrics(get_interview_metrics_by_session(session, session_id))
+    if record.mode == 'interview':
+        detail.cv = _cv_from_metrics(
+            get_interview_metrics_by_session(session, session_id)
+        )
     return detail
 
 
