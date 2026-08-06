@@ -25,6 +25,7 @@ The project uses a three-tier context model. Know which tier holds what before r
 - When rewriting a section, preserve existing code blocks, tables, and grouped examples unless the user asked to remove them.
 - When planning an edit to `CLAUDE.md`, show the proposed change as a fenced `diff` block in chat first, then wait for approval before calling `Edit`
 - After implementing a change with a runtime surface, start a worktree dev pair with `bun run dev:all`, verify against the running app, and share the printed localhost URL. A backend-only endpoint with no UI is a runtime surface too, so curl its real route live. The pair is cleaned up on session end.
+- Edit an existing file with the file-editing tool, never a shell stream editor. An unescaped `&` in a `sed` replacement expands to the whole match, and `sed -i` exits zero when its pattern matches nothing, so both fail silently while reporting success. This governs edits you make, not stream editors written into a project's own scripts.
 
 ## Indexes
 
@@ -79,29 +80,35 @@ The project uses a three-tier context model. Know which tier holds what before r
 
 ## Tasks
 
-- `.claude/TASKS.md` is gitignored local session scratch. Edit freely. No staging or revert before commits.
+- `.claude/tasks/` is gitignored local session scratch, one file per task. Edit freely. No staging or revert before commits.
 - Only create a task for work that spans multiple sessions or has real dependencies. Handle small edits immediately without a task entry.
 - Do not add tasks retroactively for work already completed. Completed work is visible in git.
-- When a task needs execution detail beyond `.claude/TASKS.md`, create a plan in `.claude/plans/` and link to it from the task block's intro paragraph. When that task ships, leave its plan file in place. It stays useful through review and rework. Delete the plan only after the human confirms the merge.
-- Write the plan in the same session as the task block. The session that executes the plan later inherits reasoning context it would otherwise have to re-derive.
+- When a task needs execution detail beyond its own file, create a plan in `.claude/plans/` and link to it from the task's intro paragraph. When that task ships, move its plan file to `.claude/plans-archive/`. Never delete it.
+- Write the plan in the same session as the task file. The session that executes the plan later inherits reasoning context it would otherwise have to re-derive.
 
 ## Memory
 
-- Write all memory files to `.claude/memory/`, not `~/.claude/projects/`.
+- Write all memory files to `.claude/memory/`, not `~/.claude/projects/`
+- A fact about a domain goes to that domain's `.claude/context/` entry, not to memory. `claude-memory-capture` routes it there and `claude-docs` folds it in. Memory keeps only what no context entry owns.
+- Never delete a memory entry. Retire one by moving it to `.claude/.tmp/memory-archive/`. A bulk retire runs through the shell, where no file edit fires a path-scoped rule, and the folder is gitignored with nothing to recover from.
+- Follow `.claude/standards/memory.md` for the filename and type prefix, the frontmatter, the body shape each type carries, and the lifecycle. Check every entry in the pen against that standard and fix what breaks it, since nothing keeps the folder conforming on its own.
 - Save a feedback memory only when the same mistake happens twice in the session, or when the user explicitly corrects you. First-occurrence slips are noise.
 - Keep feedback memories to 3 lines: the rule, a one-line Why, and a one-line How to apply. Capture the pattern, not the recovery narrative.
 - Before creating a new memory file, check for an existing one on the same topic. Update rather than duplicate.
 
 ## Scratch
 
-- Write temporary files to `.claude/.tmp/<slug>/<file>.md` in the project root. Use a kebab-slug tied to the topic. Never use `/tmp` or a flat `<slug>-<file>.md`.
+- Write temporary files to `.claude/.tmp/<slug>/<file>.md` in the project root, a nested `<slug>/` folder with a kebab-slug tied to the topic, not a flat `<slug>-<file>.md`. The scratch-guard hook enforces the location.
 
 ## Worktrees
 
 - Implementation work runs in a linked worktree. From the main worktree, enter one with `/claude-worktree` before editing tracked files for a feature.
 - Do not leave tracked-file edits uncommitted in the main worktree. It is PR-gated, so land every change on a branch: fold it into an in-flight linked worktree, or open its own PR. When that worktree has a live session, hand it the edit to commit rather than writing across worktrees.
-- Shared session scratch (`.claude/plans/`, `.claude/review/`, `.claude/memory/`, `.claude/TASKS.md`) lives at the main worktree root, not inside a linked worktree. From a linked worktree, resolve these paths against the main root via `git worktree list --porcelain | grep -m 1 '^worktree ' | cut -d' ' -f2-`. Fall back to `pwd` if not a git repo.
-- From a linked worktree, every `Edit` or `Write` to a tracked file (source, docs) must use a path starting with `pwd`. Only shared session scratch (`.claude/plans/`, `.claude/review/`, `.claude/memory/`, `.claude/TASKS.md`) resolves to the main worktree root.
+- Shared session scratch (`.claude/plans/`, `.claude/review/`, `.claude/memory/`, `.claude/tasks/`) lives at the main worktree root, not inside a linked worktree. From a linked worktree, resolve these paths against the main root via `git worktree list --porcelain | grep -m 1 '^worktree ' | cut -d' ' -f2-`. Fall back to `pwd` if not a git repo.
+- From a linked worktree, every `Edit` or `Write` to a tracked file (source, docs) must use a path starting with `pwd`.
+- From a linked worktree, `Edit` and `Write` are refused for every main-root path, session scratch included. The refusal names session isolation and points at the worktree copy, which is a second gitignored file no later session reads, so never take that redirect.
+- `Read` resolves against the main root normally from a linked worktree. A main-root write reaches it only through `Bash`, as one plain command rather than a compound one, which is refused for complexity.
+- Route a main-root write by what it does to the file. Creating a whole file goes out as one plain `Bash` command carrying a heredoc. Changing a line inside a file that already exists goes through a command that resolves the main root in-process, because the shell route for that case is the stream editor this file bans.
 - Never blanket `git add -A` over a dirty tree. Stage feature files explicitly so unrelated main edits do not ride into the feature commit, and restore any that leak with `git checkout origin/main -- <file>` before the PR.
 - Reserve parallel worker tracks for features that touch disjoint files. If two plans share a wiring seam (`config.py`, `app.py`, `pyproject.toml`, `.env.example`, `uv.lock`), hand off one, merge and verify it, then start the second off the updated main.
 - Pre-push `bun run check` can hard-fail in a linked worktree on gates CI does not run. `check:spell` matches 0 files under the gitignored worktree path, `check:frontend` fails with no `frontend/node_modules`, and mypy flags the locally-installed `scoring` extra. Run `cd frontend && bun install` before the first push, and add `--no-must-find-files` to `check:spell` in root `package.json` to end the spell false-fail. Push `--no-verify` only after confirming the finding is a worktree artifact outside your diff.

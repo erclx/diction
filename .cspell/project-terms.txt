@@ -1,5 +1,6 @@
 accentedness
 ASR
+backticked
 diction
 disfluent
 dogfooding
@@ -18,14 +19,20 @@ mispronounced
 nativeness
 overfit
 overfits
+overfitted
+overfitting
 phoneme
 phonemes
 phonemization
 prosody
+retarget
+retargeted
 Ryzen
 schwa
 scorable
 shadowing
+subfolders
+undercount
 undersampling
 unflushed
 unscorable

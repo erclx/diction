@@ -22,6 +22,7 @@ dataclass
 dataclasses
 datetimes
 dbaeumer
+Descr
 domcontentloaded
 dotenv
 dotfolders
@@ -37,6 +38,7 @@ frombuffer
 frombytes
 frontmatter
 gemma
+gsub
 hexgrad
 htmlcov
 httpx
@@ -104,6 +106,8 @@ qwen
 rcond
 regen
 repr
+RLENGTH
+RSTART
 ruff
 scannability
 seaborn
@@ -128,6 +132,7 @@ threadpool
 timeupdate
 timonwong
 tobytes
+tolower
 torchaudio
 torchcodec
 tqdm

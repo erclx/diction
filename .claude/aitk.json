@@ -1,0 +1,30 @@
+{
+  "covers": ["standards"],
+  "domains": {
+    "standards": {
+      "syncedAt": "2026-08-06T07:52:59.015Z",
+      "files": {
+        ".claude/standards/architecture.md": "sha256:ba5250a926df3a943bbd4a830ed99c0cb109b72c35e17a43687f24709ee13e8c",
+        ".claude/standards/context.md": "sha256:165b7e2a3aef0d05be54910faf420db8fb67bbdfc57ca523e9c3848a1abed4ea",
+        ".claude/standards/design.md": "sha256:3ffb517fc76312a63e63dbde02dd1a7e2050586ec600ec883969b097bc7f01c3",
+        ".claude/standards/diagrams.md": "sha256:c3bdcd013a43d54db5cafa8f31263d439d22b907c738cc38fa97492053e56b73",
+        ".claude/standards/groundwork.md": "sha256:59a7ccf1c25eb0a14061d1bb14a50000e8fdfdfa2c895ead1c2daebee9624b0e",
+        ".claude/standards/intake.md": "sha256:a6b714a4b44e0be085128f89dc90c97ffbd18f2f33e07c4c52409f4098881b16",
+        ".claude/standards/markdown.md": "sha256:97f99ed27fbc844c41d459d9239c93c5967936e948423f1037c6d920ef9eb27d",
+        ".claude/standards/memory.md": "sha256:cdde98e2adfd32e8ed5eebe0bfd6c5db19b32861eee33358a9bd30a43ea6c39a",
+        ".claude/standards/plan.md": "sha256:9080fa6d0214ae2a866e3d8cce0615dff80f6ef2ea4d0b636c62ab8293c09c23",
+        ".claude/standards/prose.md": "sha256:c47fd1ff6c3a703ca811767d7dcc301199ac4c82a032c67a6fac6eeee7936569",
+        ".claude/standards/publish.md": "sha256:56c03659bd1880ecadfa9b40f82e6fd08356a2e68b6c20eaf3ed869b5561c4c3",
+        ".claude/standards/readme.md": "sha256:ee90c3e48176a9958b9de7c437e91d7639e943fee5405f7684b3c187132513d7",
+        ".claude/standards/requirements.md": "sha256:1a9be54cf38f6ac6d3b84366fac14df203912d758d437924431934639316eb34",
+        ".claude/standards/rule.md": "sha256:91f6954be38916b8279d3ef0f817e8b506c1f3939ac90db9dd13ecb77e7200fe",
+        ".claude/standards/skill.md": "sha256:fff8e24a24cd97f4e570dec03d8cb2a37d0fdfd3c01e7d070bb09c7b9b0671ec",
+        ".claude/standards/slug.md": "sha256:2632c57d33be681a9181f88e6d30d403b4ed7bae2269a5eac04534c55ec7894f",
+        ".claude/standards/standard.md": "sha256:8d64bbed395c84a67a28b3805a7ae043ed7fbc25b840d7968f68a1de638cf2c2",
+        ".claude/standards/tasks.md": "sha256:96058c85a88a2e02f9fcaa72c399f83a4c520e43b1cb3efaf764645d9be71cbf",
+        ".claude/standards/versioning.md": "sha256:b30bdc246d2859c9a39b20e6975a050e560e2754cf8e196aa7a2d37ecbb3a9aa",
+        ".claude/standards/wireframes.md": "sha256:2317cbda84ecfdb03e13a0c98f37a7d93c560746aa191df043e689d573fb1f2f"
+      }
+    }
+  }
+}

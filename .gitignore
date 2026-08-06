@@ -47,4 +47,8 @@ __pycache__/
 .claude/plans/
 .claude/review/
 .claude/worktrees/
-.claude/TASKS.md
+.claude/groundwork/
+.claude/intake/
+.claude/plans-archive/
+.claude/task-archive/
+.claude/tasks/
