@@ -4,7 +4,7 @@ instance would double its VRAM on a card already near the ceiling. One instance
 loads here from the lifespan and both scorers share it.
 
 Imports faster-whisper, in the optional `scoring` dependency group, only inside
-this module, per `.claude/rules/lib/360-model-runtime.md`.
+this module, per `.claude/rules/project/lib/360-model-runtime.md`.
 """
 
 import io

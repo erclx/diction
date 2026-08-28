@@ -1,6 +1,6 @@
 """Transcriber contract and its stub, kept free of the `scoring` model stack so
 importing the protocol or the stub never pulls in torch or faster-whisper, per
-`.claude/rules/lib/360-model-runtime.md`. The real `WhisperTranscriber` lives in
+`.claude/rules/project/lib/360-model-runtime.md`. The real `WhisperTranscriber` lives in
 `transcription.py` and imports `Transcript` from here.
 """
 

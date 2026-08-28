@@ -14,6 +14,8 @@ Real-time conversational AI is explicitly out of this architecture. See the defe
 
 The web UI is a Vite and React single-page app talking to a FastAPI backend over localhost. FastAPI owns the model pipeline and SQLite storage. React owns mic capture, results display, dashboards, and drills.
 
+The MVP (v0.1 through v0.7) shipped in full: passage scoring, drills, shadowing, progress tracking, and free-topic conversation. v0.8 extends the system into interview practice mode and has itself mostly shipped, save the delivery-speech metrics tracked as the open item on the local task board.
+
 ## Key technical decisions
 
 ### FastAPI backend with a Vite and React single-page frontend

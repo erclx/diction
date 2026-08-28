@@ -22,7 +22,11 @@ esac
 
 [ -f "$file" ] || exit 0
 
-command -v aitk >/dev/null 2>&1 || exit 0
+if ! command -v aitk >/dev/null 2>&1; then
+  jq -nc --arg file "$file" \
+    '{hookSpecificOutput:{hookEventName:"PostToolUse",additionalContext:("aitk is not on PATH, so " + $file + " was not audited against markdown.md. Install the toolkit CLI or run aitk markdown audit by hand.")}}'
+  exit 0
+fi
 
 report=$(aitk markdown audit "$file" --json 2>/dev/null)
 [ -n "$report" ] || exit 0

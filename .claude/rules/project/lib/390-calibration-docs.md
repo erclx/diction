@@ -16,4 +16,4 @@ paths:
 
 - When adding a harness script, artifact, or figure, add it to the `README.md` Files list in the same change.
 - Re-run the plot script after changing its input so a committed figure matches the data behind it.
-- Follow methodology and reproducibility per `.claude/rules/lib/380-ml-experiments.md`.
+- Follow methodology and reproducibility per `.claude/rules/project/lib/380-ml-experiments.md`.
