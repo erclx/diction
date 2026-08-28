@@ -1,6 +1,6 @@
 # Design
 
-Authoring guidance: `.claude/standards/design.md`.
+Authoring guidance: `aitk standards design`.
 
 ## Personality
 

@@ -1,6 +1,6 @@
 # Architecture
 
-Authoring guidance: `.claude/standards/architecture.md`.
+Authoring guidance: `aitk standards architecture`.
 
 ## Overview
 

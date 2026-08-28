@@ -1,6 +1,6 @@
 # Requirements
 
-Authoring guidance: `.claude/standards/requirements.md`.
+Authoring guidance: `aitk standards requirements`.
 
 ## Problem
 
