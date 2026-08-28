@@ -1,11 +1,12 @@
 ---
-description: Form validation timing, save-blocking, and derived state for React forms
+description: Form validation timing, save-blocking, and derived state for rendered forms
 paths:
   - '**/*.tsx'
   - '**/*.jsx'
+  - '**/*.astro'
 ---
 
-# FORM STANDARDS
+# Form standards
 
 ## Validation timing
 
@@ -22,7 +23,7 @@ paths:
 ## Error placement
 
 - Show the error directly under the field that caused it, not under an unrelated field.
-- When a change to field A causes a conflict involving field B, show the error under field A (the field the user just edited), not under field B.
+- When a change to field A causes a conflict involving field B, show the error under field A (the field the user edited), not under field B.
 
 ## Input sanitization
 

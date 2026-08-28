@@ -4,9 +4,9 @@ paths:
   - '.claude/rules/**/*.md'
 ---
 
-# RULE AUTHORING STANDARDS
+# Rule authoring standards
 
 ## Authority
 
-- Follow `.claude/standards/rule.md` for rule frontmatter, body shape, and voice. It is the single source.
+- Follow the rule-authoring standard for rule frontmatter, body shape, and voice. It is the single source. Read it with `aitk standards rule`.
 - Read it before writing or editing a rule. Do not work the shape from memory.

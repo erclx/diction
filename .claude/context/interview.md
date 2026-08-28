@@ -1,13 +1,13 @@
 ---
 title: Interview
-description: Computer-vision scorer for interview delivery: posture and eye-contact signals from a recorded answer, its protocol, stub, and separation harness
+description: 'Computer-vision scorer for interview delivery: posture and eye-contact signals from a recorded answer, its protocol, stub, and separation harness'
 ---
 
 # Interview
 
 The CV scoring subsystem for interview practice mode. It runs the MediaPipe pose and face landmarkers over a recorded answer to derive posture and eye-contact signals, the delivery half of the combined interview report that stacks alongside the reused GOP pronunciation scores. The pipeline was vendored and adapted from a portable computer-vision scorer built for a separate project. It follows the scoring subsystem's optional-dependency plus stub pattern.
 
-The CV foundation, the content route, the score route that composes CV with GOP, and the combined report surface (`frontend/src/features/interview/`) have landed. The delivery-speech metrics (pace, fillers, pauses) land later, composing the existing Whisper transcriber rather than duplicating faster-whisper. Rendering a past interview session's prompt, CV metrics, and video in the history detail is also downstream, though the score route already persists the prompt on `PracticeSession.prompt`.
+The CV foundation, the content route, the score route that composes CV with GOP, the combined report surface (`frontend/src/features/interview/`), and rendering a past interview session's prompt, CV metrics, and video in the history detail have all landed. The delivery-speech metrics (pace, fillers, pauses) are the one piece still open, composing the existing Whisper transcriber rather than duplicating faster-whisper.
 
 `POST /api/interview/score` (`api/interview.py`) is where the two scorers meet. It runs `app.state.interview_scorer` on a temp copy of the uploaded webm for the posture and eye-contact report, then transcribes and scores GOP against the client-posted scripted answer, and persists the result as a `mode='interview'` `PracticeSession` plus an `InterviewMetrics` row. CV is the enrichment that degrades to an absent report on failure, while GOP is the primary that fails the request. See `.claude/context/api.md` for the route contract and `.claude/context/storage.md` for the `InterviewMetrics` table.
 
@@ -40,5 +40,5 @@ The CV foundation, the content route, the score route that composes CV with GOP,
 ## Gotchas
 
 - The separation harness (`tests/test_interview_regression.py`) is real-stack only, gated behind `DICTION_INTERVIEW_REGRESSION=1`, since CI cannot run MediaPipe. It asserts relative separation (good reads materially better than bad) rather than absolute score bands, because the still-open real-recording calibration will move the absolute numbers. The clips are gitignored under `tests/fixtures/interview/video/` and repopulated from the `source` paths in the manifest. Full ground truth in `tests/fixtures/interview/manifest.md`.
-- Runtime conventions are enforced by `.claude/rules/lib/360-model-runtime.md`.
+- Runtime conventions are enforced by `.claude/rules/project/lib/360-model-runtime.md`.
 - `questions.py` binds its exception tuple to the `_UNREADABLE_FILE_ERRORS` constant rather than writing `except (OSError, UnicodeError):` inline. ruff 0.15.20 `format` strips the parentheses from an inline exception tuple, emitting invalid Python 2 `except A, B:` syntax and breaking the module. The constant sidesteps the formatter bug and keeps the catch narrow.
