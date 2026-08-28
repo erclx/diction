@@ -4,8 +4,8 @@ paths:
   - '.claude/ARCHITECTURE.md'
 ---
 
-# ARCHITECTURE STANDARDS
+# Architecture standards
 
 ## Authority
 
-- Follow `.claude/standards/architecture.md` for the overview, named decision entries, and risks. It is the single source.
+- Follow the architecture standard for the overview, named decision entries, and risks. It is the single source. Read it with `aitk standards architecture`.

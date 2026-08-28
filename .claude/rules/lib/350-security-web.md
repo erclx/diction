@@ -4,9 +4,10 @@ paths:
   - '**/*.tsx'
   - '**/*.jsx'
   - '**/*.html'
+  - '**/*.astro'
 ---
 
-# WEB SECURITY STANDARDS
+# Web security standards
 
 ## Link safety
 

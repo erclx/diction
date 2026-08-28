@@ -1,11 +1,12 @@
 ---
-description: UX completeness checklist for interactive React components and views
+description: UX completeness checklist for interactive components and views
 paths:
   - '**/*.tsx'
   - '**/*.jsx'
+  - '**/*.astro'
 ---
 
-# UX COMPLETENESS STANDARDS
+# UX completeness standards
 
 ## Mutation feedback
 
